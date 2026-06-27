@@ -1,0 +1,72 @@
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AutoSeoWebhookController;
+use App\Http\Controllers\Api\VendorAuthController;
+use App\Http\Controllers\Api\VendorMobileController;
+use App\Models\Question;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| is assigned the "api" middleware group. Enjoy building your API!
+|
+*/
+
+Route::middleware('auth:api')->get('/user', function (Request $request) {
+  return $request->user();
+});
+
+Route::prefix('v1/vendor')->group(function () {
+  Route::get('/service-categories', [VendorAuthController::class, 'serviceCategories']);
+  Route::post('/signup', [VendorAuthController::class, 'signup']);
+  Route::post('/login', [VendorAuthController::class, 'login']);
+
+  Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me', [VendorMobileController::class, 'me']);
+    Route::post('/logout', [VendorMobileController::class, 'logout']);
+    Route::get('/dashboard', [VendorMobileController::class, 'dashboard']);
+    Route::post('/profile', [VendorMobileController::class, 'updateProfile']);
+    Route::post('/change-password', [VendorMobileController::class, 'changePassword']);
+
+    Route::get('/account-setup', [VendorMobileController::class, 'accountSetup']);
+    Route::post('/business-type', [VendorMobileController::class, 'updateBusinessType']);
+    Route::post('/registration-numbers', [VendorMobileController::class, 'storeRegistrationNumber']);
+    Route::delete('/registration-numbers/{id}', [VendorMobileController::class, 'deleteRegistrationNumber']);
+    Route::post('/documents', [VendorMobileController::class, 'storeDocument']);
+    Route::post('/submit-verification', [VendorMobileController::class, 'submitVerification']);
+
+    Route::get('/appointments', [VendorMobileController::class, 'appointments']);
+    Route::get('/appointments/{id}', [VendorMobileController::class, 'appointment']);
+    Route::post('/appointments/{id}/status', [VendorMobileController::class, 'updateAppointmentStatus']);
+    Route::post('/appointments/{id}/complete', [VendorMobileController::class, 'completeAppointment']);
+    Route::post('/appointments/{id}/invoice', [VendorMobileController::class, 'storeInvoice']);
+
+    Route::get('/staff', [VendorMobileController::class, 'staff']);
+    Route::post('/appointments/staff-assign', [VendorMobileController::class, 'assignStaff']);
+
+    Route::get('/available-jobs', [VendorMobileController::class, 'availableJobs']);
+    Route::post('/available-jobs/{id}/claim', [VendorMobileController::class, 'claimAvailableJob']);
+  });
+});
+
+Route::get('/autoseo/webhook', [AutoSeoWebhookController::class, 'health']);
+Route::post('/autoseo/webhook', [AutoSeoWebhookController::class, 'store']);
+
+// Fetch questions by service_id
+Route::get('/questions/by-service/{service_id}', function ($service_id) {
+  $questions = Question::where('service_id', $service_id)
+    ->with('options')
+    ->get();
+
+  return response()->json([
+    'success' => true,
+    'questions' => $questions,
+    'count' => $questions->count()
+  ]);
+});
