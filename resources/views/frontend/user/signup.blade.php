@@ -136,7 +136,7 @@
                                 <a href="{{ route('vendor.signup') }}">{{ __('Business') }}</a>
                             </div>
                             <p class="account-type-help">
-                                {{ __('Choose Customer to book services, or Business if you provide services on 11Done.') }}
+                                {{ __('Choose Customer to book services, or Business if you provide services on yestrades.') }}
                             </p>
                             @if (Session::has('success'))
                                 <div class="alert alert-success">{{ __(Session::get('success')) }}</div>

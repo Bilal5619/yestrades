@@ -1934,7 +1934,7 @@ Lazyload CSS
 #preLoader .eleven-preloader-wordmark {
   display: inline-flex;
   align-items: baseline;
-  color: #10121a;
+  color: #1e3a8a;
   font-size: 30px;
   font-weight: 900;
   line-height: 1;
@@ -1942,12 +1942,12 @@ Lazyload CSS
 }
 
 #preLoader .eleven-preloader-wordmark span {
-  color: #10121a;
+  color: #1e3a8a;
   font-weight: 900;
 }
 
 #preLoader .eleven-preloader-wordmark strong {
-  color: var(--color-primary);
+  color: #1e3a8a;
   font-weight: 900;
 }
 

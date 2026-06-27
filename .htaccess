@@ -3,8 +3,8 @@
         Options -MultiViews
     </IfModule>
     RewriteEngine On
-    RewriteCond %{HTTP_HOST} ^(www\.)?11done\.com$ [NC]
-    RewriteRule ^(.*)$ https://11done.co.uk/$1 [R=301,L]
+    RewriteCond %{HTTP_HOST} ^(www\.)?11done\.(com|co\.uk)$ [NC]
+    RewriteRule ^(.*)$ https://yestrades.co.uk/$1 [R=301,L]
     RewriteCond %{REQUEST_FILENAME} -d [OR]
     RewriteCond %{REQUEST_FILENAME} -f
     RewriteRule ^ ^$1 [N]

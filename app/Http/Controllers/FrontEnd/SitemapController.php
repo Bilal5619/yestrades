@@ -12,7 +12,7 @@ use Illuminate\Http\Response;
 
 class SitemapController extends Controller
 {
-  private string $baseUrl = 'https://11done.co.uk';
+  private string $baseUrl = 'https://yestrades.co.uk';
 
   public function index(): Response
   {

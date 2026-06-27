@@ -12,9 +12,8 @@
     <div class="container">
       <!-- Mobile Logo -->
       <div class="logo">
-        <a href="{{ route('index') }}" target="_self" title="{{ $websiteInfo->website_title ?? '11Done' }}" class="header-wordmark">
-          <img src="{{ asset('assets/img/11done-icon.png') }}" alt="{{ $websiteInfo->website_title ?? '11Done' }}" class="header-logo-img">
-          <span class="header-wordmark-text"><span class="header-wordmark-number">11</span><span class="header-wordmark-done">DONE</span></span>
+        <a href="{{ route('index') }}" target="_self" title="{{ $websiteInfo->website_title ?? 'yestrades' }}" class="header-wordmark">
+          <span class="header-wordmark-text">yestrades</span>
         </a>
       </div>
       <!-- Menu toggle button -->
@@ -30,9 +29,8 @@
     <div class="container">
       <nav class="navbar navbar-expand-lg">
         <!-- Logo -->
-        <a class="navbar-brand header-wordmark" href="{{ route('index') }}" target="_self" title="{{ $websiteInfo->website_title ?? '11Done' }}">
-          <img src="{{ asset('assets/img/11done-icon.png') }}" alt="{{ $websiteInfo->website_title ?? '11Done' }}" class="header-logo-img">
-          <span class="header-wordmark-text"><span class="header-wordmark-number">11</span><span class="header-wordmark-done">DONE</span></span>
+        <a class="navbar-brand header-wordmark" href="{{ route('index') }}" target="_self" title="{{ $websiteInfo->website_title ?? 'yestrades' }}">
+          <span class="header-wordmark-text">yestrades</span>
         </a>
         <!-- Navigation items -->
         <div class="collapse navbar-collapse">

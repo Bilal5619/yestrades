@@ -12,7 +12,7 @@
 @endsection
 
 @section('metaDescription')
-  {{ __('Privacy Policy for 11Done, explaining how personal data is collected, used, stored and protected.') }}
+  {{ __('Privacy Policy for yestrades, explaining how personal data is collected, used, stored and protected.') }}
 @endsection
 
 @section('content')
@@ -64,11 +64,11 @@
             <h1>{{ __('Privacy Policy') }}</h1>
             <p><strong>{{ __('Last updated:') }}</strong> 24 June 2026</p>
 
-            <p>11Done ("we", "our", "us") respects your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, store and protect your information when you use our website, services, booking forms, vendor platform or contact us.</p>
-            <p><strong>Website:</strong> <a href="https://11done.co.uk">https://11done.co.uk</a></p>
+            <p>yestrades ("we", "our", "us") respects your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, store and protect your information when you use our website, services, booking forms, vendor platform or contact us.</p>
+            <p><strong>Website:</strong> <a href="https://yestrades.co.uk">https://yestrades.co.uk</a></p>
 
             <h2>1. Who we are</h2>
-            <p>11Done is an online service booking platform for UK customers looking for services such as plumbing, gas, electrical, cleaning, landlord certificates and related property services.</p>
+            <p>yestrades is an online service booking platform for UK customers looking for services such as plumbing, gas, electrical, cleaning, landlord certificates and related property services.</p>
             <p>For privacy questions, please contact us:</p>
             <ul>
               <li>Email: {{ $businessEmail }}</li>

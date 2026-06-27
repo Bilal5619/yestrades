@@ -72,7 +72,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #10121a;
+  color: #1e3a8a;
   font-size: 20px;
   font-weight: 900;
   line-height: 1;
@@ -96,7 +96,7 @@
   font-weight: 900;
 }
 .header-area .header-wordmark:hover {
-  color: #10121a;
+  color: #1e3a8a;
 }
 .header-area .header-logo-img {
   display: block;

@@ -1,7 +1,7 @@
 <!-- Footer-area start -->
 @if ($secInfo->footer_section_status == 1)
   @php
-    $brandName = $websiteInfo->website_title ?? '11Done';
+    $brandName = $websiteInfo->website_title ?? 'yestrades';
     $whatsappNumber = !empty($basicInfo->whatsapp_number) ? preg_replace('/\D/', '', $basicInfo->whatsapp_number) : null;
   @endphp
 
@@ -33,12 +33,11 @@
           <div class="footer-brand-column">
             <div class="footer-logo">
               <a href="{{ route('index') }}" target="_self" title="{{ $brandName }}" class="footer-wordmark">
-                <img src="{{ asset('assets/img/11done-icon.png') }}" alt="{{ $brandName }}" class="footer-logo-img">
-                <span class="footer-wordmark-text"><span class="footer-wordmark-number">11</span><span class="footer-wordmark-done">DONE</span></span>
+                <span class="footer-wordmark-text">yestrades</span>
               </a>
             </div>
             <p class="footer-intro">
-              {{ __('11Done is the UK\'s easiest way to book vetted service engineers - plumbing, gas, electrical, cleaning and landlord certificates.') }}
+              {{ __('yestrades is the UK\'s easiest way to book vetted service engineers - plumbing, gas, electrical, cleaning and landlord certificates.') }}
             </p>
             <div class="footer-badges" aria-label="{{ __('Accreditations') }}">
               <span><i class="fal fa-check-circle"></i> {{ __('GAS SAFE') }}</span>

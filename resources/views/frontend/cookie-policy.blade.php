@@ -11,7 +11,7 @@
 @endsection
 
 @section('metaDescription')
-  {{ __('Cookie Policy for 11Done, explaining how cookies and similar technologies are used on the website.') }}
+  {{ __('Cookie Policy for yestrades, explaining how cookies and similar technologies are used on the website.') }}
 @endsection
 
 @section('content')
@@ -63,8 +63,8 @@
             <h1>{{ __('Cookie Policy') }}</h1>
             <p><strong>{{ __('Last updated:') }}</strong> 24 June 2026</p>
 
-            <p>This Cookie Policy explains how 11Done ("we", "our", "us") uses cookies and similar technologies on our website.</p>
-            <p><strong>Website:</strong> <a href="https://11done.co.uk">https://11done.co.uk</a></p>
+            <p>This Cookie Policy explains how yestrades ("we", "our", "us") uses cookies and similar technologies on our website.</p>
+            <p><strong>Website:</strong> <a href="https://yestrades.co.uk">https://yestrades.co.uk</a></p>
 
             <h2>1. What are cookies?</h2>
             <p>Cookies are small text files placed on your device when you visit a website. They help websites work properly, remember user preferences, improve performance and understand how visitors use the website.</p>

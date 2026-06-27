@@ -54,7 +54,7 @@ class AutoSeoWebhookController extends Controller
 
     if (($payload['event'] ?? null) === 'test') {
       return response()->json([
-        'url' => 'https://11done.co.uk/test',
+        'url' => 'https://yestrades.co.uk/test',
       ], 200);
     }
 

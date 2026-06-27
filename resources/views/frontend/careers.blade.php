@@ -5,11 +5,11 @@
 @endsection
 
 @section('metaKeywords')
-  {{ __('11Done careers, home service jobs, engineer jobs, trades jobs, operations jobs') }}
+  {{ __('yestrades careers, home service jobs, engineer jobs, trades jobs, operations jobs') }}
 @endsection
 
 @section('metaDescription')
-  {{ __('Join 11Done and help customers book trusted home services across the UK.') }}
+  {{ __('Join yestrades and help customers book trusted home services across the UK.') }}
 @endsection
 
 @section('style')
@@ -341,7 +341,7 @@
       <div class="container">
         <div class="careers-hero-grid">
           <div>
-            <span class="careers-eyebrow">{{ __('Careers at 11DONE') }}</span>
+            <span class="careers-eyebrow">{{ __('Careers at yestrades') }}</span>
             <h1>{{ __('Help make home services') }} <span>{{ __('simple to book.') }}</span></h1>
             <p>
               {{ __('We are building a practical, trusted way for customers, landlords and property teams to book vetted home-service professionals. Join the team shaping the tools, service standards and customer experience behind every booking.') }}
@@ -359,7 +359,7 @@
           <div class="careers-panel">
             <div class="careers-hero-photo">
               <img src="{{ asset('assets/img/static/careers-hero.jpg') }}"
-                alt="{{ __('11DONE service professional at work') }}">
+                alt="{{ __('yestrades service professional at work') }}">
             </div>
             <h2>{{ __('Who we are looking for') }}</h2>
             <ul class="careers-check-list">
@@ -396,7 +396,7 @@
           <div class="careers-card">
             <div class="icon"><i class="fal fa-tools"></i></div>
             <h3>{{ __('Trade Professionals') }}</h3>
-            <p>{{ __('Plumbers, gas engineers, electricians, cleaners and property specialists can join the 11DONE network.') }}</p>
+            <p>{{ __('Plumbers, gas engineers, electricians, cleaners and property specialists can join the yestrades network.') }}</p>
           </div>
         </div>
       </div>
@@ -413,7 +413,7 @@
           <div class="careers-role-card">
             <div class="icon"><i class="fal fa-user-hard-hat"></i></div>
             <h3>{{ __('Service professional applications') }}</h3>
-            <p>{{ __('Qualified plumbers, gas engineers, electricians, cleaners and property maintenance specialists can still register interest in joining the 11DONE professional network.') }}</p>
+            <p>{{ __('Qualified plumbers, gas engineers, electricians, cleaners and property maintenance specialists can still register interest in joining the yestrades professional network.') }}</p>
             <div class="careers-role-meta">
               <span>{{ __('UK based') }}</span>
               <span>{{ __('Flexible') }}</span>

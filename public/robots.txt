@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://11done.co.uk/sitemap.xml
+Sitemap: https://yestrades.co.uk/sitemap.xml

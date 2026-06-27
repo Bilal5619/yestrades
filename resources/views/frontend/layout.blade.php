@@ -81,7 +81,7 @@
     <div id="preLoader" data-preloader-status="{{ $basicInfo->preloader_status }}">
       <div class="eleven-preloader-card" role="status" aria-live="polite" aria-label="{{ __('Loading') }}">
         <div class="eleven-preloader-wordmark" aria-hidden="true">
-          <span>11</span><strong>DONE</strong>
+          <strong>yestrades</strong>
         </div>
         <div class="eleven-preloader-bar" aria-hidden="true">
           <span></span>

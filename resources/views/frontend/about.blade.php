@@ -91,10 +91,10 @@
 
   @php
     $aboutDefaults = [
-      'eyebrow' => 'About 11DONE',
+      'eyebrow' => 'About yestrades',
       'title' => 'Making home service booking simpler for customers and landlords.',
       'text' =>
-        '<p>11DONE is built to make it easier to find, compare and book essential home services from one place. From plumbing and electrical work to gas services and landlord certificates, our booking flow helps customers provide the right details before checkout.</p><p>Our aim is to keep the process clear: choose a service, confirm the property and contact information, review the price where available, and complete the booking request securely online.</p>',
+        '<p>yestrades is built to make it easier to find, compare and book essential home services from one place. From plumbing and electrical work to gas services and landlord certificates, our booking flow helps customers provide the right details before checkout.</p><p>Our aim is to keep the process clear: choose a service, confirm the property and contact information, review the price where available, and complete the booking request securely online.</p>',
     ];
 
     $defaultFeatures = [
@@ -152,7 +152,7 @@
             <div class="image img-left mb-40">
               @if (!empty(@$about->about_section_image))
                 <img class="blur-up lazyload" src="{{ asset('assets/img/about-us/' . @$about->about_section_image) }}"
-                  alt="{{ __('About 11DONE') }}">
+                  alt="{{ __('About yestrades') }}">
               @else
                 <div class="about-fallback-visual">
                   <div class="about-fallback-card">
@@ -230,7 +230,7 @@
       <div class="container">
         <div class="section-title title-center mb-50" data-aos="fade-up">
           <h2 class="title mb-0">
-            {{ !empty(@$about->features_title) ? @$about->features_title : __('Why customers use 11DONE') }}
+            {{ !empty(@$about->features_title) ? @$about->features_title : __('Why customers use yestrades') }}
           </h2>
         </div>
         <div class="row">
@@ -374,7 +374,7 @@
             <div class="col-12">
               <div class="section-title title-center mb-50" data-aos="fade-up">
                 <h2 class="title">
-                  {{ !empty($sectionContent->workprocess_section_title) ? $sectionContent->workprocess_section_title : __('How 11DONE booking works') }}
+                  {{ !empty($sectionContent->workprocess_section_title) ? $sectionContent->workprocess_section_title : __('How yestrades booking works') }}
                 </h2>
               </div>
             </div>
