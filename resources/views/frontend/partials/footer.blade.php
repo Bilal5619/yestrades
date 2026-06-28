@@ -33,7 +33,11 @@
           <div class="footer-brand-column">
             <div class="footer-logo">
               <a href="{{ route('index') }}" target="_self" title="{{ $brandName }}" class="footer-wordmark">
-                <span class="footer-wordmark-text">{{ $brandName }}</span>
+                @if (!empty($websiteInfo->logo))
+                  <img src="{{ asset('assets/img/' . $websiteInfo->logo) }}" alt="{{ $brandName }}" class="footer-logo-img">
+                @else
+                  <span class="footer-wordmark-text">{{ $brandName }}</span>
+                @endif
               </a>
             </div>
             <p class="footer-intro">
