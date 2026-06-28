@@ -902,7 +902,9 @@ class BasicController extends Controller
 
     $rules = [
       'website_title' => 'required|max:255',
-      'theme_version' => 'required|numeric',
+      // theme_version is locked (theme switcher is disabled in the view), so it is
+      // no longer submitted by the form. Validating it as required would make every
+      // save silently fail. The existing DB value is preserved below.
       'preloader_status' => 'required',
       'base_currency_symbol' => 'required',
       'base_currency_symbol_position' => 'required',
@@ -967,7 +969,7 @@ class BasicController extends Controller
         'favicon' => $iconName,
         'preloader' => $preloaderName,
         'preloader_status' => $request->preloader_status,
-        'theme_version' => $request->theme_version,
+        'theme_version' => $request->theme_version ?? $data->theme_version ?? 2,
         'primary_color' => $request->primary_color,
         'secondary_color' => $request->secondary_color,
         'base_currency_symbol' => $request->base_currency_symbol,
