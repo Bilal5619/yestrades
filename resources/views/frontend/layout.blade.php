@@ -13,8 +13,8 @@
   <!-- Title -->
   <title>@yield('pageHeading') {{ '| ' . $websiteInfo->website_title }}</title>
   <!-- Favicon -->
-  <link rel="shortcut icon" href="{{ asset('assets/img/11done-icon.png') }}" type="image/x-icon">
-  <link rel="apple-touch-icon" href="{{ asset('assets/img/11done-icon.png') }}">
+  <link rel="shortcut icon" href="{{ asset('assets/img/' . $websiteInfo->favicon) }}" type="image/x-icon">
+  <link rel="apple-touch-icon" href="{{ asset('assets/img/' . $websiteInfo->favicon) }}">
   <!-- Latest Font Awesome -->
   <!-- Font Awesome is loaded in partials/styles.blade.php -->
 
@@ -81,7 +81,7 @@
     <div id="preLoader" data-preloader-status="{{ $basicInfo->preloader_status }}">
       <div class="eleven-preloader-card" role="status" aria-live="polite" aria-label="{{ __('Loading') }}">
         <div class="eleven-preloader-wordmark" aria-hidden="true">
-          <strong>yestrades</strong>
+          <strong>{{ $websiteInfo->website_title ?? 'yestrades' }}</strong>
         </div>
         <div class="eleven-preloader-bar" aria-hidden="true">
           <span></span>

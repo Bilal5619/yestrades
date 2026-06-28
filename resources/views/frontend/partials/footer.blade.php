@@ -33,7 +33,7 @@
           <div class="footer-brand-column">
             <div class="footer-logo">
               <a href="{{ route('index') }}" target="_self" title="{{ $brandName }}" class="footer-wordmark">
-                <span class="footer-wordmark-text">yestrades</span>
+                <span class="footer-wordmark-text">{{ $brandName }}</span>
               </a>
             </div>
             <p class="footer-intro">

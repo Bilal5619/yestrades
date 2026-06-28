@@ -13,7 +13,7 @@
       <!-- Mobile Logo -->
       <div class="logo">
         <a href="{{ route('index') }}" target="_self" title="{{ $websiteInfo->website_title ?? 'yestrades' }}" class="header-wordmark">
-          <span class="header-wordmark-text">yestrades</span>
+          <span class="header-wordmark-text">{{ $websiteInfo->website_title ?? 'yestrades' }}</span>
         </a>
       </div>
       <!-- Menu toggle button -->
@@ -30,7 +30,7 @@
       <nav class="navbar navbar-expand-lg">
         <!-- Logo -->
         <a class="navbar-brand header-wordmark" href="{{ route('index') }}" target="_self" title="{{ $websiteInfo->website_title ?? 'yestrades' }}">
-          <span class="header-wordmark-text">yestrades</span>
+          <span class="header-wordmark-text">{{ $websiteInfo->website_title ?? 'yestrades' }}</span>
         </a>
         <!-- Navigation items -->
         <div class="collapse navbar-collapse">
