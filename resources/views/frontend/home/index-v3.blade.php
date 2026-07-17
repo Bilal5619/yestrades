@@ -261,7 +261,8 @@
       @endif
     @endforeach
   @endif
-  @include('frontend.home.renewal-section')
+  {{-- Hidden for now (client request) — uncomment to bring the packages section back --}}
+  {{-- @include('frontend.home.renewal-section') --}}
   <!-- Service-area start -->
   @if ($secInfo->feature_section_status == 1)
     <section class="service-area service-1 pb-100">

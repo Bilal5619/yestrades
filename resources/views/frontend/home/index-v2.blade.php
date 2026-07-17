@@ -1032,7 +1032,8 @@
 
 
 
-  @include('frontend.home.renewal-section')
+  {{-- Hidden for now (client request) — uncomment to bring the packages section back --}}
+  {{-- @include('frontend.home.renewal-section') --}}
   <!-- Service-area start -->
   @if ($secInfo->latest_service_section_status == 1)
     <section class="service-area service-1 ptb-100 home-services">

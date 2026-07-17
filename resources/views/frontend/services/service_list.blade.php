@@ -80,7 +80,8 @@
             </div>
           </div>
           <div id="search_container">
-            @if (!empty($renewalItems) && $renewalItems->count() > 0)
+            {{-- Hidden for now (client request) — remove `false &&` to bring the packages section back --}}
+            @if (false && !empty($renewalItems) && $renewalItems->count() > 0)
               <section class="renewal-package-section mb-40" data-aos="fade-up">
                 <div class="section-title mb-25">
                   <h2 class="mb-0">{{ __('Annual Safety Checks & Packages') }}</h2>
