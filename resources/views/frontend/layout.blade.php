@@ -140,6 +140,115 @@
 
   @includeIf('frontend.partials.footer')
 
+  {{-- Floating WhatsApp button (viewport bottom-right) --}}
+  @php
+    $floatingWhatsappNumber = !empty($basicInfo->whatsapp_number)
+      ? preg_replace('/\D/', '', $basicInfo->whatsapp_number)
+      : null;
+  @endphp
+  @if ($floatingWhatsappNumber)
+    <a href="https://wa.me/{{ $floatingWhatsappNumber }}" target="_blank" rel="noopener" class="floating-whatsapp"
+      aria-label="{{ __('Chat on WhatsApp') }}">
+      <span class="floating-whatsapp-label">{{ __('Chat on WhatsApp') }}</span>
+      <span class="floating-whatsapp-icon">
+        <i class="fab fa-whatsapp"></i>
+      </span>
+    </a>
+    <style>
+      .floating-whatsapp {
+        position: fixed;
+        right: 22px;
+        bottom: 92px;
+        z-index: 1050;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+      }
+
+      .floating-whatsapp-icon {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 56px;
+        height: 56px;
+        color: #ffffff;
+        background: linear-gradient(135deg, #25d366, #128c7e);
+        border-radius: 50%;
+        font-size: 27px;
+        box-shadow: 0 14px 34px rgba(18, 140, 126, 0.45);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+      }
+
+      .floating-whatsapp-icon::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 2px solid rgba(37, 211, 102, 0.55);
+        animation: floatingWaPulse 2s ease-out infinite;
+        pointer-events: none;
+      }
+
+      @keyframes floatingWaPulse {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+
+        100% {
+          transform: scale(1.55);
+          opacity: 0;
+        }
+      }
+
+      .floating-whatsapp:hover .floating-whatsapp-icon {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 20px 44px rgba(18, 140, 126, 0.55);
+      }
+
+      .floating-whatsapp-label {
+        max-width: 0;
+        overflow: hidden;
+        padding: 0;
+        color: #0b3d36;
+        background: #ffffff;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1;
+        white-space: nowrap;
+        box-shadow: 0 12px 30px rgba(11, 61, 54, 0.18);
+        opacity: 0;
+        transition: max-width 0.35s ease, padding 0.35s ease, opacity 0.25s ease, margin 0.35s ease;
+      }
+
+      .floating-whatsapp:hover .floating-whatsapp-label {
+        max-width: 220px;
+        margin-right: 12px;
+        padding: 12px 16px;
+        opacity: 1;
+      }
+
+      @media (max-width: 767.98px) {
+        .floating-whatsapp {
+          right: 16px;
+          bottom: 84px;
+        }
+
+        .floating-whatsapp-icon {
+          width: 52px;
+          height: 52px;
+          font-size: 25px;
+        }
+
+        .floating-whatsapp-label {
+          display: none;
+        }
+      }
+    </style>
+  @endif
+
   {{-- cookie alert --}}
   @if (!is_null($cookieAlertInfo) && $cookieAlertInfo->cookie_alert_status == 1)
     @include('cookie-consent::index')

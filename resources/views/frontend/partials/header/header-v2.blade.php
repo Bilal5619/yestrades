@@ -91,16 +91,6 @@
               @endif
             </a>
           </div> -->
-          @php
-            $whatsappNumber = !empty($basicInfo->whatsapp_number) ? preg_replace('/\D/', '', $basicInfo->whatsapp_number) : null;
-          @endphp
-          @if ($whatsappNumber)
-            <div class="item">
-              <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" rel="noopener" class="nav-whatsapp-link">
-                <i class="fab fa-whatsapp"></i> {{ __('WhatsApp') }}
-              </a>
-            </div>
-          @endif
           <div class="item">
             @if (Auth::guard('web')->check() || Auth::guard('vendor')->check())
               <div class="dropdown nav-account-menu">

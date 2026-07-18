@@ -1,5 +1,8 @@
 <?php
 
+// Hide PHP deprecation notices (PHP 8.3/8.4 emits them for this Laravel 9 codebase)
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 

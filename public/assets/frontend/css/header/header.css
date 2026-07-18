@@ -343,12 +343,15 @@
 }
 
 .header-area.header-2 .main-navbar {
-  background: #ffffff;
-  border-bottom: 1px solid #ecebea;
+  background: rgba(255, 255, 255, 0.88);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(17, 19, 26, 0.06);
+  box-shadow: 0 10px 30px rgba(17, 19, 26, 0.05);
 }
 
 .header-area.header-2 .main-navbar .navbar {
-  min-height: 64px;
+  min-height: 70px;
 }
 
 .header-area.header-2 .header-wordmark {
@@ -356,7 +359,7 @@
 }
 
 .header-area.header-2 .navbar-nav {
-  gap: 28px;
+  gap: 34px;
   margin-inline-start: auto;
   margin-inline-end: auto;
 }
@@ -367,12 +370,34 @@
 }
 
 .header-area.header-2 .nav-link {
-  padding-top: 23px;
-  padding-bottom: 23px;
-  color: #30333b;
-  font-size: 13px;
+  position: relative;
+  padding-top: 26px;
+  padding-bottom: 26px;
+  color: #1c2430;
+  font-size: 13.5px;
   font-weight: 700;
+  letter-spacing: 0.01em;
   line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.header-area.header-2 .nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 18px;
+  height: 2.5px;
+  background: var(--color-primary);
+  border-radius: 999px;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.25s ease;
+}
+
+.header-area.header-2 .nav-link:hover::after,
+.header-area.header-2 .nav-link.active::after {
+  transform: scaleX(1);
 }
 
 .header-area.header-2 .nav-link:hover,
@@ -402,9 +427,17 @@
 }
 
 .header-area.header-2 .nav-sign-link {
-  padding: 0;
+  padding: 0 16px;
   background: transparent;
-  border: 0;
+  border: 1px solid rgba(17, 19, 26, 0.12);
+  border-radius: 999px;
+  min-height: 40px;
+  transition: all 0.2s ease;
+}
+
+.header-area.header-2 .nav-sign-link:hover {
+  border-color: rgba(var(--color-primary-rgb), 0.45);
+  background: rgba(var(--color-primary-rgb), 0.06);
 }
 
 .header-area.header-2 .nav-sign-link i {
@@ -412,11 +445,12 @@
 }
 
 .header-area.header-2 .nav-account-menu .dropdown-menu {
-  min-width: 210px;
-  padding: 8px;
-  border: 1px solid #ecebea;
-  border-radius: 8px;
-  box-shadow: 0 18px 45px rgba(17, 19, 26, 0.12);
+  min-width: 220px;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid rgba(17, 19, 26, 0.07);
+  border-radius: 14px;
+  box-shadow: 0 24px 55px rgba(17, 19, 26, 0.14);
 }
 
 .header-area.header-2 .nav-account-menu .dropdown-item {
@@ -451,11 +485,12 @@
 
 .header-area.header-2 .nav-book-btn {
   min-height: 42px;
-  padding: 0 18px;
+  padding: 0 20px;
   color: #ffffff;
   background: var(--color-primary);
-  border-radius: 8px;
-  box-shadow: 0 12px 24px rgba(var(--color-primary-rgb), 0.18);
+  border-radius: 999px;
+  box-shadow: 0 12px 26px rgba(var(--color-primary-rgb), 0.28);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
 .header-area.header-2 .nav-cart-count {
@@ -474,7 +509,9 @@
 
 .header-area.header-2 .nav-book-btn:hover {
   color: #ffffff;
-  transform: translateY(-1px);
+  filter: brightness(1.06);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(var(--color-primary-rgb), 0.38);
 }
 
 .header-area.header-2.is-sticky .main-navbar .menu-dropdown {
