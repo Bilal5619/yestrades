@@ -1732,15 +1732,20 @@
         left: 10px;
         top: 10px;
         z-index: 2;
+        max-width: calc(100% - 62px);
         padding: 6px 12px;
         color: var(--yt-primary-deep);
-        background: rgba(255, 255, 255, 0.94);
+        background: #ffffff;
         border-radius: 999px;
+        box-shadow: 0 6px 16px rgba(16, 29, 44, 0.12);
         font-size: 11.5px;
         font-weight: 800;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
         text-decoration: none;
-        backdrop-filter: blur(4px);
-        transition: all 0.2s ease;
+        transition: color 0.2s ease, background 0.2s ease;
       }
 
       .yt-scard-tag:hover {
@@ -1748,27 +1753,46 @@
         background: var(--yt-primary);
       }
 
-      .yt-scard-wish {
+      .yt-scard-media .yt-scard-wish,
+      .yt-scard-media .yt-scard-wish:focus,
+      .yt-scard-media .yt-scard-wish:active,
+      .yt-scard-media .yt-scard-wish:visited {
         position: absolute;
         right: 10px;
         top: 10px;
-        z-index: 2;
+        z-index: 3;
         display: flex;
         align-items: center;
         justify-content: center;
         width: 36px;
         height: 36px;
+        margin: 0;
+        padding: 0;
         color: var(--yt-ink);
-        background: rgba(255, 255, 255, 0.94);
+        background: #ffffff;
+        border: 0;
         border-radius: 50%;
+        box-shadow: 0 6px 16px rgba(16, 29, 44, 0.14);
         font-size: 14px;
+        line-height: 1;
         text-decoration: none;
-        backdrop-filter: blur(4px);
-        transition: all 0.2s ease;
+        outline: none;
+        overflow: hidden;
+        transition: color 0.2s ease, background 0.2s ease;
       }
 
-      .yt-scard-wish:hover,
-      .yt-scard-wish.wishlist-active {
+      .yt-scard-wish::before,
+      .yt-scard-wish::after {
+        content: none !important;
+      }
+
+      .yt-scard-wish i {
+        display: block;
+        line-height: 1;
+      }
+
+      .yt-scard-media .yt-scard-wish:hover,
+      .yt-scard-media .yt-scard-wish.wishlist-active {
         color: #ffffff;
         background: #e8506c;
       }
