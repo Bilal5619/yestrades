@@ -1203,23 +1203,24 @@
       .yt-hero-media-frame::before {
         content: "";
         position: absolute;
-        inset: 22px -22px -22px 22px;
-        background: linear-gradient(135deg, rgba(14, 159, 110, 0.9), rgba(6, 67, 47, 0.9));
-        border-radius: 30px;
+        inset: -16px;
+        background: linear-gradient(140deg, rgba(14, 159, 110, 0.45), rgba(245, 165, 36, 0.35));
+        border-radius: 38px;
+        filter: blur(22px);
+        opacity: 0.65;
         z-index: 0;
-        transform: rotate(-2deg);
       }
 
       .yt-hero-media-frame::after {
         content: "";
         position: absolute;
-        top: -26px;
-        right: -18px;
-        width: 110px;
-        height: 110px;
-        background-image: radial-gradient(var(--yt-amber) 2.4px, transparent 2.4px);
-        background-size: 16px 16px;
-        opacity: 0.7;
+        top: -22px;
+        right: -14px;
+        width: 96px;
+        height: 96px;
+        background-image: radial-gradient(var(--yt-amber) 2.2px, transparent 2.2px);
+        background-size: 15px 15px;
+        opacity: 0.55;
         z-index: 0;
       }
 
@@ -1228,9 +1229,9 @@
         overflow: hidden;
         height: 480px;
         background: #dfe8e2;
-        border: 6px solid #ffffff;
+        border: 5px solid #ffffff;
         border-radius: 26px;
-        box-shadow: 0 36px 80px rgba(16, 29, 44, 0.22);
+        box-shadow: 0 30px 70px rgba(16, 29, 44, 0.18);
         z-index: 1;
       }
 
@@ -1301,9 +1302,12 @@
 
       .yt-hero-chip {
         position: absolute;
-        right: 14px;
-        bottom: 16px;
-        padding: 8px 14px;
+        left: 14px;
+        top: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 15px;
         color: #ffffff;
         background: rgba(6, 67, 47, 0.85);
         border: 1px solid rgba(255, 255, 255, 0.25);
@@ -1311,7 +1315,31 @@
         font-size: 12px;
         font-weight: 700;
         z-index: 2;
-        backdrop-filter: blur(4px);
+        backdrop-filter: blur(6px);
+      }
+
+      .yt-hero-chip::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        background: #4ade80;
+        border-radius: 50%;
+        box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.25);
+        animation: ytPulse 2.2s infinite;
+      }
+
+      .hero-visual-pagination .swiper-pagination-bullet {
+        width: 7px;
+        height: 7px;
+        opacity: 0.55;
+        transition: all 0.25s ease;
+      }
+
+      .hero-visual-pagination .swiper-pagination-bullet-active {
+        width: 22px;
+        border-radius: 999px;
+        opacity: 1;
+        background: #ffffff;
       }
 
       .yt-hero-float-card {
@@ -1555,17 +1583,32 @@
       /* ── Tabs ─────────────────────────────────────── */
       .yt-tabs {
         margin-top: 26px;
+        max-width: 100%;
       }
 
       .yt-tabs .nav-tabs {
-        display: inline-flex;
-        justify-content: center;
-        flex-wrap: wrap;
+        display: flex;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
         gap: 6px;
+        max-width: max-content;
+        margin: 0 auto;
         padding: 6px;
         background: var(--yt-bg);
         border: 1px solid var(--yt-line);
         border-radius: 999px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .yt-tabs .nav-tabs::-webkit-scrollbar {
+        display: none;
+      }
+
+      .yt-tabs .nav-tabs .nav-item {
+        flex: 0 0 auto;
       }
 
       .yt-tabs .nav-tabs .nav-link {
@@ -1577,6 +1620,7 @@
         border-radius: 999px;
         font-size: 13.5px;
         font-weight: 700;
+        white-space: nowrap;
         transition: all 0.2s ease;
       }
 
@@ -2542,22 +2586,6 @@
         .yt-hero-media-inline .yt-hero-slide-card {
           height: 220px;
         }
-
-        .yt-tabs .nav-tabs {
-          display: flex;
-          flex-wrap: nowrap;
-          justify-content: flex-start;
-          overflow-x: auto;
-          scrollbar-width: none;
-        }
-
-        .yt-tabs .nav-tabs::-webkit-scrollbar {
-          display: none;
-        }
-
-        .yt-tabs .nav-tabs .nav-item {
-          flex: 0 0 auto;
-        }
       }
     </style>
     <script>
@@ -2569,10 +2597,8 @@
 
           var instance = new Swiper(slider, {
             loop: true,
-            speed: 800,
-            autoplay: { delay: 4200, disableOnInteraction: false },
-            effect: 'fade',
-            fadeEffect: { crossFade: true },
+            speed: 750,
+            autoplay: { delay: 4500, disableOnInteraction: false },
             observer: true,
             observeParents: true,
             pagination: {
