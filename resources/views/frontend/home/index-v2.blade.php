@@ -281,8 +281,8 @@
                           class="yt-scard-cartform">
                           @csrf
                           <input type="hidden" name="service_id" value="{{ $service->id }}">
-                          <button type="submit" class="yt-scard-btn" title="{{ __('Add to Cart') }}">
-                            <i class="fal fa-shopping-cart"></i>{{ __('Add to Cart') }}
+                          <button type="submit" class="yt-scard-btn" title="{{ __('Book Now') }}">
+                            <i class="fal fa-calendar-check"></i>{{ __('Book Now') }}
                           </button>
                         </form>
                       </div>
@@ -386,8 +386,8 @@
                               class="yt-scard-cartform">
                               @csrf
                               <input type="hidden" name="service_id" value="{{ $service->id }}">
-                              <button type="submit" class="yt-scard-btn" title="{{ __('Add to Cart') }}">
-                                <i class="fal fa-shopping-cart"></i>{{ __('Add to Cart') }}
+                              <button type="submit" class="yt-scard-btn" title="{{ __('Book Now') }}">
+                                <i class="fal fa-calendar-check"></i>{{ __('Book Now') }}
                               </button>
                             </form>
                           </div>
@@ -693,8 +693,8 @@
                         class="yt-scard-cartform">
                         @csrf
                         <input type="hidden" name="service_id" value="{{ $service->id }}">
-                        <button type="submit" class="yt-scard-btn" title="{{ __('Add to Cart') }}">
-                          <i class="fal fa-shopping-cart"></i>{{ __('Add to Cart') }}
+                        <button type="submit" class="yt-scard-btn" title="{{ __('Book Now') }}">
+                          <i class="fal fa-calendar-check"></i>{{ __('Book Now') }}
                         </button>
                       </form>
                     </div>
@@ -2594,11 +2594,36 @@
         }
 
         .yt-section {
-          padding: 58px 0;
+          padding: 56px 0;
         }
 
         .yt-section-head {
-          margin-bottom: 32px;
+          margin-bottom: 30px;
+        }
+
+        .yt-section-head h2 {
+          overflow-wrap: break-word;
+        }
+
+        .yt-tabs {
+          gap: 8px;
+          margin-top: 22px;
+        }
+
+        .yt-tabs-arrow {
+          flex: 0 0 36px;
+          width: 36px;
+          height: 36px;
+          font-size: 15px;
+        }
+
+        .yt-tabs .nav-tabs .nav-link {
+          padding: 9px 16px;
+          font-size: 13px;
+        }
+
+        .yt-scard-body {
+          padding: 14px;
         }
 
         .yt-steps-line {
@@ -2606,9 +2631,24 @@
           gap: 28px;
         }
 
+        .yt-step-node {
+          width: 68px;
+          height: 68px;
+          font-size: 24px;
+        }
+
+        .yt-why-grid {
+          gap: 30px;
+        }
+
+        .yt-why-intro h2 {
+          margin-bottom: 20px;
+        }
+
         .yt-why-row {
           flex-direction: column;
           gap: 16px;
+          padding: 22px 20px;
         }
 
         .yt-why-row:hover {
@@ -2620,23 +2660,166 @@
           flex-direction: column;
         }
 
+        .yt-review-card {
+          padding: 22px;
+        }
+
+        .yt-process-img {
+          height: 120px;
+        }
+
+        .yt-process-img img {
+          max-height: 120px;
+        }
+
+        .yt-banner-overlay {
+          padding: 18px;
+        }
+
+        .yt-banner-arrow {
+          flex: 0 0 40px;
+          height: 40px;
+          font-size: 16px;
+        }
+
         .yt-banner-collection,
         .yt-cta-section {
-          padding-bottom: 58px;
+          padding-bottom: 56px;
         }
 
         .yt-cta-inner {
-          padding: 40px 24px;
+          max-width: 100%;
+          padding: 36px 22px;
+        }
+
+        .yt-cta-inner p {
+          font-size: 14px;
         }
 
         .yt-reviews-section {
-          padding: 58px 0;
+          padding: 56px 0;
+        }
+
+        .yt-vendor-card {
+          padding: 24px 18px 22px;
+        }
+
+        .yt-btn-primary,
+        .yt-btn-amber,
+        .yt-btn-light {
+          min-height: 46px;
+          padding: 0 22px;
+          font-size: 13.5px;
+        }
+
+        .yt-section-cta {
+          margin-top: 30px;
         }
       }
 
       @media (max-width: 575.98px) {
+        .yt-hero {
+          padding: 88px 0 96px;
+        }
+
+        .yt-hero h1 {
+          font-size: 31px;
+          line-height: 1.12;
+          overflow-wrap: anywhere;
+        }
+
+        .yt-hero-copy > p {
+          font-size: 14px;
+        }
+
+        .yt-hero-eyebrow {
+          padding: 8px 13px;
+          font-size: 10px;
+          letter-spacing: 0.04em;
+        }
+
         .yt-hero-media-inline .yt-hero-slide-card {
           height: 220px;
+          border-width: 4px;
+        }
+
+        .yt-hero-chip {
+          padding: 7px 12px;
+          font-size: 11px;
+        }
+
+        .yt-hero-trust {
+          font-size: 12.5px;
+        }
+
+        .yt-statbar-wrap {
+          margin-top: -50px;
+          margin-bottom: 26px;
+        }
+
+        .yt-stat {
+          padding: 16px 10px;
+        }
+
+        .yt-stat strong {
+          font-size: 19px;
+        }
+
+        .yt-stat span {
+          margin-top: 6px;
+          font-size: 9.5px;
+          letter-spacing: 0.06em;
+        }
+
+        .yt-section {
+          padding: 48px 0;
+        }
+
+        .yt-section-head h2 {
+          font-size: 25px;
+        }
+
+        .yt-eyebrow {
+          font-size: 10.5px;
+        }
+
+        .yt-why-intro h2 {
+          font-size: 25px;
+        }
+
+        .yt-step h4 {
+          font-size: 15.5px;
+        }
+
+        .yt-step p,
+        .yt-why-row p {
+          font-size: 13px;
+        }
+
+        .yt-scard-title {
+          font-size: 15px;
+        }
+
+        .yt-price-chip {
+          padding: 6px 11px;
+          font-size: 13px;
+        }
+
+        .yt-review-card blockquote {
+          font-size: 14px;
+        }
+
+        .yt-cta-inner h2 {
+          font-size: 24px;
+        }
+
+        .yt-banner-collection,
+        .yt-cta-section {
+          padding-bottom: 48px;
+        }
+
+        .yt-reviews-section {
+          padding: 48px 0;
         }
       }
     </style>
