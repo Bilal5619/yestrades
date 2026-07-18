@@ -200,18 +200,26 @@
           </h2>
           @if (count($categories) > 0)
             <div class="yt-tabs">
-              <ul class="nav nav-tabs" data-hover="fancyHover">
-                <li class="nav-item active">
-                  <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#defaultTab"
-                    type="button">{{ __('All Services') }}</button>
-                </li>
-                @foreach ($categories as $category)
-                  <li class="nav-item">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab{{ $category->id }}"
-                      type="button">{{ $category->name }}</button>
+              <button type="button" class="yt-tabs-arrow yt-tabs-prev" aria-label="{{ __('Scroll categories left') }}">
+                <i class="fal fa-angle-left"></i>
+              </button>
+              <div class="yt-tabs-scroll">
+                <ul class="nav nav-tabs" data-hover="fancyHover">
+                  <li class="nav-item active">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#defaultTab"
+                      type="button">{{ __('All Services') }}</button>
                   </li>
-                @endforeach
-              </ul>
+                  @foreach ($categories as $category)
+                    <li class="nav-item">
+                      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab{{ $category->id }}"
+                        type="button">{{ $category->name }}</button>
+                    </li>
+                  @endforeach
+                </ul>
+              </div>
+              <button type="button" class="yt-tabs-arrow yt-tabs-next" aria-label="{{ __('Scroll categories right') }}">
+                <i class="fal fa-angle-right"></i>
+              </button>
             </div>
           @endif
         </div>
@@ -1582,18 +1590,17 @@
 
       /* ── Tabs ─────────────────────────────────────── */
       .yt-tabs {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
         margin-top: 26px;
         max-width: 100%;
       }
 
-      .yt-tabs .nav-tabs {
-        display: flex;
-        justify-content: flex-start;
-        flex-wrap: nowrap;
-        gap: 6px;
-        max-width: max-content;
-        margin: 0 auto;
-        padding: 6px;
+      .yt-tabs-scroll {
+        max-width: 100%;
+        min-width: 0;
         background: var(--yt-bg);
         border: 1px solid var(--yt-line);
         border-radius: 999px;
@@ -1601,10 +1608,55 @@
         scrollbar-width: none;
         -ms-overflow-style: none;
         -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
       }
 
-      .yt-tabs .nav-tabs::-webkit-scrollbar {
+      .yt-tabs-scroll::-webkit-scrollbar {
         display: none;
+      }
+
+      .yt-tabs .nav-tabs {
+        display: flex;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        gap: 6px;
+        width: max-content;
+        margin: 0;
+        padding: 6px;
+        background: transparent;
+        border: 0;
+      }
+
+      .yt-tabs-arrow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 42px;
+        width: 42px;
+        height: 42px;
+        color: var(--yt-primary-dark);
+        background: #ffffff;
+        border: 1px solid var(--yt-line);
+        border-radius: 50%;
+        font-size: 17px;
+        box-shadow: 0 8px 20px rgba(16, 29, 44, 0.08);
+        transition: all 0.2s ease;
+      }
+
+      .yt-tabs-arrow:hover {
+        color: #ffffff;
+        background: var(--yt-primary);
+        border-color: var(--yt-primary);
+        box-shadow: 0 12px 26px rgba(14, 159, 110, 0.32);
+      }
+
+      .yt-tabs-arrow.is-hidden {
+        display: none;
+      }
+
+      .yt-tabs-arrow:disabled {
+        opacity: 0.35;
+        pointer-events: none;
       }
 
       .yt-tabs .nav-tabs .nav-item {
@@ -2621,6 +2673,44 @@
         window.addEventListener('load', refreshHeroSwipers);
         window.addEventListener('resize', refreshHeroSwipers);
         setTimeout(refreshHeroSwipers, 250);
+
+        document.querySelectorAll('.yt-tabs').forEach(function (tabs) {
+          var scroller = tabs.querySelector('.yt-tabs-scroll');
+          var prevBtn = tabs.querySelector('.yt-tabs-prev');
+          var nextBtn = tabs.querySelector('.yt-tabs-next');
+
+          if (!scroller || !prevBtn || !nextBtn) {
+            return;
+          }
+
+          function updateArrows() {
+            var overflow = scroller.scrollWidth - scroller.clientWidth;
+
+            if (overflow <= 2) {
+              prevBtn.classList.add('is-hidden');
+              nextBtn.classList.add('is-hidden');
+              return;
+            }
+
+            prevBtn.classList.remove('is-hidden');
+            nextBtn.classList.remove('is-hidden');
+            prevBtn.disabled = scroller.scrollLeft <= 2;
+            nextBtn.disabled = scroller.scrollLeft >= overflow - 2;
+          }
+
+          prevBtn.addEventListener('click', function () {
+            scroller.scrollBy({ left: -Math.max(scroller.clientWidth * 0.7, 180), behavior: 'smooth' });
+          });
+
+          nextBtn.addEventListener('click', function () {
+            scroller.scrollBy({ left: Math.max(scroller.clientWidth * 0.7, 180), behavior: 'smooth' });
+          });
+
+          scroller.addEventListener('scroll', updateArrows, { passive: true });
+          window.addEventListener('resize', updateArrows);
+          window.addEventListener('load', updateArrows);
+          updateArrows();
+        });
 
         document.querySelectorAll('.heroVisualSliderInline').forEach(function (slider) {
           var slides = Array.prototype.slice.call(slider.querySelectorAll('.swiper-slide'));
