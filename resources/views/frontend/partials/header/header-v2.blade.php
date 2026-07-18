@@ -49,9 +49,10 @@
             <li class="nav-item">
               <a href="{{ route('frontend.landlords') }}" class="nav-link">{{ __('Landlords') }}</a>
             </li>
-            <li class="nav-item">
+            {{-- Hidden for now (client request) — uncomment to bring Reviews back --}}
+            {{-- <li class="nav-item">
               <a href="{{ route('index') }}#reviews" class="nav-link">{{ __('Reviews') }}</a>
-            </li>
+            </li> --}}
             <li class="nav-item">
               <a href="{{ route('contact') }}" class="nav-link">{{ __('Contact') }}</a>
             </li>
