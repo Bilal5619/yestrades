@@ -46,8 +46,8 @@
   padding: 58px 32px 56px;
   text-align: center;
   background:
-    radial-gradient(circle at 7% 12%, rgba(255, 29, 74, 0.15), transparent 26%),
-    radial-gradient(circle at 95% 82%, rgba(255, 172, 48, 0.18), transparent 28%),
+    radial-gradient(circle at 7% 12%, rgba(14, 159, 110, 0.14), transparent 26%),
+    radial-gradient(circle at 95% 82%, rgba(245, 165, 36, 0.16), transparent 28%),
     #ffffff;
   border: 1px solid #e7e3df;
   border-radius: 8px;

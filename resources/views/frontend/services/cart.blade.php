@@ -25,8 +25,14 @@
   {{ !empty($pageHeading) ? ($pageHeading->cart_page_title ?? __('Service Cart')) : __('Service Cart') }}
 @endsection
 
-@section('style')
+@push('scripts')
   <style>
+    /* Cart page brand accent — scoped to emerald to match the rest of the redesign */
+    .service-cart-page {
+      --color-primary: #0e9f6e;
+      --color-primary-rgb: 14, 159, 110;
+    }
+
     .service-cart-page {
       background: #fbfbfa;
     }
@@ -1249,7 +1255,7 @@
       }
     }
   </style>
-@endsection
+@endpush
 
 @section('content')
   @includeIf('frontend.partials.breadcrumb', [

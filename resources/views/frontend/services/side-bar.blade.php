@@ -20,15 +20,19 @@
                 <!-- Add class .list-dropdown form dropdown-menu -->
                 <li class="list-item list-dropdown">
                   <a class="category-toggle {{ request()->category ? '' : 'active' }}"
-                    href="javascript:void(0)">{{ __('All') }}<span
-                      class="qty category_total_service">({{ $total_services }})</span></a>
+                    href="javascript:void(0)">
+                    <span class="category-toggle-label"><i></i>{{ __('All') }}</span>
+                    <span class="qty category_total_service">({{ $total_services }})</span>
+                  </a>
                 </li>
                 @foreach ($categories as $category)
                   <li class="list-item">
                     <a href="javascript:void(0)"
                       class="category-toggle {{ request()->category == $category->slug ? 'active' : '' }}"
                       data-slug="{{ $category->slug }}">
-                      {{ $category->name }}
+                      <span class="category-toggle-label">
+                        <i></i>{{ $category->name }}
+                      </span>
                       <span class="qty">({{ $category->service_count }})</span>
                     </a>
                   </li>
@@ -227,7 +231,7 @@
 
     <!-- Submit button -->
     <div class="text-center">
-      <button type="submit" class="btn btn-lg btn-primary btn-gradient">
+      <button type="submit" class="sv-apply-btn">
         <i class="fas fa-search"></i> {{ __('Apply Filters') }}
       </button>
     </div>
@@ -235,7 +239,7 @@
 </form>
 <br>
         <div class="cta pb-40">
-          <a href="{{ route('frontend.services') }}" class="btn btn-lg btn-primary btn-gradient icon-end w-100">
+          <a href="{{ route('frontend.services') }}" class="sv-reset-btn">
             <i class="fal fa-sync-alt"></i> {{ __('Reset All Filters') }}
           </a>
         </div>
