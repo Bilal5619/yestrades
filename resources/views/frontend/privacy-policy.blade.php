@@ -17,52 +17,28 @@
 
 @section('content')
   <style>
-    .legal-page-content h1,
-    .legal-page-content h2,
-    .legal-page-content h3 {
-      margin-bottom: 14px;
-      color: #111827;
-      line-height: 1.25;
-    }
-
-    .legal-page-content h1 {
-      font-size: 42px;
-    }
-
-    .legal-page-content h2 {
-      margin-top: 34px;
-      font-size: 24px;
-    }
-
-    .legal-page-content h3 {
-      margin-top: 22px;
-      font-size: 18px;
-    }
-
-    .legal-page-content p,
-    .legal-page-content li {
-      color: #4b5563;
-      font-size: 16px;
-      line-height: 1.75;
-    }
-
-    .legal-page-content ul {
-      padding-left: 22px;
-      margin-bottom: 18px;
-    }
-
-    .legal-page-content a {
-      color: var(--color-primary);
-    }
+    @include('frontend.partials.legal-page-styles')
   </style>
 
-  <section class="pt-100 pb-75">
+  <section class="lg-hero">
+    <div class="lg-hero-dots"></div>
+    <div class="container">
+      <nav aria-label="breadcrumb" class="lg-breadcrumb">
+        <a href="{{ route('index') }}">{{ __('Home') }}</a>
+        <i class="fal fa-angle-right"></i>
+        <span>{{ __('Privacy Policy') }}</span>
+      </nav>
+      <h1>{{ __('Privacy Policy') }}</h1>
+      <p>{{ __('How we collect, use, store and protect your personal data.') }}</p>
+    </div>
+  </section>
+
+  <section class="lg-content-section">
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-lg-9">
-          <article class="legal-page-content">
-            <h1>{{ __('Privacy Policy') }}</h1>
-            <p><strong>{{ __('Last updated:') }}</strong> 24 June 2026</p>
+          <article class="legal-page-content" data-aos="fade-up">
+            <span class="lg-updated-chip"><i class="fal fa-clock"></i>{{ __('Last updated:') }} 24 June 2026</span>
 
             <p>yestrades ("we", "our", "us") respects your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, store and protect your information when you use our website, services, booking forms, vendor platform or contact us.</p>
             <p><strong>Website:</strong> <a href="https://yestrades.co.uk">https://yestrades.co.uk</a></p>
@@ -218,4 +194,5 @@
       </div>
     </div>
   </section>
+  <!-- /lg-content-section -->
 @endsection

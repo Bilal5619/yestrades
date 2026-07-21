@@ -76,8 +76,14 @@
   @endif
 @endsection
 
-@section('style')
+@push('scripts')
   <style>
+    /* Pricing page brand accent — scoped to emerald to match the rest of the redesign */
+    .eleven-pricing {
+      --color-primary: #0e9f6e;
+      --color-primary-rgb: 14, 159, 110;
+    }
+
     .eleven-pricing {
       background: #fbfbfa;
     }
@@ -494,7 +500,7 @@
       }
     }
   </style>
-@endsection
+@endpush
 
 @section('content')
   @includeIf('frontend.partials.breadcrumb', [

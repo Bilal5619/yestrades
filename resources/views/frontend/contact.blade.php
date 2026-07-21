@@ -67,6 +67,13 @@
               </div>
             </div>
             <div class="ct-info-card">
+              <span class="ct-info-icon"><i class="fal fa-phone"></i></span>
+              <div>
+                <span class="ct-info-label">{{ __('Landline') }}</span>
+                <a href="tel:01506560130">01506 560130</a>
+              </div>
+            </div>
+            <div class="ct-info-card">
               <span class="ct-info-icon"><i class="fal fa-map-marker-alt"></i></span>
               <div>
                 <span class="ct-info-label">{{ __('Coverage') }}</span>

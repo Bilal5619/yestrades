@@ -16,52 +16,28 @@
 
 @section('content')
   <style>
-    .legal-page-content h1,
-    .legal-page-content h2,
-    .legal-page-content h3 {
-      margin-bottom: 14px;
-      color: #111827;
-      line-height: 1.25;
-    }
-
-    .legal-page-content h1 {
-      font-size: 42px;
-    }
-
-    .legal-page-content h2 {
-      margin-top: 34px;
-      font-size: 24px;
-    }
-
-    .legal-page-content h3 {
-      margin-top: 22px;
-      font-size: 18px;
-    }
-
-    .legal-page-content p,
-    .legal-page-content li {
-      color: #4b5563;
-      font-size: 16px;
-      line-height: 1.75;
-    }
-
-    .legal-page-content ul {
-      padding-left: 22px;
-      margin-bottom: 18px;
-    }
-
-    .legal-page-content a {
-      color: var(--color-primary);
-    }
+    @include('frontend.partials.legal-page-styles')
   </style>
 
-  <section class="pt-100 pb-75">
+  <section class="lg-hero">
+    <div class="lg-hero-dots"></div>
+    <div class="container">
+      <nav aria-label="breadcrumb" class="lg-breadcrumb">
+        <a href="{{ route('index') }}">{{ __('Home') }}</a>
+        <i class="fal fa-angle-right"></i>
+        <span>{{ __('Cookie Policy') }}</span>
+      </nav>
+      <h1>{{ __('Cookie Policy') }}</h1>
+      <p>{{ __('How cookies and similar technologies are used on this website.') }}</p>
+    </div>
+  </section>
+
+  <section class="lg-content-section">
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-lg-9">
-          <article class="legal-page-content">
-            <h1>{{ __('Cookie Policy') }}</h1>
-            <p><strong>{{ __('Last updated:') }}</strong> 24 June 2026</p>
+          <article class="legal-page-content" data-aos="fade-up">
+            <span class="lg-updated-chip"><i class="fal fa-clock"></i>{{ __('Last updated:') }} 24 June 2026</span>
 
             <p>This Cookie Policy explains how yestrades ("we", "our", "us") uses cookies and similar technologies on our website.</p>
             <p><strong>Website:</strong> <a href="https://yestrades.co.uk">https://yestrades.co.uk</a></p>

@@ -82,12 +82,174 @@
         height: 42px;
       }
     }
+
+    /* ═══════════════ About page — emerald & slate ═══════════════ */
+    .ab-page {
+      --ab-primary: #0e9f6e;
+      --ab-primary-dark: #0a7d57;
+      --ab-primary-deep: #06432f;
+      --ab-primary-soft: #e5f5ee;
+      --ab-ink: #101d2c;
+      --ab-muted: #5e6b7e;
+      background: #ffffff;
+    }
+
+    .ab-hero {
+      position: relative;
+      overflow: hidden;
+      margin-top: 84px;
+      padding: 64px 0 58px;
+      background:
+        radial-gradient(circle at 92% 6%, rgba(14, 159, 110, 0.5), transparent 40%),
+        radial-gradient(circle at 4% 100%, rgba(245, 165, 36, 0.14), transparent 32%),
+        linear-gradient(120deg, #0d1b16 0%, #06432f 100%);
+      color: #ffffff;
+    }
+
+    .ab-hero-dots {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1.5px, transparent 1.5px);
+      background-size: 22px 22px;
+      mask-image: linear-gradient(120deg, rgba(0, 0, 0, 0.9), transparent 60%);
+      -webkit-mask-image: linear-gradient(120deg, rgba(0, 0, 0, 0.9), transparent 60%);
+      pointer-events: none;
+    }
+
+    .ab-hero .container {
+      position: relative;
+      z-index: 1;
+    }
+
+    .ab-breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 16px;
+      color: #a9c7ba;
+      font-size: 12.5px;
+      font-weight: 700;
+    }
+
+    .ab-breadcrumb a {
+      color: #dbeee3;
+      text-decoration: none;
+    }
+
+    .ab-breadcrumb a:hover {
+      color: #ffffff;
+    }
+
+    .ab-breadcrumb i {
+      font-size: 10px;
+      color: #6f9a84;
+    }
+
+    .ab-breadcrumb span {
+      color: #8be3bf;
+    }
+
+    .ab-hero h1 {
+      margin: 0 0 10px;
+      color: #ffffff;
+      font-size: clamp(28px, 3.4vw, 40px);
+      font-weight: 900;
+      letter-spacing: -0.015em;
+    }
+
+    .ab-hero p {
+      max-width: 560px;
+      margin: 0;
+      color: #bcd8cb;
+      font-size: 14.5px;
+      line-height: 1.7;
+    }
+
+    /* Reskin the existing theme components used on this page to the emerald palette */
+    .ab-page .subtitle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      padding: 7px 14px;
+      color: var(--ab-primary-dark) !important;
+      background: var(--ab-primary-soft);
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .ab-page .content-title .title,
+    .ab-page .section-title .title {
+      color: var(--ab-ink);
+      font-weight: 900;
+      letter-spacing: -0.01em;
+    }
+
+    .ab-page .btn-primary {
+      background: linear-gradient(120deg, var(--ab-primary), var(--ab-primary-dark)) !important;
+      border-color: transparent !important;
+      box-shadow: 0 14px 30px rgba(14, 159, 110, 0.3);
+    }
+
+    .ab-page .feature-area .card,
+    .ab-page .works-area .card,
+    .ab-page .testimonial-area .slider-item {
+      border-radius: 18px !important;
+      box-shadow: 0 14px 40px rgba(16, 29, 44, 0.07);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .ab-page .feature-area .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 28px 64px rgba(16, 29, 44, 0.13);
+    }
+
+    .ab-page .feature-area .card-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 54px;
+      height: 54px;
+      color: var(--ab-primary-dark) !important;
+      background: var(--ab-primary-soft) !important;
+      font-size: 21px;
+    }
+
+    .ab-page .works-area.works-2 {
+      background: #f4f7f5 !important;
+    }
+
+    .ab-page .works-area .card-icon.bg-primary {
+      background: linear-gradient(135deg, var(--ab-primary), var(--ab-primary-dark)) !important;
+    }
+
+    .ab-page .stroke-gradient {
+      -webkit-text-stroke: 1px var(--ab-primary);
+      color: transparent !important;
+    }
+
+    .ab-page .testimonial-area {
+      background: var(--ab-primary-deep);
+    }
   </style>
 
-  @includeIf('frontend.partials.breadcrumb', [
-      'breadcrumb' => $bgImg->breadcrumb,
-      'title' => !empty($pageHeading) ? $pageHeading->about_us_title : __('About Us'),
-  ])
+  <section class="ab-hero">
+    <div class="ab-hero-dots"></div>
+    <div class="container">
+      <nav aria-label="breadcrumb" class="ab-breadcrumb">
+        <a href="{{ route('index') }}">{{ __('Home') }}</a>
+        <i class="fal fa-angle-right"></i>
+        <span>{{ !empty($pageHeading) ? $pageHeading->about_us_title : __('About Us') }}</span>
+      </nav>
+      <h1>{{ !empty($pageHeading) ? $pageHeading->about_us_title : __('About yestrades') }}</h1>
+      <p>{{ __('The UK\'s easiest way to book vetted service engineers - plumbing, gas, electrical, cleaning and landlord certificates.') }}</p>
+    </div>
+  </section>
+
+  <div class="ab-page">
 
   @php
     $aboutDefaults = [
@@ -559,4 +721,7 @@
       {!! showAd(3) !!}
     </div>
   @endif
+
+  </div>
+  <!-- /.ab-page -->
 @endsection
