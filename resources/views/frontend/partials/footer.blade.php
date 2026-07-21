@@ -1,4 +1,4 @@
-<!-- Footer-area start -->
+﻿<!-- Footer-area start -->
 @if ($secInfo->footer_section_status == 1)
   @php
     $brandName = $websiteInfo->website_title ?? 'yestrades';
@@ -117,7 +117,7 @@
             <h3>{{ __('Company') }}</h3>
             <ul>
               <li><a href="{{ route('about_us') }}">{{ __('About') }}</a></li>
-              <li><a href="{{ route('frontend.careers') }}">{{ __('Careers') }}</a></li>
+              <li><a href="{{ route('careers.index') }}">{{ __('Careers') }}</a></li>
               <li><a href="{{ route('blog') }}">{{ __('Press') }}</a></li>
               <li><a href="{{ route('contact') }}">{{ __('Contact') }}</a></li>
               <li><a href="{{ route('privacy_policy') }}">{{ __('Privacy') }}</a></li>
@@ -147,3 +147,4 @@
 <!-- Add Review Modal Start -->
 @include('frontend.services.booking-modal.modal-page')
 <!-- Add Review Modal End -->
+

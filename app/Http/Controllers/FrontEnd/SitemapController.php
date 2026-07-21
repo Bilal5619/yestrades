@@ -5,6 +5,7 @@ namespace App\Http\Controllers\FrontEnd;
 use App\Http\Controllers\Controller;
 use App\Models\CustomPage\Page;
 use App\Models\CustomPage\PageContent;
+use App\Models\Careers\CareerJob;
 use App\Models\Language;
 use App\Models\Services\ServiceCategory;
 use App\Models\Services\ServiceContent;
@@ -23,6 +24,7 @@ class SitemapController extends Controller
       $this->baseUrl . '/contact',
       $this->baseUrl . '/privacy-policy',
       $this->baseUrl . '/cookie-policy',
+      $this->baseUrl . '/careers',
     ]);
 
     $languageId = optional(Language::where('is_default', 1)->first())->id;
@@ -53,10 +55,17 @@ class SitemapController extends Controller
       ->get(['services.id', 'service_contents.slug'])
       ->map(fn ($service) => $this->baseUrl . '/services/details/' . $service->slug . '/' . $service->id);
 
+    $careerUrls = CareerJob::active()
+      ->orderByDesc('published_at')
+      ->limit(500)
+      ->pluck('slug')
+      ->map(fn ($slug) => $this->baseUrl . '/careers/' . $slug);
+
     $urls = $urls
       ->merge($customPages)
       ->merge($categoryUrls)
       ->merge($serviceUrls)
+      ->merge($careerUrls)
       ->unique()
       ->values();
 
@@ -85,3 +94,4 @@ class SitemapController extends Controller
     ], true);
   }
 }
+

@@ -1,4 +1,4 @@
-<div class="sidebar sidebar-style-2"
+﻿<div class="sidebar sidebar-style-2"
   data-background-color="{{ $settings->admin_theme_version == 'light' ? 'white' : 'dark2' }}">
   <div class="sidebar-wrapper scrollbar scrollbar-inner">
     <div class="sidebar-content">
@@ -85,6 +85,21 @@ if (!is_null($roleInfo)) {
             <i class="fas fa-chart-line"></i>
             <p>Website Visitors</p>
           </a>
+        </li>
+        <li class="nav-item @if (request()->routeIs('admin.careers.*')) active @endif">
+          <a data-toggle="collapse" href="#careersMenu">
+            <i class="fas fa-briefcase"></i>
+            <p>Careers</p>
+            <span class="caret"></span>
+          </a>
+          <div id="careersMenu" class="collapse @if (request()->routeIs('admin.careers.*')) show @endif">
+            <ul class="nav nav-collapse">
+              <li class="{{ request()->routeIs('admin.careers.dashboard') ? 'active' : '' }}"><a href="{{ route('admin.careers.dashboard') }}"><span class="sub-item">Dashboard</span></a></li>
+              <li class="{{ request()->routeIs('admin.careers.jobs.*') ? 'active' : '' }}"><a href="{{ route('admin.careers.jobs.index') }}"><span class="sub-item">Job Vacancies</span></a></li>
+              <li class="{{ request()->routeIs('admin.careers.applications.index') || request()->routeIs('admin.careers.applications.show') ? 'active' : '' }}"><a href="{{ route('admin.careers.applications.index') }}"><span class="sub-item">Applications</span></a></li>
+              <li class="{{ request()->routeIs('admin.careers.applications.general') ? 'active' : '' }}"><a href="{{ route('admin.careers.applications.general') }}"><span class="sub-item">General CVs</span></a></li>
+            </ul>
+          </div>
         </li>
         {{-- menu builder --}}
         @if (is_null($roleInfo) || (!empty($rolePermissions) && in_array('Menu Builder', $rolePermissions)))
@@ -1533,3 +1548,4 @@ active @endif
 </div>
 </div>
 </div>
+

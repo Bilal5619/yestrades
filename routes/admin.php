@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use Illuminate\Support\Facades\Route;
 
@@ -48,6 +48,37 @@ Route::prefix('/admin')->middleware('auth:admin')->group(function () {
   });
 
 
+
+  Route::prefix('/careers')->group(function () {
+    Route::get('/dashboard', 'Admin\Careers\CareerJobController@dashboard')->name('admin.careers.dashboard');
+
+    Route::prefix('/jobs')->group(function () {
+      Route::get('/', 'Admin\Careers\CareerJobController@index')->name('admin.careers.jobs.index');
+      Route::get('/create', 'Admin\Careers\CareerJobController@create')->name('admin.careers.jobs.create');
+      Route::post('/store', 'Admin\Careers\CareerJobController@store')->name('admin.careers.jobs.store');
+      Route::get('/{job}/preview', 'Admin\Careers\CareerJobController@show')->name('admin.careers.jobs.show');
+      Route::get('/{job}/edit', 'Admin\Careers\CareerJobController@edit')->name('admin.careers.jobs.edit');
+      Route::post('/{job}/update', 'Admin\Careers\CareerJobController@update')->name('admin.careers.jobs.update');
+      Route::post('/{job}/publish', 'Admin\Careers\CareerJobController@publish')->name('admin.careers.jobs.publish');
+      Route::post('/{job}/close', 'Admin\Careers\CareerJobController@close')->name('admin.careers.jobs.close');
+      Route::post('/{job}/archive', 'Admin\Careers\CareerJobController@archive')->name('admin.careers.jobs.archive');
+      Route::post('/{job}/duplicate', 'Admin\Careers\CareerJobController@duplicate')->name('admin.careers.jobs.duplicate');
+      Route::post('/{job}/delete', 'Admin\Careers\CareerJobController@destroy')->name('admin.careers.jobs.delete');
+    });
+
+    Route::prefix('/applications')->group(function () {
+      Route::get('/', 'Admin\Careers\CareerApplicationController@index')->name('admin.careers.applications.index');
+      Route::get('/general-cvs', 'Admin\Careers\CareerApplicationController@general')->name('admin.careers.applications.general');
+      Route::get('/{application}', 'Admin\Careers\CareerApplicationController@show')->name('admin.careers.applications.show');
+      Route::post('/{application}/status', 'Admin\Careers\CareerApplicationController@updateStatus')->name('admin.careers.applications.update-status');
+      Route::post('/{application}/assign', 'Admin\Careers\CareerApplicationController@assign')->name('admin.careers.applications.assign');
+      Route::post('/{application}/notes', 'Admin\Careers\CareerApplicationController@addNote')->name('admin.careers.applications.add-note');
+      Route::get('/{application}/download-cv', 'Admin\Careers\CareerApplicationController@downloadCv')->name('admin.careers.applications.download-cv');
+      Route::get('/{application}/download-cover-letter', 'Admin\Careers\CareerApplicationController@downloadCoverLetter')->name('admin.careers.applications.download-cover-letter');
+      Route::post('/{application}/send-email', 'Admin\Careers\CareerApplicationController@sendEmail')->name('admin.careers.applications.send-email');
+      Route::post('/{application}/delete', 'Admin\Careers\CareerApplicationController@destroy')->name('admin.careers.applications.delete');
+    });
+  });
   // menu-builder route
   Route::prefix('/menu-builder')->middleware('permission:Menu Builder')->group(function () {
     Route::get('', 'Admin\MenuBuilderController@index')->name('admin.menu_builder');
@@ -267,7 +298,7 @@ Route::prefix('/admin')->middleware('auth:admin')->group(function () {
       Route::post('/bulk-delete-services_categories', 'Admin\ServiceCategoryController@bulkDestroy')->name('admin.service_managment.category.bulk_delete');
     });
     Route::prefix('questions')
-      // ->as('admin.')   // 🔥 THIS IS REQUIRED
+      // ->as('admin.')   // ðŸ”¥ THIS IS REQUIRED
       ->group(function () {
 
         Route::get('/', 'Admin\QuestionController@index')->name('admin.questions.index');
@@ -1117,3 +1148,4 @@ Route::prefix('/admin')->middleware('auth:admin')->group(function () {
     });
   });
 });
+

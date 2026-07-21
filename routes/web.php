@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use Illuminate\Support\Facades\Route;
 
@@ -185,9 +185,15 @@ Route::middleware('change.lang')->group(function () {
 
   Route::get('/faq', 'FrontEnd\FaqController@faq')->name('faq');
   Route::get('/about-us', 'FrontEnd\HomeController@about')->name('about_us');
-  Route::get('/careers', function () {
-    return view('frontend.careers');
-  })->name('frontend.careers');
+  Route::prefix('careers')->group(function () {
+    Route::get('/', 'FrontEnd\CareersController@index')->name('careers.index');
+    Route::get('/send-cv', 'FrontEnd\CareersController@createGeneral')->name('careers.general.create');
+    Route::post('/send-cv', 'FrontEnd\CareersController@storeGeneral')->name('careers.general.store')->middleware('throttle:5,1')->withoutMiddleware('change.lang');
+    Route::get('/success/{reference}', 'FrontEnd\CareersController@success')->name('careers.success');
+    Route::get('/{slug}', 'FrontEnd\CareersController@show')->name('careers.show');
+    Route::post('/{job}/apply', 'FrontEnd\CareersController@store')->name('careers.store')->middleware('throttle:5,1')->withoutMiddleware('change.lang');
+  });
+  Route::get('/careers-page', fn () => redirect()->route('careers.index'))->name('frontend.careers');
 
   Route::prefix('/contact')->group(function () {
     Route::get('', 'FrontEnd\ContactController@contact')->name('contact');
@@ -320,3 +326,4 @@ Route::get('/{slug}', 'FrontEnd\PageController@page')->name('dynamic_page')->mid
 Route::fallback(function () {
   return view('errors.404');
 })->middleware('change.lang');
+
