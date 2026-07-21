@@ -198,46 +198,6 @@
             <i class="fal fa-sync-alt"></i> {{ __('Reset All Filters') }}
           </a>
         </div -->
-        <form action="{{ route('frontend.services') }}" method="GET">
-  <div id="service_details">
-    <div class="widget widget-select mb-30 p-20 border radius-md">
-      <h5 class="title">
-        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#select">
-          {{ __('Service Details') }}
-        </button>
-      </h5>
-      <div id="select" class="collapse show">
-        <div class="accordion-body mt-20 scroll-y">
-          <div class="row gx-sm-2">
-            <div class="col-md-12 col-xxl-12">
-              <div class="form-group mb-20">
-                <label class="mb-1 color-dark">{{ __('Service Title') }}</label>
-                <input class="form-control" autocomplete="off" type="text"
-                  placeholder="{{ __('Enter Service Title') }}" value="{{ request('service_title') }}"
-                  name="service_title" id="search_service_title">
-              </div>
-            </div>
-            <div class="col-md-12 col-xxl-12">
-              <div class="form-group">
-                <label class="mb-1 color-dark">{{ __('Location') }}</label>
-                <input class="form-control" value="{{ request('location') }}" type="text" autocomplete="off"
-                  placeholder="{{ __('Postcode / location') }}" name="location" id="location">
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Submit button -->
-    <div class="text-center">
-      <button type="submit" class="sv-apply-btn">
-        <i class="fas fa-search"></i> {{ __('Apply Filters') }}
-      </button>
-    </div>
-  </div>
-</form>
-<br>
         <div class="cta pb-40">
           <a href="{{ route('frontend.services') }}" class="sv-reset-btn">
             <i class="fal fa-sync-alt"></i> {{ __('Reset All Filters') }}

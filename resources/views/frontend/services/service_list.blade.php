@@ -434,12 +434,35 @@
       .sv-page .widget-categories .list-group {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 6px;
         list-style: none;
         margin: 0;
         padding: 0;
-        max-height: 360px;
-        overflow-y: auto;
+        max-height: none;
+        overflow-y: visible;
+      }
+
+      .sv-page .widget-categories {
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 200px);
+      }
+
+      .sv-page .widget-categories #categories {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+      }
+
+      .sv-page .widget-categories .accordion-body {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        padding-bottom: 20px !important;
+      }
+
+      .sv-page .widget-categories .list-item > a.category-toggle {
+        padding: 14px 14px !important;
       }
 
       .sv-page .widget-categories .list-item {
@@ -1013,6 +1036,10 @@
         .sv-page .widget-area {
           position: static;
           top: auto;
+        }
+
+        .sv-page .widget-categories {
+          min-height: 0;
         }
       }
 

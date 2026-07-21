@@ -66,7 +66,7 @@
 
     /* Site chrome (navbar + footer CTA) uses the new emerald brand look site-wide */
     .header-area,
-    .footer-cta-wrap,
+    .footer-signal-wrap,
     .eleven-footer .go-top {
       --color-primary: #0e9f6e;
       --color-primary-rgb: 14, 159, 110;

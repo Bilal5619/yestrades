@@ -122,7 +122,8 @@
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                   <li><a class="dropdown-item" href="{{ route('user.login') }}">{{ __('Customer sign in') }}</a></li>
-                  <li><a class="dropdown-item" href="{{ route('vendor.login') }}">{{ __('Business sign in') }}</a></li>
+                  {{-- Business sign in hidden for now (client request) — restore this <li> to bring it back --}}
+                  {{-- <li><a class="dropdown-item" href="{{ route('vendor.login') }}">{{ __('Business sign in') }}</a></li> --}}
                   <li><hr class="dropdown-divider"></li>
                   <li><a class="dropdown-item" href="{{ route('user.signup') }}">{{ __('Create account') }}</a></li>
                 </ul>

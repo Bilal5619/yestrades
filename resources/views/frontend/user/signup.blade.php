@@ -39,13 +39,14 @@
             <h3>{{ !empty($pageHeading) ? $pageHeading->signup_page_title : __('Sign up') }}</h3>
             <p class="au-form-sub">{{ __('Create an account to start booking services.') }}</p>
 
-            <div class="au-type-switch" aria-label="{{ __('Choose account type') }}">
+            {{-- Business signup option hidden for now (client request) — restore the toggle below to bring it back --}}
+            {{-- <div class="au-type-switch" aria-label="{{ __('Choose account type') }}">
               <span class="active">{{ __('Customer') }}</span>
               <a href="{{ route('vendor.signup') }}">{{ __('Business') }}</a>
             </div>
             <p class="au-type-help">
               {{ __('Choose Customer to book services, or Business if you provide services on yestrades.') }}
-            </p>
+            </p> --}}
 
             @if (Session::has('success'))
               <div class="au-alert au-alert-success">{{ __(Session::get('success')) }}</div>

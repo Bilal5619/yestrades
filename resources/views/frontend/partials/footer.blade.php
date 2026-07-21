@@ -8,20 +8,51 @@
   <footer class="footer-area eleven-footer">
     <div class="go-top" aria-label="{{ __('Back to top') }}"><i class="fal fa-long-arrow-up"></i></div>
 
-    <div class="footer-cta-wrap">
+    <div class="footer-signal-wrap">
       <div class="container">
-        <div class="footer-cta">
-          <h2>{{ __('Got a job? Get it done in 60 seconds.') }}</h2>
-          <p>{!! __('Use code <strong>FIRST10</strong> at checkout to save 10% on your first booking.') !!}</p>
-          <div class="footer-cta-actions">
-            <a href="{{ route('frontend.services') }}" class="footer-primary-btn">
-              {{ __('Book a service now') }} <i class="fal fa-long-arrow-right"></i>
-            </a>
-            @if ($whatsappNumber)
-              <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" rel="noopener" class="footer-secondary-btn">
-                <i class="fab fa-whatsapp"></i> {{ __('Chat on WhatsApp') }}
+        <div class="footer-signal">
+          <div class="footer-signal-blob footer-signal-blob-1"></div>
+          <div class="footer-signal-blob footer-signal-blob-2"></div>
+          <div class="footer-signal-dots"></div>
+
+          <div class="footer-signal-copy">
+            <span class="footer-signal-eyebrow"><span class="footer-signal-dot"></span>{{ __('Ready when you are') }}</span>
+            <h2>{{ __('Booked, confirmed and') }} <span>{{ __('sorted — today.') }}</span></h2>
+            <p>{{ __('Tell us the job, pick a time and we\'ll match you with a vetted local engineer. No call-outs, no guesswork.') }}</p>
+            <div class="footer-signal-actions">
+              <a href="{{ route('frontend.services') }}" class="footer-primary-btn">
+                {{ __('Book a service now') }} <i class="fal fa-long-arrow-right"></i>
               </a>
-            @endif
+              @if ($whatsappNumber)
+                <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" rel="noopener" class="footer-secondary-btn">
+                  <i class="fab fa-whatsapp"></i> {{ __('Chat on WhatsApp') }}
+                </a>
+              @endif
+            </div>
+          </div>
+
+          <div class="footer-signal-points">
+            <div class="footer-signal-point">
+              <span class="footer-signal-icon"><i class="fal fa-bolt"></i></span>
+              <div>
+                <strong>{{ __('60-second booking') }}</strong>
+                <span class="footer-signal-point-label">{{ __('Online, no phone calls needed') }}</span>
+              </div>
+            </div>
+            <div class="footer-signal-point">
+              <span class="footer-signal-icon"><i class="fal fa-shield-check"></i></span>
+              <div>
+                <strong>{{ __('Vetted engineers') }}</strong>
+                <span class="footer-signal-point-label">{{ __('Gas Safe & NICEIC registered') }}</span>
+              </div>
+            </div>
+            <div class="footer-signal-point">
+              <span class="footer-signal-icon"><i class="fal fa-tag"></i></span>
+              <div>
+                <strong>{{ __('Fixed pricing') }}</strong>
+                <span class="footer-signal-point-label">{{ __('No hidden fees, ever') }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -108,7 +139,8 @@
           <div class="footer-link-column">
             <h3>{{ __('For Pros') }}</h3>
             <ul>
-              <li><a href="{{ route('vendor.signup') }}">{{ __('Become an engineer') }}</a></li>
+              {{-- Vendor signup link hidden for now (client request) — restore this <li> to bring it back --}}
+              {{-- <li><a href="{{ route('vendor.signup') }}">{{ __('Become an engineer') }}</a></li> --}}
               <li><a href="{{ route('frontend.pricing') }}">{{ __('Pricing') }}</a></li>
             </ul>
           </div>
