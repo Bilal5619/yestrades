@@ -1,4 +1,4 @@
-﻿<section id="apply-now" class="card border-0 shadow-sm mt-5">
+<section id="apply-now" class="card border-0 shadow-sm mt-5">
   <div class="card-body">
     <h2 class="h4">Application form</h2>
     <form method="POST" action="{{ route('careers.store', $job) }}" enctype="multipart/form-data" novalidate>

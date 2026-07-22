@@ -1,7 +1,7 @@
 @extends('frontend.layout')
 
-@section('pageHeading', 'Application Received | Yes Trades')
-@section('metaDescription', 'Your Yes Trades application has been received.')
+@section('pageHeading', 'Application Received | ' . ($websiteInfo->website_title ?? config('app.name')))
+@section('metaDescription', 'Your ' . ($websiteInfo->website_title ?? config('app.name')) . ' application has been received.')
 @section('content')
   <main class="cr-success-page">
     <div class="container">

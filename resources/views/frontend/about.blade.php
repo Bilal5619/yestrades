@@ -244,7 +244,7 @@
         <i class="fal fa-angle-right"></i>
         <span>{{ !empty($pageHeading) ? $pageHeading->about_us_title : __('About Us') }}</span>
       </nav>
-      <h1>{{ !empty($pageHeading) ? $pageHeading->about_us_title : __('About yestrades') }}</h1>
+      <h1>{{ !empty($pageHeading) ? $pageHeading->about_us_title : (!empty($websiteInfo->website_title) ? __('About') . ' ' . $websiteInfo->website_title : __('About Us')) }}</h1>
       <p>{{ __('The UK\'s easiest way to book vetted service engineers - plumbing, gas, electrical, cleaning and landlord certificates.') }}</p>
     </div>
   </section>
@@ -253,10 +253,10 @@
 
   @php
     $aboutDefaults = [
-      'eyebrow' => 'About yestrades',
+      'eyebrow' => 'About ' . ($websiteInfo->website_title ?? config('app.name')),
       'title' => 'Making home service booking simpler for customers and landlords.',
       'text' =>
-        '<p>yestrades is built to make it easier to find, compare and book essential home services from one place. From plumbing and electrical work to gas services and landlord certificates, our booking flow helps customers provide the right details before checkout.</p><p>Our aim is to keep the process clear: choose a service, confirm the property and contact information, review the price where available, and complete the booking request securely online.</p>',
+        '<p>' . ($websiteInfo->website_title ?? config('app.name')) . ' is built to make it easier to find, compare and book essential home services from one place. From plumbing and electrical work to gas services and landlord certificates, our booking flow helps customers provide the right details before checkout.</p><p>Our aim is to keep the process clear: choose a service, confirm the property and contact information, review the price where available, and complete the booking request securely online.</p>',
     ];
 
     $defaultFeatures = [
@@ -314,7 +314,7 @@
             <div class="image img-left mb-40">
               @if (!empty(@$about->about_section_image))
                 <img class="blur-up lazyload" src="{{ asset('assets/img/about-us/' . @$about->about_section_image) }}"
-                  alt="{{ __('About yestrades') }}">
+                  alt="{{ (!empty($websiteInfo->website_title) ? __('About') . ' ' . $websiteInfo->website_title : __('About Us')) }}">
               @else
                 <div class="about-fallback-visual">
                   <div class="about-fallback-card">
@@ -392,7 +392,7 @@
       <div class="container">
         <div class="section-title title-center mb-50" data-aos="fade-up">
           <h2 class="title mb-0">
-            {{ !empty(@$about->features_title) ? @$about->features_title : __('Why customers use yestrades') }}
+            {{ !empty(@$about->features_title) ? @$about->features_title : __('Why customers use') . ' ' . ($websiteInfo->website_title ?? config('app.name')) }}
           </h2>
         </div>
         <div class="row">
@@ -536,7 +536,7 @@
             <div class="col-12">
               <div class="section-title title-center mb-50" data-aos="fade-up">
                 <h2 class="title">
-                  {{ !empty($sectionContent->workprocess_section_title) ? $sectionContent->workprocess_section_title : __('How yestrades booking works') }}
+                  {{ !empty($sectionContent->workprocess_section_title) ? $sectionContent->workprocess_section_title : __('How') . ' ' . ($websiteInfo->website_title ?? config('app.name')) . ' ' . __('booking works') }}
                 </h2>
               </div>
             </div>

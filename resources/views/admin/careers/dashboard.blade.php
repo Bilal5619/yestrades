@@ -1,4 +1,4 @@
-﻿@extends('admin.layout')
+@extends('admin.layout')
 @section('content')
   <div class="page-header"><h4 class="page-title">Careers Dashboard</h4><ul class="breadcrumbs"><li class="nav-home"><a href="{{ route('admin.dashboard') }}"><i class="flaticon-home"></i></a></li><li class="separator"><i class="flaticon-right-arrow"></i></li><li class="nav-item"><a href="#">Careers</a></li></ul></div>
   <div class="row">@foreach($stats as $label => $value)<div class="col-md-3 mb-3"><div class="card"><div class="card-body"><p class="mb-1 text-muted">{{ ucwords(str_replace('_',' ', $label)) }}</p><h2 class="mb-0">{{ $value }}</h2></div></div></div>@endforeach</div>

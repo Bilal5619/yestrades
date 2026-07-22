@@ -1,4 +1,4 @@
-﻿<p>A new careers application has been received.</p>
+<p>A new careers application has been received.</p>
 <ul>
   <li><strong>Applicant:</strong> {{ $application->applicant_name }}</li>
   <li><strong>Job:</strong> {{ $application->job_title_snapshot ?: 'General CV Submission' }}</li>

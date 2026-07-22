@@ -1,7 +1,7 @@
-﻿<!-- Footer-area start -->
+<!-- Footer-area start -->
 @if ($secInfo->footer_section_status == 1)
   @php
-    $brandName = $websiteInfo->website_title ?? 'yestrades';
+    $brandName = $websiteInfo->website_title ?? config('app.name');
     $whatsappNumber = !empty($basicInfo->whatsapp_number) ? preg_replace('/\D/', '', $basicInfo->whatsapp_number) : null;
   @endphp
 
@@ -72,7 +72,7 @@
               </a>
             </div>
             <p class="footer-intro">
-              {{ __('yestrades is the UK\'s easiest way to book vetted service engineers - plumbing, gas, electrical, cleaning and landlord certificates.') }}
+              {{ $brandName }} {{ __('is the UK\'s easiest way to book vetted service engineers - plumbing, gas, electrical, cleaning and landlord certificates.') }}
             </p>
             <div class="footer-badges" aria-label="{{ __('Accreditations') }}">
               <span><i class="fal fa-check-circle"></i> {{ __('GAS SAFE') }}</span>
@@ -130,20 +130,21 @@
             <h3>{{ __('For Customers') }}</h3>
             <ul>
               <li><a href="{{ route('index') }}#how-it-works">{{ __('How it works') }}</a></li>
-              <li><a href="{{ route('frontend.pricing') }}">{{ __('Pricing') }}</a></li>
+              {{-- Pricing link hidden for now (client request) — restore this <li> to bring it back --}}
+              {{-- <li><a href="{{ route('frontend.pricing') }}">{{ __('Pricing') }}</a></li> --}}
               <li><a href="{{ route('faq') }}">{{ __('FAQs') }}</a></li>
               <li><a href="{{ route('contact') }}">{{ __('Help') }}</a></li>
             </ul>
           </div>
 
-          <div class="footer-link-column">
+          {{-- "For Pros" column hidden for now (client request) — restore this block to bring it back --}}
+          {{-- <div class="footer-link-column">
             <h3>{{ __('For Pros') }}</h3>
             <ul>
-              {{-- Vendor signup link hidden for now (client request) — restore this <li> to bring it back --}}
-              {{-- <li><a href="{{ route('vendor.signup') }}">{{ __('Become an engineer') }}</a></li> --}}
+              <li><a href="{{ route('vendor.signup') }}">{{ __('Become an engineer') }}</a></li>
               <li><a href="{{ route('frontend.pricing') }}">{{ __('Pricing') }}</a></li>
             </ul>
-          </div>
+          </div> --}}
 
           <div class="footer-link-column">
             <h3>{{ __('Company') }}</h3>

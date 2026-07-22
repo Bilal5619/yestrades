@@ -2037,9 +2037,6 @@
               <a href="{{ route('frontend.services') }}" class="cart-primary-btn">
                 {{ __('Add another service') }} <i class="fal fa-plus"></i>
               </a>
-              <button type="button" class="cart-secondary-btn" data-cart-summary-pay>
-                {{ __('Review & pay') }} <i class="fal fa-long-arrow-right"></i>
-              </button>
               <form action="{{ route('frontend.services.cart.clear') }}" method="POST"
                 data-custom-confirm="{{ __('Clear all items?') }}"
                 data-confirm-title="{{ __('Clear cart') }}"
@@ -2333,8 +2330,10 @@
           })
           .catch(function () {
             applyPostcodeSurcharge([]);
-            cartPostcodeCheckedValue = '';
+            cartPostcodeCheckedValue = postcode;
+            hideCartAlert('postcode');
             setCartPostcodeNote(@json(__('Could not check postcode pricing — standard price applied.')), 'is-standard');
+            return true;
           });
       }
 

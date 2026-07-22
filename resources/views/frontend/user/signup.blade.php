@@ -24,7 +24,7 @@
           <div class="au-brand">
             <div class="au-brand-dots"></div>
             <div class="au-brand-inner">
-              <span class="au-brand-eyebrow"><span class="au-eyebrow-dot"></span>{{ __('Join yestrades') }}</span>
+              <span class="au-brand-eyebrow"><span class="au-eyebrow-dot"></span>{{ __('Join') }} {{ $websiteInfo->website_title ?? config('app.name') }}</span>
               <h1>{{ __('Create your account') }} <span>{{ __('in under a minute.') }}</span></h1>
               <p>{{ __('Book vetted engineers for certificates, repairs and cleaning with clear pricing every time.') }}</p>
               <ul class="au-points">
@@ -45,7 +45,7 @@
               <a href="{{ route('vendor.signup') }}">{{ __('Business') }}</a>
             </div>
             <p class="au-type-help">
-              {{ __('Choose Customer to book services, or Business if you provide services on yestrades.') }}
+              {{ __('Choose Customer to book services, or Business if you provide services on') }} {{ $websiteInfo->website_title ?? config('app.name') }}.
             </p> --}}
 
             @if (Session::has('success'))

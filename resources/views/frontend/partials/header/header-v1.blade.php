@@ -12,11 +12,11 @@
     <div class="container">
       <!-- Mobile Logo -->
       <div class="logo">
-        <a href="{{ route('index') }}" target="_self" title="{{ $websiteInfo->website_title ?? 'yestrades' }}" class="header-wordmark">
+        <a href="{{ route('index') }}" target="_self" title="{{ $websiteInfo->website_title ?? config('app.name') }}" class="header-wordmark">
           @if (!empty($websiteInfo->logo))
-            <img src="{{ asset('assets/img/' . $websiteInfo->logo) }}" alt="{{ $websiteInfo->website_title ?? 'yestrades' }}" class="header-logo-img">
+            <img src="{{ asset('assets/img/' . $websiteInfo->logo) }}" alt="{{ $websiteInfo->website_title ?? config('app.name') }}" class="header-logo-img">
           @else
-            <span class="header-wordmark-text">{{ $websiteInfo->website_title ?? 'yestrades' }}</span>
+            <span class="header-wordmark-text">{{ $websiteInfo->website_title ?? config('app.name') }}</span>
           @endif
         </a>
       </div>
@@ -33,11 +33,11 @@
     <div class="container">
       <nav class="navbar navbar-expand-lg">
         <!-- Logo -->
-        <a class="navbar-brand header-wordmark" href="{{ route('index') }}" target="_self" title="{{ $websiteInfo->website_title ?? 'yestrades' }}">
+        <a class="navbar-brand header-wordmark" href="{{ route('index') }}" target="_self" title="{{ $websiteInfo->website_title ?? config('app.name') }}">
           @if (!empty($websiteInfo->logo))
-            <img src="{{ asset('assets/img/' . $websiteInfo->logo) }}" alt="{{ $websiteInfo->website_title ?? 'yestrades' }}" class="header-logo-img">
+            <img src="{{ asset('assets/img/' . $websiteInfo->logo) }}" alt="{{ $websiteInfo->website_title ?? config('app.name') }}" class="header-logo-img">
           @else
-            <span class="header-wordmark-text">{{ $websiteInfo->website_title ?? 'yestrades' }}</span>
+            <span class="header-wordmark-text">{{ $websiteInfo->website_title ?? config('app.name') }}</span>
           @endif
         </a>
         <!-- Navigation items -->

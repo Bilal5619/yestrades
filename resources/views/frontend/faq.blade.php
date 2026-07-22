@@ -59,7 +59,7 @@
           'answer' => 'Payments are processed through secure payment providers. Card details are handled by the payment provider and are not stored directly on our website.',
         ],
         [
-          'question' => 'Can landlords use yestrades?',
+          'question' => 'Can landlords use ' . ($websiteInfo->website_title ?? config('app.name')) . '?',
           'answer' => 'Yes. Landlords can browse certificate and property service options, provide site details and complete booking requests online.',
         ],
         [

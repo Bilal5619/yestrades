@@ -1,8 +1,8 @@
 @extends('frontend.layout')
 
-@section('pageHeading', $job->title . ' - Careers at Yes Trades')
+@section('pageHeading', $job->title . ' - Careers at ' . ($websiteInfo->website_title ?? config('app.name')))
 @section('metaDescription', $job->summary)
-@section('metaKeywords', $job->title . ', careers, Yes Trades')
+@section('metaKeywords', $job->title . ', careers, ' . ($websiteInfo->website_title ?? config('app.name')))
 
 @section('content')
   @php
@@ -12,7 +12,7 @@
       'title' => $job->title,
       'description' => trim(strip_tags($job->description)),
       'datePosted' => optional($job->published_at ?: $job->created_at)->toDateString(),
-      'hiringOrganization' => ['@type' => 'Organization', 'name' => 'Yes Trades', 'sameAs' => url('/')],
+      'hiringOrganization' => ['@type' => 'Organization', 'name' => $websiteInfo->website_title ?? config('app.name'), 'sameAs' => url('/')],
       'employmentType' => strtoupper(str_replace(['-', ' '], '_', $job->employment_type)),
     ];
     if ($job->closing_date) $structured['validThrough'] = $job->closing_date->endOfDay()->toIso8601String();
@@ -65,7 +65,7 @@
 
             <section class="cr-detail-section">
               <h2>{{ __('Equal opportunities') }}</h2>
-              <p>{{ $job->equal_opportunity_statement ?: __('Yes Trades is committed to fair and respectful recruitment decisions for every applicant.') }}</p>
+              <p>{{ $job->equal_opportunity_statement ?: ($websiteInfo->website_title ?? config('app.name')) . ' ' . __('is committed to fair and respectful recruitment decisions for every applicant.') }}</p>
             </section>
           </div>
 

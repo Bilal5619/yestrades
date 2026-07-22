@@ -1,4 +1,4 @@
-﻿@extends('admin.layout')
+@extends('admin.layout')
 @section('content')
   <div class="page-header"><h4 class="page-title">{{ $job->exists ? 'Edit Job' : 'Add Job' }}</h4><ul class="breadcrumbs"><li class="nav-home"><a href="{{ route('admin.dashboard') }}"><i class="flaticon-home"></i></a></li><li class="separator"><i class="flaticon-right-arrow"></i></li><li class="nav-item"><a href="#">Careers</a></li></ul></div>
   <div class="card"><div class="card-header"><div class="card-title d-inline-block">{{ $job->exists ? 'Edit Job' : 'Add Job' }}</div><a class="btn btn-info btn-sm float-right" href="{{ route('admin.careers.jobs.index') }}"><i class="fas fa-backward"></i> Back</a></div><div class="card-body">

@@ -208,7 +208,7 @@
           <div class="ld-why-intro" data-aos="fade-up">
             <span class="ld-tag"><i class="fal fa-badge-check"></i>{{ __('Built for landlords') }}</span>
             <h2>{{ __('Fewer calls, less chasing, properties that stay compliant.') }}</h2>
-            <p>{{ __('yestrades handles the coordination so you can focus on your portfolio, not your inbox.') }}</p>
+            <p>{{ $websiteInfo->website_title ?? config('app.name') }} {{ __('handles the coordination so you can focus on your portfolio, not your inbox.') }}</p>
             <a href="{{ route('frontend.services') }}" class="ld-btn-primary">
               {{ __('Browse all services') }} <i class="fal fa-long-arrow-right"></i>
             </a>

@@ -62,10 +62,47 @@
 
   <div class="sv-page">
     <div class="container">
-      <div class="row gx-xl-5">
-        <!--- services side-bar-->
-        @includeIf('frontend.services.side-bar')
-        <div class="col-lg-8 col-xl-9">
+      <!-- ══════════ Full-width category bar ══════════ -->
+      <div class="sv-cat-bar" data-aos="fade-up">
+        <button type="button" class="sv-cat-arrow sv-cat-prev" aria-label="{{ __('Scroll categories left') }}">
+          <i class="fal fa-angle-left"></i>
+        </button>
+        <div class="sv-cat-scroll">
+          <ul class="sv-cat-list">
+            <li>
+              <a href="javascript:void(0)" class="category-toggle sv-cat-pill {{ request()->category ? '' : 'active' }}">
+                <i class="fal fa-grid-2"></i>{{ __('All') }}
+                <span class="qty category_total_service">({{ $total_services }})</span>
+              </a>
+            </li>
+            @foreach ($categories as $category)
+              <li>
+                <a href="javascript:void(0)"
+                  class="category-toggle sv-cat-pill {{ request()->category == $category->slug ? 'active' : '' }}"
+                  data-slug="{{ $category->slug }}">
+                  <i class="{{ !empty($category->icon) ? $category->icon : 'fal fa-wrench' }}"></i>{{ $category->name }}
+                  <span class="qty">({{ $category->service_count }})</span>
+                </a>
+              </li>
+            @endforeach
+          </ul>
+        </div>
+        <button type="button" class="sv-cat-arrow sv-cat-next" aria-label="{{ __('Scroll categories right') }}">
+          <i class="fal fa-angle-right"></i>
+        </button>
+        <a href="{{ route('frontend.services') }}" class="sv-cat-reset" title="{{ __('Reset All Filters') }}">
+          <i class="fal fa-sync-alt"></i> <span>{{ __('Reset') }}</span>
+        </a>
+      </div>
+      @if (!empty(showAd(1)))
+        <div class="text-center mb-4">
+          {!! showAd(1) !!}
+        </div>
+      @endif
+      <!-- ══════════ /Full-width category bar ══════════ -->
+
+      <div class="row">
+        <div class="col-12">
           <div class="sv-toolbar" data-aos="fade-up">
             <div class="sv-toolbar-count">
               @if ($total_services > 1)
@@ -77,10 +114,6 @@
               @endif
             </div>
             <div class="sv-toolbar-actions">
-              <button class="sv-filter-trigger d-lg-none" type="button" data-bs-toggle="offcanvas"
-                data-bs-target="#widgetOffcanvas" aria-controls="widgetOffcanvas">
-                <i class="fal fa-sliders-h"></i> {{ __('Filter') }}
-              </button>
               <div class="sv-sort">
                 <label for="sv-sort-select"><i class="fal fa-arrow-down-arrow-up"></i> {{ __('Sort By') }}</label>
                 <select id="sv-sort-select" name="sort" class="sort">
@@ -384,7 +417,152 @@
         background: #ffffff;
       }
 
-      /* ── Sidebar ──────────────────────────────────── */
+      /* ── Full-width category bar ──────────────────── */
+      .sv-cat-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+
+      .sv-cat-scroll {
+        flex: 1;
+        min-width: 0;
+        background: var(--sv-bg);
+        border: 1px solid var(--sv-line);
+        border-radius: 999px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+      }
+
+      .sv-cat-scroll::-webkit-scrollbar {
+        display: none;
+      }
+
+      .sv-cat-list {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 8px;
+        width: max-content;
+        margin: 0;
+        padding: 8px;
+        list-style: none;
+      }
+
+      .sv-cat-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 11px 18px;
+        color: var(--sv-ink-2);
+        background: #ffffff;
+        border: 1px solid var(--sv-line);
+        border-radius: 999px;
+        font-size: 13.5px;
+        font-weight: 700;
+        white-space: nowrap;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.18s ease;
+      }
+
+      .sv-cat-pill i {
+        color: var(--sv-primary);
+        font-size: 13px;
+      }
+
+      .sv-cat-pill:hover {
+        color: var(--sv-primary-dark);
+        border-color: rgba(14, 159, 110, 0.35);
+      }
+
+      .sv-cat-pill.active {
+        color: #ffffff;
+        background: linear-gradient(120deg, var(--sv-primary), var(--sv-primary-dark));
+        border-color: transparent;
+        box-shadow: 0 10px 22px rgba(14, 159, 110, 0.3);
+      }
+
+      .sv-cat-pill.active i {
+        color: #ffffff;
+      }
+
+      .sv-cat-pill .qty {
+        padding: 1px 8px;
+        color: inherit;
+        background: rgba(0, 0, 0, 0.06);
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .sv-cat-pill.active .qty {
+        background: rgba(255, 255, 255, 0.22);
+      }
+
+      .sv-cat-arrow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 42px;
+        width: 42px;
+        height: 42px;
+        color: var(--sv-primary-dark);
+        background: #ffffff;
+        border: 1px solid var(--sv-line);
+        border-radius: 50%;
+        font-size: 15px;
+        box-shadow: 0 8px 20px rgba(16, 29, 44, 0.08);
+        transition: all 0.2s ease;
+      }
+
+      .sv-cat-arrow:hover {
+        color: #ffffff;
+        background: var(--sv-primary);
+        border-color: var(--sv-primary);
+      }
+
+      .sv-cat-arrow.is-hidden {
+        display: none;
+      }
+
+      .sv-cat-arrow:disabled {
+        opacity: 0.35;
+        pointer-events: none;
+      }
+
+      .sv-cat-reset {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        flex: 0 0 auto;
+        padding: 11px 16px;
+        color: var(--sv-muted);
+        background: #ffffff;
+        border: 1px solid var(--sv-line);
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s ease;
+      }
+
+      .sv-cat-reset:hover {
+        color: var(--sv-primary-dark);
+        border-color: rgba(14, 159, 110, 0.35);
+        background: var(--sv-primary-soft);
+      }
+
+      @media (max-width: 575.98px) {
+        .sv-cat-reset span {
+          display: none;
+        }
+      }
+
+      /* ── Sidebar (kept for backward compatibility, unused) ── */
       .sv-page .widget-area {
         position: sticky;
         top: 96px;
@@ -1105,6 +1283,53 @@
         }
       }
     </style>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        var catBar = document.querySelector('.sv-cat-bar');
+        if (!catBar) {
+          return;
+        }
+
+        var scroller = catBar.querySelector('.sv-cat-scroll');
+        var prevBtn = catBar.querySelector('.sv-cat-prev');
+        var nextBtn = catBar.querySelector('.sv-cat-next');
+
+        if (!scroller || !prevBtn || !nextBtn) {
+          return;
+        }
+
+        function updateArrows() {
+          var overflow = scroller.scrollWidth - scroller.clientWidth;
+
+          if (overflow <= 2) {
+            prevBtn.classList.add('is-hidden');
+            nextBtn.classList.add('is-hidden');
+            return;
+          }
+
+          prevBtn.classList.remove('is-hidden');
+          nextBtn.classList.remove('is-hidden');
+          prevBtn.disabled = scroller.scrollLeft <= 2;
+          nextBtn.disabled = scroller.scrollLeft >= overflow - 2;
+        }
+
+        prevBtn.addEventListener('click', function () {
+          scroller.scrollBy({ left: -Math.max(scroller.clientWidth * 0.7, 180), behavior: 'smooth' });
+        });
+
+        nextBtn.addEventListener('click', function () {
+          scroller.scrollBy({ left: Math.max(scroller.clientWidth * 0.7, 180), behavior: 'smooth' });
+        });
+
+        scroller.addEventListener('scroll', updateArrows, { passive: true });
+        window.addEventListener('resize', updateArrows);
+        window.addEventListener('load', updateArrows);
+        updateArrows();
+
+        var scrollObserver = new MutationObserver(updateArrows);
+        scrollObserver.observe(scroller, { childList: true, subtree: true });
+      });
+    </script>
   @endpush
 @endsection
 @section('script')

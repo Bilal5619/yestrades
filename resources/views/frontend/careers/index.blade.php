@@ -1,8 +1,8 @@
 @extends('frontend.layout')
 
-@section('pageHeading', 'Careers at Yes Trades | Join Our Team')
-@section('metaDescription', 'Explore current career opportunities at Yes Trades and apply to join our growing UK home-services team.')
-@section('metaKeywords', 'Yes Trades careers, jobs, recruitment')
+@section('pageHeading', 'Careers at ' . ($websiteInfo->website_title ?? config('app.name')) . ' | Join Our Team')
+@section('metaDescription', 'Explore current career opportunities at ' . ($websiteInfo->website_title ?? config('app.name')) . ' and apply to join our growing UK home-services team.')
+@section('metaKeywords', ($websiteInfo->website_title ?? config('app.name')) . ' careers, jobs, recruitment')
 
 @section('content')
   <main class="cr-page">
@@ -15,8 +15,8 @@
       <div class="container">
         <div class="cr-hero-grid">
           <div data-aos="fade-up">
-            <span class="cr-eyebrow"><span class="cr-eyebrow-dot"></span>{{ __('Careers at Yes Trades') }}</span>
-            <h1>{{ __('Build your career') }} <span>{{ __('with Yes Trades.') }}</span></h1>
+            <span class="cr-eyebrow"><span class="cr-eyebrow-dot"></span>{{ __('Careers at') }} {{ $websiteInfo->website_title ?? config('app.name') }}</span>
+            <h1>{{ __('Build your career') }} <span>{{ __('with') }} {{ $websiteInfo->website_title ?? config('app.name') }}.</span></h1>
             <p>{{ __('Join a growing team helping customers across the UK book trusted plumbing, heating, gas, electrical, cleaning and property services.') }}</p>
             <div class="cr-hero-actions">
               <a href="#open-positions" class="cr-btn-primary">
@@ -31,7 +31,7 @@
             <div class="cr-hero-panel">
               <span class="cr-panel-icon"><i class="fal fa-briefcase"></i></span>
               <h2>{{ __('Find your next role') }}</h2>
-              <p>{{ __('Browse current vacancies or share your CV for future opportunities with the Yes Trades recruitment team.') }}</p>
+              <p>{{ __('Browse current vacancies or share your CV for future opportunities with the') }} {{ $websiteInfo->website_title ?? config('app.name') }} {{ __('recruitment team.') }}</p>
             </div>
           </div>
         </div>

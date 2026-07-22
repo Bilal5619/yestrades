@@ -1,4 +1,4 @@
-﻿<div class="row">
+<div class="row">
   @foreach ([['first_name','First name'],['last_name','Last name'],['email','Email address'],['phone','Phone number'],['city','Current town/city'],['postcode','Postcode']] as $field)
     <div class="col-md-6 mb-3">
       <label for="{{ $field[0] }}">{{ $field[1] }} <span class="text-danger">*</span></label>
@@ -45,6 +45,6 @@
     <div class="col-md-6 mb-3"><label for="portfolio_url">Portfolio URL</label><input id="portfolio_url" name="portfolio_url" value="{{ old('portfolio_url') }}" class="form-control" type="url"></div>
   @endif
 
-  <div class="col-12 mb-3"><div class="form-check"><input id="privacy_consent" name="privacy_consent" value="1" class="form-check-input @error('privacy_consent') is-invalid @enderror" type="checkbox" required><label class="form-check-label" for="privacy_consent">I confirm that the information provided is accurate and I agree that Yes Trades may process my personal data for recruitment purposes in accordance with the <a href="{{ route('privacy_policy') }}" target="_blank" rel="noopener">Privacy Policy</a>.</label>@error('privacy_consent')<div class="text-danger small">{{ $message }}</div>@enderror</div></div>
+  <div class="col-12 mb-3"><div class="form-check"><input id="privacy_consent" name="privacy_consent" value="1" class="form-check-input @error('privacy_consent') is-invalid @enderror" type="checkbox" required><label class="form-check-label" for="privacy_consent">I confirm that the information provided is accurate and I agree that {{ $websiteInfo->website_title ?? config('app.name') }} may process my personal data for recruitment purposes in accordance with the <a href="{{ route('privacy_policy') }}" target="_blank" rel="noopener">Privacy Policy</a>.</label>@error('privacy_consent')<div class="text-danger small">{{ $message }}</div>@enderror</div></div>
   <div class="col-12"><button type="submit" class="btn btn-primary">Submit Application</button></div>
 </div>

@@ -45,7 +45,7 @@
           'answer' => 'Yes. You can start small and upgrade when you need more services, images, appointments or staff access.',
       ],
       [
-          'question' => 'Do customers pay through yestrades?',
+          'question' => 'Do customers pay through ' . ($websiteInfo->website_title ?? config('app.name')) . '?',
           'answer' => 'Customers book services through the website. Your package controls the tools and limits available for managing those services as a pro.',
       ],
       [
@@ -514,7 +514,7 @@
         <span class="pricing-eyebrow"><i class="fal fa-star"></i> {{ __('Suggested packages') }}</span>
         <h1>{{ __('Simple packages for service pros and growing teams.') }}</h1>
         <p>
-          {{ __('Choose a practical starting point for managing services, appointments, staff and customer bookings on yestrades.') }}
+          {{ __('Choose a practical starting point for managing services, appointments, staff and customer bookings on') }} {{ $websiteInfo->website_title ?? config('app.name') }}.
         </p>
       </div>
     </section>

@@ -1,4 +1,4 @@
-﻿@extends('admin.layout')
+@extends('admin.layout')
 @section('content')
   <div class="page-header"><h4 class="page-title">Job Vacancies</h4><ul class="breadcrumbs"><li class="nav-home"><a href="{{ route('admin.dashboard') }}"><i class="flaticon-home"></i></a></li><li class="separator"><i class="flaticon-right-arrow"></i></li><li class="nav-item"><a href="#">Careers</a></li><li class="separator"><i class="flaticon-right-arrow"></i></li><li class="nav-item"><a href="#">Jobs</a></li></ul></div>
   <div class="card"><div class="card-header"><div class="card-title d-inline-block">Job Vacancies</div><a class="btn btn-primary btn-sm float-right" href="{{ route('admin.careers.jobs.create') }}"><i class="fas fa-plus"></i> Add Job</a></div><div class="card-body">

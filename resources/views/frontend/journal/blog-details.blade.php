@@ -8,7 +8,7 @@
   $detailsImage = !empty($details->image) && filter_var($details->image, FILTER_VALIDATE_URL)
     ? $details->image
     : asset('assets/img/blogs/' . $details->image);
-  $detailsAuthor = in_array(strtolower(trim((string) $details->author)), ['autoseo', 'admin']) ? 'yestrades' : $details->author;
+  $detailsAuthor = in_array(strtolower(trim((string) $details->author)), ['autoseo', 'admin']) ? ($websiteInfo->website_title ?? config('app.name')) : $details->author;
   $detailsCategoryName = strcasecmp(trim((string) $details->categoryName), 'AutoSEO') === 0 ? 'Safety Guides' : $details->categoryName;
 @endphp
 @section('pageHeading')
@@ -118,7 +118,7 @@
                   $blogImage = !empty($blog->image) && filter_var($blog->image, FILTER_VALIDATE_URL)
                     ? $blog->image
                     : asset('assets/img/blogs/' . $blog->image);
-                  $blogAuthor = in_array(strtolower(trim((string) $blog->author)), ['autoseo', 'admin']) ? 'yestrades' : $blog->author;
+                  $blogAuthor = in_array(strtolower(trim((string) $blog->author)), ['autoseo', 'admin']) ? ($websiteInfo->website_title ?? config('app.name')) : $blog->author;
                 @endphp
                 <article class="article-item mb-30">
                   <div class="image">

@@ -11,7 +11,7 @@
 @endsection
 
 @section('metaDescription')
-  {{ __('Cookie Policy for yestrades, explaining how cookies and similar technologies are used on the website.') }}
+  {{ __('Cookie Policy for') }} {{ $websiteInfo->website_title ?? config('app.name') }}{{ __(', explaining how cookies and similar technologies are used on the website.') }}
 @endsection
 
 @section('content')
@@ -39,7 +39,7 @@
           <article class="legal-page-content" data-aos="fade-up">
             <span class="lg-updated-chip"><i class="fal fa-clock"></i>{{ __('Last updated:') }} 24 June 2026</span>
 
-            <p>This Cookie Policy explains how yestrades ("we", "our", "us") uses cookies and similar technologies on our website.</p>
+            <p>This Cookie Policy explains how {{ $websiteInfo->website_title ?? config('app.name') }} ("we", "our", "us") uses cookies and similar technologies on our website.</p>
             <p><strong>Website:</strong> <a href="https://yestrades.co.uk">https://yestrades.co.uk</a></p>
 
             <h2>1. What are cookies?</h2>

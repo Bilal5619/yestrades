@@ -1,1 +1,1 @@
-﻿{!! nl2br(e($mailBody)) !!}
+{!! nl2br(e($mailBody)) !!}

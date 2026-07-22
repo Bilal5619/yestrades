@@ -22,7 +22,7 @@
           <div class="au-brand">
             <div class="au-brand-dots"></div>
             <div class="au-brand-inner">
-              <span class="au-brand-eyebrow"><span class="au-eyebrow-dot"></span>{{ __('Grow with yestrades') }}</span>
+              <span class="au-brand-eyebrow"><span class="au-eyebrow-dot"></span>{{ __('Grow with') }} {{ $websiteInfo->website_title ?? config('app.name') }}</span>
               <h1>{{ __('Get more jobs') }} <span>{{ __('in your area.') }}</span></h1>
               <p>{{ __('Register your business to receive booking requests, manage your calendar and get paid quickly.') }}</p>
               <ul class="au-points">
@@ -42,7 +42,7 @@
               <span class="active">{{ __('Business') }}</span>
             </div>
             <p class="au-type-help">
-              {{ __('Choose Customer to book services, or Business if you provide services on yestrades.') }}
+              {{ __('Choose Customer to book services, or Business if you provide services on') }} {{ $websiteInfo->website_title ?? config('app.name') }}.
             </p>
 
             @if (Session::has('success'))

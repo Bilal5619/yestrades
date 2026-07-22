@@ -44,7 +44,7 @@
                   <div class="swiper-wrapper">
                     @foreach ($heroSliderImages as $slide)
                       <div class="swiper-slide">
-                        <img src="{{ asset('assets/img/hero/' . $slide->image) }}" alt="{{ __('yestrades service') }}">
+                        <img src="{{ asset('assets/img/hero/' . $slide->image) }}" alt="{{ __('Service') }}">
                       </div>
                     @endforeach
                   </div>
@@ -52,7 +52,7 @@
                 </div>
               @else
                 <img src="{{ asset('assets/img/hero/' . @$sectionContent->hero_section_background_img) }}"
-                  alt="{{ __('yestrades service') }}">
+                  alt="{{ __('Service') }}">
               @endif
 
               <div class="yt-hero-chip">{{ __('On the way - 14 min') }}</div>
@@ -101,7 +101,7 @@
                   <div class="swiper-wrapper">
                     @foreach ($heroSliderImages as $slide)
                       <div class="swiper-slide">
-                        <img src="{{ asset('assets/img/hero/' . $slide->image) }}" alt="{{ __('yestrades service') }}">
+                        <img src="{{ asset('assets/img/hero/' . $slide->image) }}" alt="{{ __('Service') }}">
                       </div>
                     @endforeach
                   </div>
@@ -109,7 +109,7 @@
                 </div>
               @else
                 <img src="{{ asset('assets/img/hero/' . @$sectionContent->hero_section_background_img) }}"
-                  alt="{{ __('yestrades service') }}">
+                  alt="{{ __('Service') }}">
               @endif
 
               <div class="yt-hero-chip">{{ __('Booking in progress') }}</div>

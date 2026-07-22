@@ -50,7 +50,7 @@
                     $blogImage = !empty($blog->image) && filter_var($blog->image, FILTER_VALIDATE_URL)
                       ? $blog->image
                       : asset('assets/img/blogs/' . $blog->image);
-                    $blogAuthor = in_array(strtolower(trim((string) $blog->author)), ['autoseo', 'admin']) ? 'yestrades' : $blog->author;
+                    $blogAuthor = in_array(strtolower(trim((string) $blog->author)), ['autoseo', 'admin']) ? ($websiteInfo->website_title ?? config('app.name')) : $blog->author;
                     $blogCategoryName = strcasecmp(trim((string) $blog->categoryName), 'AutoSEO') === 0 ? 'Safety Guides' : $blog->categoryName;
                   @endphp
                   <div class="col-md-6" data-aos="fade-up">

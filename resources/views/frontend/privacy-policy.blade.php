@@ -12,7 +12,7 @@
 @endsection
 
 @section('metaDescription')
-  {{ __('Privacy Policy for yestrades, explaining how personal data is collected, used, stored and protected.') }}
+  {{ __('Privacy Policy for') }} {{ $websiteInfo->website_title ?? config('app.name') }}{{ __(', explaining how personal data is collected, used, stored and protected.') }}
 @endsection
 
 @section('content')
@@ -40,11 +40,11 @@
           <article class="legal-page-content" data-aos="fade-up">
             <span class="lg-updated-chip"><i class="fal fa-clock"></i>{{ __('Last updated:') }} 24 June 2026</span>
 
-            <p>yestrades ("we", "our", "us") respects your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, store and protect your information when you use our website, services, booking forms, vendor platform or contact us.</p>
+            <p>{{ $websiteInfo->website_title ?? config('app.name') }} ("we", "our", "us") respects your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, store and protect your information when you use our website, services, booking forms, vendor platform or contact us.</p>
             <p><strong>Website:</strong> <a href="https://yestrades.co.uk">https://yestrades.co.uk</a></p>
 
             <h2>1. Who we are</h2>
-            <p>yestrades is an online service booking platform for UK customers looking for services such as plumbing, gas, electrical, cleaning, landlord certificates and related property services.</p>
+            <p>{{ $websiteInfo->website_title ?? config('app.name') }} is an online service booking platform for UK customers looking for services such as plumbing, gas, electrical, cleaning, landlord certificates and related property services.</p>
             <p>For privacy questions, please contact us:</p>
             <ul>
               <li>Email: {{ $businessEmail }}</li>
