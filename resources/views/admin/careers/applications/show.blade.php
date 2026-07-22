@@ -119,18 +119,6 @@
             <button class="btn btn-primary btn-sm">Update Status</button>
           </form>
 
-          <form method="POST" action="{{ route('admin.careers.applications.assign', $application) }}" class="mb-3">
-            @csrf
-            <label>Assign admin</label>
-            <select class="form-control mb-2" name="assigned_to">
-              <option value="">Unassigned</option>
-              @foreach ($admins as $admin)
-                <option value="{{ $admin->id }}" @selected($application->assigned_to == $admin->id)>{{ $admin->first_name }} {{ $admin->last_name }}</option>
-              @endforeach
-            </select>
-            <button class="btn btn-secondary btn-sm">Assign</button>
-          </form>
-
           <form method="POST" action="{{ route('admin.careers.applications.add-note', $application) }}" class="mb-3">
             @csrf
             <label>Private note</label>
