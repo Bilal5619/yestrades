@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Careers;
 
 use App\Http\Controllers\Controller;
 use App\Mail\Careers\CandidateStatusMail;
+use App\Mail\Careers\InterviewScheduledMail;
 use App\Models\Admin;
 use App\Models\Careers\CareerApplication;
 use App\Models\Careers\CareerApplicationActivity;
@@ -77,16 +78,33 @@ class CareerApplicationController extends Controller
     $data = $request->validate([
       'status' => ['required', Rule::in(CareerApplication::STATUSES)],
       'note' => ['nullable', 'string', 'max:2000'],
+      'interview_date' => ['nullable', 'date'],
     ]);
 
     $previous = $application->status;
+    $previousInterviewAt = $application->interview_scheduled_at;
     $timestamps = [];
     if ($data['status'] === 'reviewing' && !$application->reviewed_at) $timestamps['reviewed_at'] = now();
     if ($data['status'] === 'rejected') $timestamps['rejected_at'] = now();
     if ($data['status'] === 'hired') $timestamps['hired_at'] = now();
 
+    $newInterviewAt = null;
+    if ($data['status'] === 'interview' && !empty($data['interview_date'])) {
+      $newInterviewAt = \Carbon\Carbon::parse($data['interview_date']);
+      $timestamps['interview_scheduled_at'] = $newInterviewAt;
+    }
+
     $application->update(array_merge(['status' => $data['status']], $timestamps));
     $this->activity($application, 'status_changed', $data['note'] ?? null, $previous, $data['status']);
+
+    if ($newInterviewAt && (!$previousInterviewAt || !$newInterviewAt->equalTo($previousInterviewAt))) {
+      try {
+        Mail::to($application->email)->send(new InterviewScheduledMail($application));
+        $this->activity($application, 'interview_email_sent', 'Interview email sent for ' . $newInterviewAt->format('d M Y H:i'));
+      } catch (\Throwable $exception) {
+        return back()->with('warning', __('Status updated, but the interview email could not be sent: ') . $exception->getMessage());
+      }
+    }
 
     return back()->with('success', __('Application status updated.'));
   }

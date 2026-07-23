@@ -45,6 +45,7 @@ class CareerApplication extends Model
     'cover_letter_mime_type',
     'cover_letter_size',
     'status',
+    'interview_scheduled_at',
     'source',
     'admin_notes',
     'assigned_to',
@@ -61,6 +62,7 @@ class CareerApplication extends Model
 
   protected $casts = [
     'submitted_at' => 'datetime',
+    'interview_scheduled_at' => 'datetime',
     'reviewed_at' => 'datetime',
     'rejected_at' => 'datetime',
     'hired_at' => 'datetime',

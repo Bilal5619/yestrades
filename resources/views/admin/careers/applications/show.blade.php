@@ -110,14 +110,39 @@
           <form method="POST" action="{{ route('admin.careers.applications.update-status', $application) }}" class="mb-3">
             @csrf
             <label>Status</label>
-            <select class="form-control mb-2" name="status">
+            <select class="form-control mb-2" name="status" id="applicationStatusSelect">
               @foreach (\App\Models\Careers\CareerApplication::STATUSES as $status)
                 <option value="{{ $status }}" @selected($application->status === $status)>{{ ucfirst($status) }}</option>
               @endforeach
             </select>
+            <div id="interviewDateGroup" class="mb-2" style="display:none;">
+              <label>Interview date &amp; time</label>
+              <input type="datetime-local" class="form-control" name="interview_date"
+                value="{{ old('interview_date', optional($application->interview_scheduled_at)->format('Y-m-d\TH:i')) }}">
+              @if ($application->interview_scheduled_at)
+                <small class="text-muted">Currently scheduled: {{ $application->interview_scheduled_at->format('d M Y, H:i') }}. Changing this and saving will email the candidate the new time.</small>
+              @else
+                <small class="text-muted">Pick a date and time to automatically email the candidate their interview slot when you save.</small>
+              @endif
+            </div>
             <textarea class="form-control mb-2" name="note" rows="2" placeholder="Optional reason or note"></textarea>
             <button class="btn btn-primary btn-sm">Update Status</button>
           </form>
+
+          <script>
+            (function () {
+              var statusSelect = document.getElementById('applicationStatusSelect');
+              var interviewGroup = document.getElementById('interviewDateGroup');
+              if (!statusSelect || !interviewGroup) return;
+
+              function syncInterviewField() {
+                interviewGroup.style.display = statusSelect.value === 'interview' ? '' : 'none';
+              }
+
+              statusSelect.addEventListener('change', syncInterviewField);
+              syncInterviewField();
+            })();
+          </script>
 
           <form method="POST" action="{{ route('admin.careers.applications.add-note', $application) }}" class="mb-3">
             @csrf
