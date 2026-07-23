@@ -15,10 +15,15 @@ use App\Models\Admin;
 use App\Models\BasicSettings\Basic;
 use App\Models\BasicSettings\MailTemplate;
 use App\Models\Language;
+use App\Models\Question;
+use App\Models\QuestionOption;
 use App\Models\Services\ServiceBooking;
 use App\Models\Services\ServiceContent;
 use App\Models\Services\ServiceReview;
+use App\Models\Services\Services;
 use App\Models\Staff\Staff;
+use App\Models\Staff\StaffGlobalHour;
+use App\Models\Staff\StaffServiceHour;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -73,6 +78,223 @@ class AppointmentController extends Controller
     $information['vendorBusyMap'] = VendorAvailability::busyMapForAppointments($information['booking_item']->getCollection(), $information['vendors']);
     $information['vendorEligibleMap'] = VendorMatching::eligibleMapForAppointments($information['booking_item']->getCollection(), $information['vendors']);
     return view('admin.appointment.all', $information);
+  }
+
+  public function createManualJob(Request $request)
+  {
+    $language = Language::where('code', request()->language)->first() ?: Language::where('is_default', 1)->firstOrFail();
+    $languageId = $language->id;
+
+    $information['langs'] = Language::all();
+    $information['currencyInfo'] = $this->getCurrencyInfo();
+    $information['services'] = ServiceContent::query()
+      ->with('service')
+      ->where('language_id', $languageId)
+      ->orderBy('name')
+      ->get()
+      ->unique('service_id')
+      ->values();
+    $information['staffMembers'] = Staff::with('StaffContent')->orderByDesc('id')->get();
+    $information['staffHours'] = StaffServiceHour::orderBy('start_time')->get();
+    $information['globalHours'] = StaffGlobalHour::orderBy('start_time')->get();
+    $information['questionsByService'] = Question::with('options')
+      ->whereNotNull('service_id')
+      ->orderBy('service_id')
+      ->orderBy('id')
+      ->get()
+      ->groupBy('service_id');
+    $information['optionsByQuestion'] = QuestionOption::orderBy('id')->get()->groupBy('question_id');
+
+    return view('admin.appointment.manual-create', $information);
+  }
+
+  public function manualJobPrice(Request $request)
+  {
+    $data = $request->validate([
+      'service_id' => ['required', 'integer', 'exists:services,id'],
+      'postcode' => ['nullable', 'string', 'max:100'],
+      'question_answers' => ['nullable', 'array'],
+      'question_answers.*' => ['nullable'],
+    ]);
+
+    $service = Services::findOrFail($data['service_id']);
+    $answers = $this->normalizeManualQuestionAnswers($data['question_answers'] ?? [], (int) $service->id);
+    $pricing = app(ServicePaymentController::class)->resolveServiceCartItemPrice(
+      $service,
+      $answers,
+      $data['postcode'] ?? null
+    );
+
+    return response()->json([
+      'success' => true,
+      'price' => round((float) ($pricing['total'] ?? 0), 2),
+      'base_price' => round((float) ($pricing['base'] ?? 0), 2),
+      'question_surcharge' => round((float) ($pricing['questions'] ?? 0), 2),
+      'postcode_surcharge' => round((float) ($pricing['postcode_surcharge'] ?? 0), 2),
+      'price_display' => symbolPrice(round((float) ($pricing['total'] ?? 0), 2)),
+    ]);
+  }
+
+  public function storeManualJob(Request $request)
+  {
+    $data = $request->validate([
+      'service_id' => ['required', 'integer', 'exists:services,id'],
+      'customer_paid' => ['required', 'numeric', 'min:0'],
+      'customer_name' => ['required', 'string', 'max:255'],
+      'customer_phone' => ['required', 'string', 'max:255'],
+      'customer_email' => ['required', 'email', 'max:255'],
+      'customer_address' => ['required', 'string', 'max:500'],
+      'customer_zip_code' => ['required', 'string', 'max:100'],
+      'customer_country' => ['nullable', 'string', 'max:255'],
+      'booking_date' => ['required', 'date'],
+      'staff_id' => ['nullable', 'integer', 'exists:staff,id'],
+      'service_hour_id' => ['nullable', 'integer'],
+      'start_date' => ['nullable', 'date_format:H:i'],
+      'end_date' => ['nullable', 'date_format:H:i'],
+      'payment_status' => ['required', Rule::in(['pending', 'completed', 'rejected'])],
+      'order_status' => ['required', Rule::in(['pending', 'accepted', 'completed', 'rejected'])],
+      'access_notes' => ['nullable', 'string', 'max:2000'],
+      'question_answers' => ['nullable', 'array'],
+      'question_answers.*' => ['nullable'],
+      'send_customer_email' => ['nullable', 'boolean'],
+    ]);
+
+    $service = Services::findOrFail($data['service_id']);
+    $staffId = $data['staff_id'] ?? null;
+    $serviceHourId = $data['service_hour_id'] ?? null;
+    $startTime = $data['start_date'] ?? null;
+    $endTime = $data['end_date'] ?? null;
+
+    if ($serviceHourId) {
+      $hour = $staffId ? StaffServiceHour::find($serviceHourId) : null;
+      $hour = $hour ?: StaffGlobalHour::find($serviceHourId);
+
+      if (!$hour) {
+        return redirect()->back()->withInput()->with('warning', __('Selected time slot was not found.'));
+      }
+
+      $startTime = $hour->start_time;
+      $endTime = $hour->end_time;
+    }
+
+    if (empty($startTime) || empty($endTime)) {
+      return redirect()->back()->withInput()->with('warning', __('Please select an existing time slot or enter both start and end time.'));
+    }
+
+    $currencyInfo = $this->getCurrencyInfo();
+    $questionAnswers = $this->normalizeManualQuestionAnswers($data['question_answers'] ?? [], (int) $service->id);
+    $paymentProcess = new ServicePaymentController();
+    $pricing = $paymentProcess->resolveServiceCartItemPrice(
+      $service,
+      $questionAnswers,
+      $data['customer_zip_code'] ?? null
+    );
+    $calculatedCustomerPaid = round((float) ($pricing['total'] ?? $data['customer_paid']), 2);
+
+    session()->forget('multiServiceOrder');
+
+    $arrData = [
+      'item_type' => 'service',
+      'zoom_status' => $service->zoom_meeting == 1 ? 1 : 0,
+      'calender_status' => $service->calendar_status == 1 ? 1 : 0,
+      'customer_name' => $data['customer_name'],
+      'customer_phone' => $data['customer_phone'],
+      'customer_email' => $data['customer_email'],
+      'customer_address' => $data['customer_address'],
+      'customer_zip_code' => $data['customer_zip_code'],
+      'customer_country' => $data['customer_country'] ?? 'United Kingdom',
+      'start_date' => $startTime,
+      'end_date' => $endTime,
+      'booking_date' => $data['booking_date'],
+      'staff_id' => $staffId,
+      'service_id' => $service->id,
+      'service_package_id' => null,
+      'package_name' => null,
+      'package_price' => null,
+      'package_included_services' => null,
+      'max_person' => 1,
+      'user_id' => null,
+      'vendor_id' => (int) ($service->vendor_id ?? 0),
+      'service_hour_id' => $serviceHourId,
+      'customer_paid' => $calculatedCustomerPaid,
+      'urgency_surcharge_amount' => null,
+      'urgency_surcharge_period' => null,
+      'billing_same' => 1,
+      'site_name' => null,
+      'site_phone' => null,
+      'site_email' => null,
+      'site_address' => null,
+      'site_zip_code' => null,
+      'site_country' => null,
+      'access_notes' => $data['access_notes'] ?? null,
+      'currencyText' => $currencyInfo->base_currency_text,
+      'currencyTextPosition' => $currencyInfo->base_currency_text_position,
+      'currencySymbol' => $currencyInfo->base_currency_symbol,
+      'currencySymbolPosition' => $currencyInfo->base_currency_symbol_position,
+      'paymentMethod' => 'Manual Admin',
+      'gatewayType' => 'offline',
+      'paymentStatus' => $data['payment_status'],
+      'orderStatus' => $data['order_status'],
+      'refund' => 'pending',
+      'attachment' => null,
+      'group_token' => null,
+      'question_answers' => json_encode($questionAnswers),
+    ];
+
+    $booking = $paymentProcess->finalizeOrder($arrData)->first();
+
+    if ($request->boolean('send_customer_email')) {
+      try {
+        if ($data['payment_status'] === 'completed') {
+          $mailType = 'service_payment_approved';
+        } elseif ($data['payment_status'] === 'rejected') {
+          $mailType = 'service_payment_rejected';
+        } else {
+          $mailType = 'service_payment_pending';
+        }
+
+        payemntStatusMail($mailType, $booking->id);
+      } catch (\Throwable $exception) {
+        return redirect()
+          ->route('admin.appointment.details', ['id' => $booking->id, 'language' => request()->language])
+          ->with('warning', __('Manual job created, but the customer email could not be sent: ') . $exception->getMessage());
+      }
+    }
+
+    return redirect()
+      ->route('admin.appointment.details', ['id' => $booking->id, 'language' => request()->language])
+      ->with('success', __('Manual job created successfully.'));
+  }
+
+  private function normalizeManualQuestionAnswers(array $answers, int $serviceId): array
+  {
+    $questionIds = Question::where('service_id', $serviceId)->pluck('id')->map(function ($id) {
+      return (string) $id;
+    })->all();
+    $allowedQuestionIds = array_flip($questionIds);
+    $normalized = [];
+
+    foreach ($answers as $questionId => $answer) {
+      $questionKey = (string) $questionId;
+      if (!isset($allowedQuestionIds[$questionKey])) {
+        continue;
+      }
+
+      if (is_array($answer)) {
+        $answer = array_values(array_filter($answer, function ($value) {
+          return $value !== null && $value !== '';
+        }));
+        if (count($answer) === 0) {
+          continue;
+        }
+      } elseif ($answer === null || $answer === '') {
+        continue;
+      }
+
+      $normalized[$questionKey] = $answer;
+    }
+
+    return $normalized;
   }
 
   /**

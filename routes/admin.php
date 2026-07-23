@@ -202,6 +202,12 @@ Route::prefix('/admin')->middleware('auth:admin')->group(function () {
 
     Route::get('/all-appointments', 'Admin\Appointment\AppointmentController@index')->name('admin.all_appointment');
 
+    Route::get('/manual-create', 'Admin\Appointment\AppointmentController@createManualJob')->name('admin.appointment.manual_create');
+
+    Route::post('/manual-store', 'Admin\Appointment\AppointmentController@storeManualJob')->name('admin.appointment.manual_store');
+
+    Route::post('/manual-price', 'Admin\Appointment\AppointmentController@manualJobPrice')->name('admin.appointment.manual_price');
+
     Route::get('pending-appointments', 'Admin\Appointment\AppointmentController@pendingAppointment')->name('admin.pending_appointment');
 
     Route::get('accepted-appointments', 'Admin\Appointment\AppointmentController@acceptedAppointment')->name('admin.accepted_appointment');

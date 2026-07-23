@@ -413,6 +413,7 @@ show
            @if (request()->routeIs('admin.rejected_appointment')) active @endif
            @if (request()->routeIs('admin.appointment.details')) active @endif
            @if (request()->routeIs('admin.appointment.calendar')) active @endif
+           @if (request()->routeIs('admin.appointment.manual_create')) active @endif
            @if (request()->routeIs('admin.all_appointment')) active @endif">
       <a data-toggle="collapse" href="#appointment">
         <i class="fas fa-calendar-alt"></i>
@@ -430,6 +431,7 @@ show
            @if (request()->routeIs('admin.appointment.calendar')) show @endif
            @if (request()->routeIs('admin.availability_compliance')) show @endif
            @if (request()->routeIs('admin.customer_compliance')) show @endif
+           @if (request()->routeIs('admin.appointment.manual_create')) show @endif
               @if (request()->routeIs('admin.all_appointment')) show @endif">
         <ul class="nav nav-collapse">
           <li
@@ -444,6 +446,11 @@ show
           <li class="{{ request()->routeIs('admin.appointment.calendar') ? 'active' : '' }}">
             <a href="{{ route('admin.appointment.calendar', ['language' => $defaultLang->code]) }}">
               <span class="sub-item">Vendor Calendar</span>
+            </a>
+          </li>
+          <li class="{{ request()->routeIs('admin.appointment.manual_create') ? 'active' : '' }}">
+            <a href="{{ route('admin.appointment.manual_create', ['language' => $defaultLang->code]) }}">
+              <span class="sub-item">Create Manual Job</span>
             </a>
           </li>
           <li class="{{ request()->routeIs('admin.pending_appointment') ? 'active' : '' }}">

@@ -22,7 +22,7 @@
         <a href="#">{{ __('All Appointments') }}</a>
       </li>
     </ul>
-
+    <a href="{{ route('admin.appointment.manual_create', ['language' => request()->language]) }}" class="btn btn-primary btn-sm ml-auto">{{ __('Create Manual Job') }}</a>
   </div>
 
   <div class="row">

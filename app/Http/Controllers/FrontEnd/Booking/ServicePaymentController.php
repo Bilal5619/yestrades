@@ -575,6 +575,24 @@ class ServicePaymentController extends Controller
     ];
   }
 
+  public function resolveServiceCartItemPrice(Services $service, array $answers, ?string $postcode = null, array $item = []): array
+  {
+    $basePrice = $this->resolveCartBasePrice($service, $item);
+    $questionPrice = $this->calculateCartQuestionPrice((int) $service->id, $answers);
+    $postcodeSurcharge = $this->resolvePostcodeSurcharge($postcode, [
+      'service_id' => (int) $service->id,
+      'service_category_id' => $this->serviceCategoryId((int) $service->id),
+    ]);
+    $total = round($basePrice + $questionPrice + $postcodeSurcharge['price'], 2);
+
+    return [
+      'base' => $basePrice,
+      'questions' => $questionPrice,
+      'postcode_surcharge' => $postcodeSurcharge['price'],
+      'total' => $total,
+    ];
+  }
+
   private function resolveServiceCouponDiscount(float $total): float
   {
     $code = Session::get('serviceCouponCode');
