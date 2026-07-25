@@ -15,6 +15,7 @@ class Services extends Model
   protected $fillable = [
     'vendor_id',
     'status',
+    'service_type',
     'price',
     'prev_price',
     'price_placeholder',
@@ -69,11 +70,24 @@ class Services extends Model
     return !empty($this->price_placeholder);
   }
 
+  public function isQuoteType(): bool
+  {
+    return $this->service_type === 'quote';
+  }
+
+  public function quoteQuestions()
+  {
+    return $this->hasMany(\App\Models\QuoteQuestion::class, 'service_id', 'id');
+  }
+
   /**
    * Get the price to display (placeholder or actual price)
    */
   public function getDisplayPrice()
   {
+    if ($this->isQuoteType()) {
+      return __('Quote Required');
+    }
     if ($this->hasPricePlaceholder()) {
       return $this->price_placeholder;
     }

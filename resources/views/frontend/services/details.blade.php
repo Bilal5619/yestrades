@@ -189,14 +189,21 @@
                       </div-->
                   <center>
                     <div class="col-lg-4 col-sm-6">
-                      <form action="{{ route('frontend.services.cart.quick_add') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="service_id" value="{{ $details->id }}">
-                        <button type="submit" class="btn btn-lg btn-primary icon-start w-100 mb-3"
-                          title="{{ __('Add to Cart') }}">
-                          <i class="fal fa-shopping-cart"></i>{{ __('Add to Cart') }}
-                        </button>
-                      </form>
+                      @if ($details->isQuoteType())
+                        <a href="{{ route('frontend.service_quote.questions', $details->id) }}" class="btn btn-lg btn-primary icon-start w-100 mb-3"
+                          title="{{ __('Get a Quote') }}">
+                          <i class="fal fa-file-invoice"></i>{{ __('Get a Quote') }}
+                        </a>
+                      @else
+                        <form action="{{ route('frontend.services.cart.quick_add') }}" method="POST">
+                          @csrf
+                          <input type="hidden" name="service_id" value="{{ $details->id }}">
+                          <button type="submit" class="btn btn-lg btn-primary icon-start w-100 mb-3"
+                            title="{{ __('Add to Cart') }}">
+                            <i class="fal fa-shopping-cart"></i>{{ __('Add to Cart') }}
+                          </button>
+                        </form>
+                      @endif
                     </div>
                   </center>
 
@@ -308,13 +315,19 @@
                               <span class="font-sm icon-start"><i class="fal fa-video"></i>{{ __('Online') }}</span>
                             @endif
                             <div class="d-flex align-items-center justify-content-end gap-2 mt-10">
-                              <form action="{{ route('frontend.services.cart.quick_add') }}" method="POST" class="m-0">
-                                @csrf
-                                <input type="hidden" name="service_id" value="{{ $related_service->id }}">
-                                <button type="submit" class="btn btn-sm btn-outline-2" title="{{ __('Add to Cart') }}">
-                                  <i class="fal fa-shopping-cart me-1"></i>{{ __('Add to Cart') }}
-                                </button>
-                              </form>
+                              @if ($related_service->isQuoteType())
+                                <a href="{{ route('frontend.service_quote.questions', $related_service->id) }}" class="btn btn-sm btn-outline-2" title="{{ __('Get a Quote') }}">
+                                  <i class="fal fa-file-invoice me-1"></i>{{ __('Get a Quote') }}
+                                </a>
+                              @else
+                                <form action="{{ route('frontend.services.cart.quick_add') }}" method="POST" class="m-0">
+                                  @csrf
+                                  <input type="hidden" name="service_id" value="{{ $related_service->id }}">
+                                  <button type="submit" class="btn btn-sm btn-outline-2" title="{{ __('Add to Cart') }}">
+                                    <i class="fal fa-shopping-cart me-1"></i>{{ __('Add to Cart') }}
+                                  </button>
+                                </form>
+                              @endif
                             </div>
                           </div>
                         </div><!-- product-default -->

@@ -308,7 +308,8 @@ class AdminServiceController extends Controller
     $languages = Language::all();
 
     $service = Services::create([
-      'price' => $request->price,
+      'price' => $request->filled('price') ? $request->price : 0,
+      'service_type' => $request->input('service_type', 'buy'),
       'zoom_meeting' => $request->zoom_meeting,
       'calendar_status' => $request->calender_status,
       'service_image' => $service_image,
@@ -427,7 +428,8 @@ class AdminServiceController extends Controller
     $languages = Language::all();
 
     $service->update([
-      'price' => $request->price,
+      'price' => $request->filled('price') ? $request->price : 0,
+      'service_type' => $request->input('service_type', 'buy'),
       'zoom_meeting' => $request->zoom_meeting,
       'vendor_id' => $request->vendor_id,
       'calendar_status' => $request->calender_status,

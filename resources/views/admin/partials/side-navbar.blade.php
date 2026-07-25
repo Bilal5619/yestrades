@@ -148,6 +148,16 @@ if (!is_null($roleInfo)) {
           </li>
         @endif
 
+        {{-- quote requests --}}
+        @if (is_null($roleInfo) || (!empty($rolePermissions) && in_array('Quote Requests', $rolePermissions)))
+          <li class="nav-item @if (request()->routeIs('admin.quote_requests.*')) active @endif">
+            <a href="{{ route('admin.quote_requests.index') }}">
+              <i class="fas fa-file-invoice-dollar"></i>
+              <p>Quote Requests</p>
+            </a>
+          </li>
+        @endif
+
         {{-- subscription log --}}
         @if (is_null($roleInfo) || (!empty($rolePermissions) && in_array('Subscription Log', $rolePermissions)))
           <li class="nav-item @if (request()->routeIs('admin.subscription-log.index')) active @endif">
@@ -175,6 +185,7 @@ if (!is_null($roleInfo)) {
                     @if (request()->routeIs('admin.rejected-featured.service')) active @endif
                     @if (request()->routeIs('admin.pending-featured.service')) active @endif
                     @if (request()->routeIs('admin.questions.index')) active @endif
+                    @if (request()->routeIs('admin.quote_questions.*')) active @endif
                     @if (request()->routeIs('admin.service_packages.*')) active @endif
                     " >
                     <a data-toggle="collapse" href="#service">
@@ -198,6 +209,7 @@ if (!is_null($roleInfo)) {
                     @elseif (request()->routeIs('admin.pending-featured.service')) show
                       @elseif (request()->routeIs('admin.service_managment.create')) show 
                       @elseif (request()->routeIs('admin.questions.index')) show
+                      @elseif (request()->routeIs('admin.quote_questions.*')) show
                       @elseif (request()->routeIs('admin.service_packages.*')) show
                       @endif">
                       <ul class="nav nav-collapse">
@@ -209,6 +221,11 @@ if (!is_null($roleInfo)) {
                         <li class="{{ request()->routeIs('admin.questions.index') ? 'active' : '' }}">
                           <a href="{{ route('admin.questions.index') }}">
                             <span class="sub-item">Sub Categories</span>
+                          </a>
+                        </li>
+                        <li class="{{ request()->routeIs('admin.quote_questions.*') ? 'active' : '' }}">
+                          <a href="{{ route('admin.quote_questions.index') }}">
+                            <span class="sub-item">Quote Questions</span>
                           </a>
                         </li>
                         <li

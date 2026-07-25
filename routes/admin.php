@@ -326,6 +326,17 @@ Route::prefix('/admin')->middleware('auth:admin')->group(function () {
         Route::get('/package/{packageId}', 'Admin\QuestionController@getQuestionsByPackage')->name('admin.questions.by_package');
         Route::get('/options/{questionId}', 'Admin\QuestionController@getQuestionOptions')->name('admin.questions.options');
       });
+    // Quote Questions — the admin-managed form shown to customers of "Get a Quote" services.
+    Route::prefix('quote-questions')->group(function () {
+      Route::get('/', 'Admin\QuoteQuestionController@index')->name('admin.quote_questions.index');
+      Route::get('/create', 'Admin\QuoteQuestionController@create')->name('admin.quote_questions.create');
+      Route::post('/store', 'Admin\QuoteQuestionController@store')->name('admin.quote_questions.store');
+      Route::get('/edit/{id}', 'Admin\QuoteQuestionController@edit')->name('admin.quote_questions.edit');
+      Route::put('/update/{id}', 'Admin\QuoteQuestionController@update')->name('admin.quote_questions.update');
+      Route::get('/show/{id}', 'Admin\QuoteQuestionController@show')->name('admin.quote_questions.show');
+      Route::delete('/destroy/{id}', 'Admin\QuoteQuestionController@destroy')->name('admin.quote_questions.destroy');
+      Route::get('/service/{serviceId}', 'Admin\QuoteQuestionController@getQuoteQuestionsByService')->name('admin.quote_questions.by_service');
+    });
     //services
     Route::get('/', 'Admin\AdminServiceController@index')->name('admin.service_managment');
 
@@ -424,6 +435,16 @@ Route::prefix('/admin')->middleware('auth:admin')->group(function () {
       Route::post('/bulk-delete', 'Admin\PostalCodeController@bulkDestroy')->name('admin.postal_codes.bulk_delete');
       Route::post('/default-price', 'Admin\PostalCodeController@updateDefaultPrice')->name('admin.postal_codes.default_price.update');
     });
+  });
+
+  // Quote Requests — customer submissions for "Get a Quote" services.
+  Route::prefix('quote-requests')->middleware('permission:Quote Requests')->group(function () {
+    Route::get('/', 'Admin\QuoteRequestController@index')->name('admin.quote_requests.index');
+    Route::get('/{id}', 'Admin\QuoteRequestController@show')->name('admin.quote_requests.show');
+    Route::post('/{id}/status', 'Admin\QuoteRequestController@updateStatus')->name('admin.quote_requests.status');
+    Route::post('/{id}/assign-staff', 'Admin\QuoteRequestController@assignStaff')->name('admin.quote_requests.assign_staff');
+    Route::post('/{id}/pricing', 'Admin\QuoteRequestController@savePricing')->name('admin.quote_requests.pricing');
+    Route::post('/{id}/send', 'Admin\QuoteRequestController@sendQuote')->name('admin.quote_requests.send');
   });
 
   // subscription Log

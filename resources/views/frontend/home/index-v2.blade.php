@@ -257,7 +257,9 @@
                           <i class="fal fa-heart"></i>
                         </a>
                         <span class="yt-price-chip">
-                          @if ($service->hasPricePlaceholder())
+                          @if ($service->isQuoteType())
+                            {{ __('Quote Required') }}
+                          @elseif ($service->hasPricePlaceholder())
                             {{ $service->price_placeholder }}
                           @else
                             {{ symbolPrice($service->price) }}
@@ -277,14 +279,20 @@
                         @if ($service->zoom_meeting == 1)
                           <span class="yt-scard-meta"><i class="fal fa-video"></i>{{ __('Online') }}</span>
                         @endif
-                        <form action="{{ route('frontend.services.cart.quick_add') }}" method="POST"
-                          class="yt-scard-cartform">
-                          @csrf
-                          <input type="hidden" name="service_id" value="{{ $service->id }}">
-                          <button type="submit" class="yt-scard-btn" title="{{ __('Book Now') }}">
-                            <i class="fal fa-calendar-check"></i>{{ __('Book Now') }}
-                          </button>
-                        </form>
+                        @if ($service->isQuoteType())
+                          <a href="{{ route('frontend.service_quote.questions', $service->id) }}" class="yt-scard-btn" title="{{ __('Get a Quote') }}">
+                            <i class="fal fa-file-invoice"></i>{{ __('Get a Quote') }}
+                          </a>
+                        @else
+                          <form action="{{ route('frontend.services.cart.quick_add') }}" method="POST"
+                            class="yt-scard-cartform">
+                            @csrf
+                            <input type="hidden" name="service_id" value="{{ $service->id }}">
+                            <button type="submit" class="yt-scard-btn" title="{{ __('Book Now') }}">
+                              <i class="fal fa-calendar-check"></i>{{ __('Book Now') }}
+                            </button>
+                          </form>
+                        @endif
                       </div>
                     </div>
                   </div>
@@ -669,7 +677,9 @@
                         <i class="fal fa-heart"></i>
                       </a>
                       <span class="yt-price-chip">
-                        @if ($service->hasPricePlaceholder())
+                        @if ($service->isQuoteType())
+                          {{ __('Quote Required') }}
+                        @elseif ($service->hasPricePlaceholder())
                           {{ $service->price_placeholder }}
                         @else
                           {{ symbolPrice($service->price) }}
@@ -689,14 +699,20 @@
                       @if ($service->zoom_meeting == 1)
                         <span class="yt-scard-meta"><i class="fal fa-video"></i>{{ __('Online') }}</span>
                       @endif
-                      <form action="{{ route('frontend.services.cart.quick_add') }}" method="POST"
-                        class="yt-scard-cartform">
-                        @csrf
-                        <input type="hidden" name="service_id" value="{{ $service->id }}">
-                        <button type="submit" class="yt-scard-btn" title="{{ __('Book Now') }}">
-                          <i class="fal fa-calendar-check"></i>{{ __('Book Now') }}
-                        </button>
-                      </form>
+                      @if ($service->isQuoteType())
+                        <a href="{{ route('frontend.service_quote.questions', $service->id) }}" class="yt-scard-btn" title="{{ __('Get a Quote') }}">
+                          <i class="fal fa-file-invoice"></i>{{ __('Get a Quote') }}
+                        </a>
+                      @else
+                        <form action="{{ route('frontend.services.cart.quick_add') }}" method="POST"
+                          class="yt-scard-cartform">
+                          @csrf
+                          <input type="hidden" name="service_id" value="{{ $service->id }}">
+                          <button type="submit" class="yt-scard-btn" title="{{ __('Book Now') }}">
+                            <i class="fal fa-calendar-check"></i>{{ __('Book Now') }}
+                          </button>
+                        </form>
+                      @endif
                     </div>
                   </div>
                 </div>

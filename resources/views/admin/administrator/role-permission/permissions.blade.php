@@ -122,6 +122,12 @@
                     </label>
 
                     <label class="selectgroup-item">
+                      <input type="checkbox" class="selectgroup-input" name="permissions[]" value="Quote Requests"
+                        @if (is_array($rolePermissions) && in_array('Quote Requests', $rolePermissions)) checked @endif>
+                      <span class="selectgroup-button">{{ __('Quote Requests') }}</span>
+                    </label>
+
+                    <label class="selectgroup-item">
                       <input type="checkbox" class="selectgroup-input" name="permissions[]" value="Invoices"
                         @if (is_array($rolePermissions) && in_array('Invoices', $rolePermissions)) checked @endif>
                       <span class="selectgroup-button">{{ __('Invoices') }}</span>

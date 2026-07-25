@@ -19,6 +19,18 @@ function toggleServiceOptions() {
   }
 }
 
+/*================ Buy / Get a Quote toggle =======================*/
+$(document).ready(function () {
+  toggleServiceTypeFields();
+  $('body').on('change', '.js-quote-toggle', toggleServiceTypeFields);
+});
+
+function toggleServiceTypeFields() {
+  var isQuote = $('.js-quote-toggle').val() === 'quote';
+  $('.js-buy-only-fields').toggleClass('d-none', isQuote);
+  $('.js-quote-only-fields').toggleClass('d-none', !isQuote);
+}
+
 
 /*==== Allow Login toggle button on Staff Page  =====*/
 $(document).ready(function () {

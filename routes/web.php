@@ -23,6 +23,20 @@ Route::middleware('change.lang')->group(function () {
   Route::get('/review/{token}', 'FrontEnd\VerifiedReviewController@show')->name('frontend.verified_review.show');
   Route::post('/review/{token}', 'FrontEnd\VerifiedReviewController@store')->name('frontend.verified_review.store');
 
+  // Get-a-Quote accept/decline — single-use token emailed once admin sends a priced quote.
+  Route::get('/quote/respond/{token}', 'FrontEnd\QuoteResponseController@show')
+    ->where('token', '[A-Za-z0-9]{64}')
+    ->middleware('throttle:30,1')
+    ->name('frontend.quote.response.show');
+  Route::post('/quote/respond/{token}/accept', 'FrontEnd\QuoteResponseController@accept')
+    ->where('token', '[A-Za-z0-9]{64}')
+    ->middleware('throttle:10,1')
+    ->name('frontend.quote.response.accept');
+  Route::post('/quote/respond/{token}/decline', 'FrontEnd\QuoteResponseController@decline')
+    ->where('token', '[A-Za-z0-9]{64}')
+    ->middleware('throttle:10,1')
+    ->name('frontend.quote.response.decline');
+
   //services route
   Route::prefix('services')->group(function () {
     Route::get('/', 'FrontEnd\Services\ServiceController@index')->name('frontend.services');
@@ -72,6 +86,12 @@ Route::middleware('change.lang')->group(function () {
         'count' => $questions->count()
       ]);
     })->name('frontend.service.questions');
+
+    // Get-a-Quote: separate from the buy cart/checkout flow — never touches
+    // serviceCart session state, only creates a QuoteRequest for admin to price.
+    Route::get('quote/{service_id}/questions', 'FrontEnd\Services\ServiceQuoteController@questions')->name('frontend.service_quote.questions');
+    Route::post('quote/{service_id}/submit', 'FrontEnd\Services\ServiceQuoteController@submit')->name('frontend.service_quote.submit');
+    Route::get('quote/thank-you/{reference}', 'FrontEnd\Services\ServiceQuoteController@thankYou')->name('frontend.service_quote.thank_you');
 
     Route::post('session/forget', 'FrontEnd\Services\ServiceController@sessionForget')->name('service.session.forget');
 

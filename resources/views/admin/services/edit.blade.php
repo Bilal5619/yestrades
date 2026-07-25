@@ -188,12 +188,26 @@
                     <div class="row">
                       <div class="col-lg-4">
                         <div class="form-group">
+                          <label>{{ __('Service Type') . '*' }}</label>
+                          <select name="service_type" class="form-control js-quote-toggle">
+                            <option value="buy" {{ ($service->service_type ?? 'buy') == 'buy' ? 'selected' : '' }}>{{ __('Buy Service (fixed pricing)') }}</option>
+                            <option value="quote" {{ ($service->service_type ?? 'buy') == 'quote' ? 'selected' : '' }}>{{ __('Get a Quote (custom pricing)') }}</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-lg-8 js-quote-only-fields d-none">
+                        <div class="form-group">
+                          <small class="text-muted">{{ __('Manage this service\'s Quote Questions from Service Managment > Quote Questions.') }}</small>
+                        </div>
+                      </div>
+                      <div class="col-lg-4 js-buy-only-fields">
+                        <div class="form-group">
                           <label>{{ __('Price') . '* (' . $currencyText . ')' }}</label>
                           <input type="number" step="0.01" class="form-control" name="price"
                             value="{{ $service->price }}" placeholder="Enter Price">
                         </div>
                       </div>
-                      <div class="col-lg-4">
+                      <div class="col-lg-4 js-buy-only-fields">
                         <div class="form-group">
                           <label> {{ __('Previous Price') . ' (' . $currencyText . ')' }}</label>
                           <input type="number" step="0.01" class="form-control" name="prev_price"
@@ -202,7 +216,7 @@
                         </div>
                       </div>
 
-                      <div class="col-lg-4">
+                      <div class="col-lg-4 js-buy-only-fields">
                         <div class="form-group">
                           <label>{{ __('Price Placeholder') }}</label>
                           <input type="text" class="form-control" name="price_placeholder"
@@ -212,14 +226,14 @@
                         </div>
                       </div>
 
-                      <div class="col-lg-4">
+                      <div class="col-lg-4 js-buy-only-fields">
                         <div class="form-group">
                           <label>{{ __('Offer Price') }}</label>
                           <input type="number" step="0.01" class="form-control" name="offer_price" value="{{ $service->offer_price ?? '' }}">
                         </div>
                       </div>
 
-                      <div class="col-lg-4">
+                      <div class="col-lg-4 js-buy-only-fields">
                         <div class="form-group">
                           <label>{{ __('Offer Label') }}</label>
                           <input type="text" class="form-control" name="offer_label" value="{{ $service->offer_label ?? '' }}">

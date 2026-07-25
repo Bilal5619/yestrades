@@ -37,7 +37,8 @@ class ServiceStoreRequest extends FormRequest
         new ImageMimeTypeRule()
       ],
       'status' => 'required',
-      'price' => 'required|numeric',
+      'service_type' => 'required|in:buy,quote',
+      'price' => 'required_if:service_type,buy|nullable|numeric',
       'offer_price' => 'nullable|numeric|min:0',
       'offer_label' => 'nullable|string|max:255',
       'show_in_renewal_section' => 'nullable|boolean',

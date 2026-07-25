@@ -577,6 +577,20 @@ class ServicePaymentController extends Controller
 
   public function resolveServiceCartItemPrice(Services $service, array $answers, ?string $postcode = null, array $item = []): array
   {
+    // An accepted quote's price is fixed by admin (QuoteAcceptanceService) and
+    // must never be recalculated here — postcode surcharges below are
+    // otherwise always applied on top, which would silently inflate a locked
+    // total. Short-circuit before any of that runs.
+    if (($item['price_status'] ?? null) === 'quote_locked') {
+      $lockedTotal = round((float) ($item['price'] ?? $item['base_price'] ?? 0), 2);
+      return [
+        'base' => $lockedTotal,
+        'questions' => 0.00,
+        'postcode_surcharge' => 0.00,
+        'total' => $lockedTotal,
+      ];
+    }
+
     $basePrice = $this->resolveCartBasePrice($service, $item);
     $questionPrice = $this->calculateCartQuestionPrice((int) $service->id, $answers);
     $postcodeSurcharge = $this->resolvePostcodeSurcharge($postcode, [
@@ -952,6 +966,7 @@ class ServicePaymentController extends Controller
         $itemArr['calender_status'] = $item['calendar_status'] ?? ($arrData['calender_status'] ?? 0);
         $itemArr['group_token'] = $groupToken;
         $itemArr['question_answers'] = $item['question_answers'] ?? ($arrData['question_answers'] ?? null);
+        $itemArr['quote_request_id'] = $item['quote_request_id'] ?? null;
 
         if (!empty($currency)) {
           $itemArr['currencyText'] = $currency['text'] ?? $itemArr['currencyText'];
@@ -1051,7 +1066,24 @@ class ServicePaymentController extends Controller
       'refund' => $arrData['refund'],
       'attachment' => array_key_exists('attachment', $arrData) ? $arrData['attachment'] : null,
       'zoom_info' => session()->has('zoom_info') ? json_encode(session()->get('zoom_info')) : null,
+      'quote_request_id' => $arrData['quote_request_id'] ?? null,
     ]);
+
+    // This booking was created from an accepted Get-a-Quote request — close
+    // the loop on the source QuoteRequest so admin sees it as converted.
+    if (!empty($arrData['quote_request_id'])) {
+      \App\Models\QuoteRequest::where('id', $arrData['quote_request_id'])->update([
+        'status' => \App\Models\QuoteRequest::STATUS_CONVERTED,
+        'converted_booking_id' => $orderInfo->id,
+      ]);
+      \App\Models\QuoteStatusHistory::create([
+        'quote_request_id' => $arrData['quote_request_id'],
+        'previous_status' => \App\Models\QuoteRequest::STATUS_CUSTOMER_ACCEPTED,
+        'new_status' => \App\Models\QuoteRequest::STATUS_CONVERTED,
+        'note' => 'Payment completed, booking #' . $orderInfo->order_number . ' created.',
+        'changed_by_type' => 'system',
+      ]);
+    }
 
     //create transaction for this payment
     if ($arrData['gatewayType'] != 'offline') {

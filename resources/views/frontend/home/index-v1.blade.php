@@ -361,7 +361,9 @@
                           @endif
                           <div class="d-flex align-items-center justify-content-between gap-2 mt-10">
                             <div class="product-price">
-                              @if ($service->hasPricePlaceholder())
+                              @if ($service->isQuoteType())
+                                <span class="h6 new-price">{{ __('Quote Required') }}</span>
+                              @elseif ($service->hasPricePlaceholder())
                                 <span class="h6 new-price">{{ $service->price_placeholder }}</span>
                               @else
                                 <span class="h6 new-price">{{ symbolPrice($service->price) }}</span>
@@ -369,10 +371,15 @@
                                   class="prev-price font-sm">{{ $service->prev_price ? symbolPrice($service->prev_price) : '' }}</span>
                               @endif
                             </div>
-                            <a href="javaScript:void(0)" class="bookNowBtn btn btn-sm btn-outline-2" data-bs-toggle="modal"
-                              data-bs-target="#makeBooking" data-service-id="{{ $service->id }}" title="Book Now"
-                              target="_self">
-                              {{ __('Book Now') }}</a>
+                            @if ($service->isQuoteType())
+                              <a href="{{ route('frontend.service_quote.questions', $service->id) }}" class="btn btn-sm btn-outline-2" title="{{ __('Get a Quote') }}" target="_self">
+                                {{ __('Get a Quote') }}</a>
+                            @else
+                              <a href="javaScript:void(0)" class="bookNowBtn btn btn-sm btn-outline-2" data-bs-toggle="modal"
+                                data-bs-target="#makeBooking" data-service-id="{{ $service->id }}" title="Book Now"
+                                target="_self">
+                                {{ __('Book Now') }}</a>
+                            @endif
                           </div>
                         </div>
                       </div><!-- product-default -->
@@ -706,14 +713,25 @@
                             @endif
                             <div class="d-flex align-items-center justify-content-between gap-2 mt-10">
                               <div class="product-price">
-                                <span class="h6 new-price">{{ symbolPrice($service->price) }}</span>
-                                <span
-                                  class="prev-price font-sm">{{ $service->prev_price ? symbolPrice($service->prev_price) : '' }}</span>
+                                @if ($service->isQuoteType())
+                                  <span class="h6 new-price">{{ __('Quote Required') }}</span>
+                                @elseif ($service->hasPricePlaceholder())
+                                  <span class="h6 new-price">{{ $service->price_placeholder }}</span>
+                                @else
+                                  <span class="h6 new-price">{{ symbolPrice($service->price) }}</span>
+                                  <span
+                                    class="prev-price font-sm">{{ $service->prev_price ? symbolPrice($service->prev_price) : '' }}</span>
+                                @endif
                               </div>
-                              <a href="javaScript:void(0)" class="bookNowBtn btn btn-sm btn-outline-2" data-bs-toggle="modal"
-                                data-bs-target="#makeBooking" data-service-id="{{ $service->id }}" title="Book Now"
-                                target="_self">
-                                {{ __('Book Now') }}</a>
+                              @if ($service->isQuoteType())
+                                <a href="{{ route('frontend.service_quote.questions', $service->id) }}" class="btn btn-sm btn-outline-2" title="{{ __('Get a Quote') }}" target="_self">
+                                  {{ __('Get a Quote') }}</a>
+                              @else
+                                <a href="javaScript:void(0)" class="bookNowBtn btn btn-sm btn-outline-2" data-bs-toggle="modal"
+                                  data-bs-target="#makeBooking" data-service-id="{{ $service->id }}" title="Book Now"
+                                  target="_self">
+                                  {{ __('Book Now') }}</a>
+                              @endif
                             </div>
                           </div>
                         </div>
@@ -848,14 +866,25 @@
                                 @endif
                                 <div class="d-flex align-items-center justify-content-between gap-2 mt-10">
                                   <div class="product-price">
-                                    <span class="h6 new-price">{{ symbolPrice($service->price) }}</span>
-                                    <span
-                                      class="prev-price font-sm">{{ $service->prev_price ? symbolPrice($service->prev_price) : '' }}</span>
+                                    @if ($service->isQuoteType())
+                                      <span class="h6 new-price">{{ __('Quote Required') }}</span>
+                                    @elseif ($service->hasPricePlaceholder())
+                                      <span class="h6 new-price">{{ $service->price_placeholder }}</span>
+                                    @else
+                                      <span class="h6 new-price">{{ symbolPrice($service->price) }}</span>
+                                      <span
+                                        class="prev-price font-sm">{{ $service->prev_price ? symbolPrice($service->prev_price) : '' }}</span>
+                                    @endif
                                   </div>
-                                  <a href="javaScript:void(0)" class="bookNowBtn btn btn-sm btn-outline-2" data-bs-toggle="modal"
-                                    data-bs-target="#makeBooking" data-service-id="{{ $service->id }}" title="Book Now"
-                                    target="_self">
-                                    {{ __('Book Now') }}</a>
+                                  @if ($service->isQuoteType())
+                                    <a href="{{ route('frontend.service_quote.questions', $service->id) }}" class="btn btn-sm btn-outline-2" title="{{ __('Get a Quote') }}" target="_self">
+                                      {{ __('Get a Quote') }}</a>
+                                  @else
+                                    <a href="javaScript:void(0)" class="bookNowBtn btn btn-sm btn-outline-2" data-bs-toggle="modal"
+                                      data-bs-target="#makeBooking" data-service-id="{{ $service->id }}" title="Book Now"
+                                      target="_self">
+                                      {{ __('Book Now') }}</a>
+                                  @endif
                                 </div>
                               </div>
                             </div>

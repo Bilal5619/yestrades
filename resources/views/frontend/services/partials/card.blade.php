@@ -21,7 +21,9 @@
       <i class="fal fa-heart"></i>
     </a>
     <span class="sv-price-chip">
-      @if ($service->hasPricePlaceholder())
+      @if ($service->isQuoteType())
+        {{ __('Quote Required') }}
+      @elseif ($service->hasPricePlaceholder())
         {{ $service->price_placeholder }}
       @else
         {{ symbolPrice($service->price) }}
@@ -51,13 +53,19 @@
       @endif
     </div>
     <div class="sv-card-footer">
-      <form action="{{ route('frontend.services.cart.quick_add') }}" method="POST" class="m-0 w-100">
-        @csrf
-        <input type="hidden" name="service_id" value="{{ $service->id }}">
-        <button type="submit" class="sv-card-btn" title="{{ __('Book Now') }}">
-          <i class="fal fa-calendar-check"></i>{{ __('Book Now') }}
-        </button>
-      </form>
+      @if ($service->isQuoteType())
+        <a href="{{ route('frontend.service_quote.questions', $service->id) }}" class="sv-card-btn" title="{{ __('Get a Quote') }}">
+          <i class="fal fa-file-invoice"></i>{{ __('Get a Quote') }}
+        </a>
+      @else
+        <form action="{{ route('frontend.services.cart.quick_add') }}" method="POST" class="m-0 w-100">
+          @csrf
+          <input type="hidden" name="service_id" value="{{ $service->id }}">
+          <button type="submit" class="sv-card-btn" title="{{ __('Book Now') }}">
+            <i class="fal fa-calendar-check"></i>{{ __('Book Now') }}
+          </button>
+        </form>
+      @endif
     </div>
   </div>
 </div>
