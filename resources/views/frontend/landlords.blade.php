@@ -60,8 +60,8 @@
               </ul>
             </div>
             <div class="ld-panel-float">
-              <strong>4.9<i class="fas fa-star"></i></strong>
-              <span>{{ __('Landlord satisfaction') }}</span>
+              <strong>{{ __('Fixed') }}<i class="fal fa-tag"></i></strong>
+              <span>{{ __('Price, no surprises') }}</span>
             </div>
           </div>
         </div>
@@ -72,17 +72,17 @@
       <div class="container">
         <div class="ld-statbar" data-aos="fade-up">
           <div class="ld-stat">
-            <span class="ld-stat-icon"><i class="fal fa-bolt"></i></span>
+            <span class="ld-stat-icon"><i class="fal fa-tag"></i></span>
             <div>
-              <strong>{{ __('60s') }}</strong>
-              <span class="ld-stat-label">{{ __('Book online') }}</span>
+              <strong>{{ __('Fixed') }}</strong>
+              <span class="ld-stat-label">{{ __('Transparent pricing') }}</span>
             </div>
           </div>
           <div class="ld-stat">
-            <span class="ld-stat-icon"><i class="fas fa-star"></i></span>
+            <span class="ld-stat-icon"><i class="fal fa-user-shield"></i></span>
             <div>
-              <strong>{{ __('4.9') }}</strong>
-              <span class="ld-stat-label">{{ __('Average rating') }}</span>
+              <strong>{{ __('DBS') }}</strong>
+              <span class="ld-stat-label">{{ __('Checked engineers') }}</span>
             </div>
           </div>
           <div class="ld-stat">

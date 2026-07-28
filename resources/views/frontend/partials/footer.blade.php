@@ -77,7 +77,8 @@
             <div class="footer-badges" aria-label="{{ __('Accreditations') }}">
               <span><i class="fal fa-check-circle"></i> {{ __('GAS SAFE') }}</span>
               <span>{{ __('NICEIC') }}</span>
-              <span>{{ __('DBS') }}</span>
+              {{-- DBS badge hidden for now (client request) — restore this <span> to bring it back --}}
+              {{-- <span>{{ __('DBS') }}</span> --}}
             </div>
             @if (count($socialMediaInfos) > 0)
               <div class="social-link footer-social">
@@ -129,7 +130,8 @@
           <div class="footer-link-column">
             <h3>{{ __('For Customers') }}</h3>
             <ul>
-              <li><a href="{{ route('index') }}#how-it-works">{{ __('How it works') }}</a></li>
+              {{-- How it works link hidden for now (client request) — restore this <li> to bring it back --}}
+              {{-- <li><a href="{{ route('index') }}#how-it-works">{{ __('How it works') }}</a></li> --}}
               {{-- Pricing link hidden for now (client request) — restore this <li> to bring it back --}}
               {{-- <li><a href="{{ route('frontend.pricing') }}">{{ __('Pricing') }}</a></li> --}}
               <li><a href="{{ route('faq') }}">{{ __('FAQs') }}</a></li>
