@@ -12,7 +12,7 @@
     "academe/omnipay-authorizenetapi": "^3.1",
     "anandsiddharth/laravel-paytm-wallet": "^2.0",
     "anhskohbo/no-captcha": "^3.3",
-    "barryvdh/laravel-dompdf": "^2.0.0",
+    "barryvdh/laravel-dompdf": "^2.1",
     "cartalyst/stripe-laravel": "^14.0.0",
     "fideloper/proxy": "^4.4",
     "fruitcake/laravel-cors": "^2.0",

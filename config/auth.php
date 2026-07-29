@@ -58,7 +58,12 @@ return [
     'staff' => [
       'driver' => 'session',
       'provider' => 'staffs'
-    ]
+    ],
+    'company' => [
+    'driver' => 'session',
+    'provider' => 'company_users',
+]
+
   ],
 
   /*
@@ -95,7 +100,11 @@ return [
     'staffs' => [
       'driver' => 'eloquent',
       'model' => App\Models\Staff\Staff::class
-    ]
+    ],
+    'company_users' => [
+    'driver' => 'eloquent',
+    'model' => App\Models\Company\CompanyUser::class,
+]
   ],
 
   /*

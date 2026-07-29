@@ -24,6 +24,10 @@ class Kernel extends ConsoleKernel
    */
   protected function schedule(Schedule $schedule)
   {
+    $schedule
+    ->command('training:expire')
+    ->dailyAt('00:10')
+    ->withoutOverlapping();
   }
 
   /**

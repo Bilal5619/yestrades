@@ -70,5 +70,6 @@ class Kernel extends HttpKernel
     'limitCheck' => \App\Http\Middleware\LimitCheckMiddleware::class,
     'checkPackage' => \App\Http\Middleware\CheckPackage::class,
     'staffCheck' => \App\Http\Middleware\StaffPermission::class,
+    'company.permission' => \App\Http\Middleware\CompanyPermissionMiddleware::class,
   ];
 }
