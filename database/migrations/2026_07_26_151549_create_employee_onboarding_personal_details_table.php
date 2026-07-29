@@ -12,52 +12,84 @@ return new class extends Migration
      * @return void
      */
     public function up()
-{
-    Schema::create(
-        'employee_onboarding_personal_details',
-        function (Blueprint $table) {
-            $table->id();
+    {
+        Schema::create(
+            'employee_onboarding_personal_details',
+            function (Blueprint $table) {
+                $table->id();
 
-            $table->foreignId('employee_onboarding_id')
-                ->unique()
-                ->constrained('employee_onboardings')
-                ->cascadeOnDelete();
+                $table->unsignedBigInteger(
+                    'employee_onboarding_id'
+                );
 
-            $table->string('full_name');
-            $table->date('date_of_birth')->nullable();
-            $table->string('personal_email')->nullable();
-            $table->string('phone')->nullable();
+                $table->unique(
+                    'employee_onboarding_id',
+                    'eopd_onboarding_unique'
+                );
 
-            $table->text('home_address')->nullable();
+                $table->foreign(
+                    'employee_onboarding_id',
+                    'eopd_onboarding_fk'
+                )
+                    ->references('id')
+                    ->on('employee_onboardings')
+                    ->cascadeOnDelete();
 
-            $table->string('emergency_contact_name')->nullable();
-            $table->string('emergency_contact_relationship')->nullable();
-            $table->string('emergency_contact_phone')->nullable();
+                $table->string('full_name');
+                $table->date('date_of_birth')->nullable();
+                $table->string('personal_email')->nullable();
+                $table->string('phone')->nullable();
 
-            $table->string('national_insurance_number')->nullable();
+                $table->text('home_address')->nullable();
 
-            $table->string('bank_name')->nullable();
-            $table->string('account_holder_name')->nullable();
-            $table->string('sort_code')->nullable();
-            $table->string('account_number')->nullable();
+                $table->string(
+                    'emergency_contact_name'
+                )->nullable();
 
-            $table->boolean('details_verified')
-                ->default(false);
+                $table->string(
+                    'emergency_contact_relationship'
+                )->nullable();
 
-            $table->foreignId('verified_by')
-                ->nullable()
-                ->constrained('company_users')
-                ->nullOnDelete();
+                $table->string(
+                    'emergency_contact_phone'
+                )->nullable();
 
-            $table->timestamp('verified_at')
-                ->nullable();
+                $table->string(
+                    'national_insurance_number'
+                )->nullable();
 
-            $table->text('notes')->nullable();
+                $table->string('bank_name')->nullable();
+                $table->string(
+                    'account_holder_name'
+                )->nullable();
 
-            $table->timestamps();
-        }
-    );
-}
+                $table->string('sort_code')->nullable();
+                $table->string('account_number')->nullable();
+
+                $table->boolean('details_verified')
+                    ->default(false);
+
+                $table->unsignedBigInteger(
+                    'verified_by'
+                )->nullable();
+
+                $table->foreign(
+                    'verified_by',
+                    'eopd_verified_by_fk'
+                )
+                    ->references('id')
+                    ->on('company_users')
+                    ->nullOnDelete();
+
+                $table->timestamp('verified_at')
+                    ->nullable();
+
+                $table->text('notes')->nullable();
+
+                $table->timestamps();
+            }
+        );
+    }
 
     /**
      * Reverse the migrations.
@@ -66,6 +98,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('employee_onboarding_personal_details');
+        Schema::dropIfExists(
+            'employee_onboarding_personal_details'
+        );
     }
 };
