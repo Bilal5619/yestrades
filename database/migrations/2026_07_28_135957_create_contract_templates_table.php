@@ -15,7 +15,7 @@ return new class extends Migration
 
                 $table->string('name');
 
-                $table->string('employment_type')
+               $table->string('employment_type', 50)
                     ->nullable();
 
                 $table->string('description')
@@ -56,10 +56,13 @@ return new class extends Migration
 
                 $table->timestamps();
 
-                $table->index([
-                    'employment_type',
-                    'is_active',
-                ]);
+                $table->index(
+                    [
+                        'employment_type',
+                        'is_active',
+                    ],
+                    'contract_templates_type_active_idx'
+                );
             }
         );
     }
