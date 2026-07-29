@@ -50,8 +50,8 @@ return new class extends Migration
                 $table->unsignedInteger('version')
                     ->default(1);
 
-                $table->string('status')
-                    ->default('draft');
+                $table->string('status', 30)
+    ->default('draft');
 
                 $table->longText('generated_content')
                     ->nullable();
@@ -104,10 +104,13 @@ return new class extends Migration
 
                 $table->timestamps();
 
-                $table->index([
-                    'employee_id',
-                    'status',
-                ]);
+                $table->index(
+    [
+        'employee_id',
+        'status',
+    ],
+    'employee_contract_emp_status_idx'
+);
             }
         );
     }
