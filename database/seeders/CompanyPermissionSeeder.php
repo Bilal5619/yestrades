@@ -67,6 +67,16 @@ class CompanyPermissionSeeder extends Seeder
                 'module' => 'Staff',
             ],
             [
+                'name' => 'View Job Sheet',
+                'slug' => 'jobs.view',
+                'module' => 'Staff',
+            ],
+            [
+                'name' => 'Manage Job Sheet',
+                'slug' => 'jobs.manage',
+                'module' => 'Staff',
+            ],
+            [
                 'name' => 'Manage Expenses',
                 'slug' => 'expenses.manage',
                 'module' => 'Staff',

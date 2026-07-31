@@ -2,19 +2,26 @@
 
 namespace App\Models\Company;
 
+use App\Models\Staff\Staff;
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Sanctum\HasApiTokens;
 
-class Employee extends Model
+class Employee extends Model implements AuthenticatableContract
 {
+    use HasApiTokens;
     use HasFactory;
     use SoftDeletes;
+    use Authenticatable;
 
     protected $table = 'employees';
 
     protected $fillable = [
         'employee_number',
+        'staff_id',
         'first_name',
         'middle_name',
         'last_name',
@@ -26,6 +33,10 @@ class Employee extends Model
         'alternative_phone',
         'profile_photo',
         'national_insurance_number',
+        'password',
+        'activation_token',
+        'activation_token_expires_at',
+        'activated_at',
         'address_line_1',
         'address_line_2',
         'city',
@@ -55,6 +66,12 @@ class Employee extends Model
         'updated_by',
     ];
 
+    protected $hidden = [
+        'password',
+        'remember_token',
+        'activation_token',
+    ];
+
     protected $casts = [
         'date_of_birth' => 'date',
         'start_date' => 'date',
@@ -62,7 +79,17 @@ class Employee extends Model
         'leaving_date' => 'date',
         'normal_weekly_hours' => 'decimal:2',
         'pay_rate' => 'decimal:2',
+        'activation_token_expires_at' => 'datetime',
+        'activated_at' => 'datetime',
     ];
+
+    public function staff()
+    {
+        return $this->belongsTo(
+            Staff::class,
+            'staff_id'
+        );
+    }
 
     public function manager()
     {
@@ -108,6 +135,23 @@ class Employee extends Model
     public function getIsArchivedAttribute()
     {
         return $this->employment_status === 'archived';
+    }
+
+    public function loginEmail(): ?string
+    {
+        return $this->work_email ?: $this->personal_email;
+    }
+
+    public function generateActivationToken(int $expiresInDays = 7): string
+    {
+        $token = bin2hex(random_bytes(32));
+
+        $this->forceFill([
+            'activation_token' => $token,
+            'activation_token_expires_at' => now()->addDays($expiresInDays),
+        ])->save();
+
+        return $token;
     }
     public function documents()
 {
@@ -288,6 +332,38 @@ public function payslips()
 {
     return $this->hasMany(
         EmployeePayslip::class,
+        'employee_id'
+    );
+}
+
+public function announcementReads()
+{
+    return $this->hasMany(
+        AnnouncementRead::class,
+        'employee_id'
+    );
+}
+
+public function shifts()
+{
+    return $this->hasMany(
+        EmployeeShift::class,
+        'employee_id'
+    );
+}
+
+public function jobs()
+{
+    return $this->hasMany(
+        EmployeeJob::class,
+        'employee_id'
+    );
+}
+
+public function attendances()
+{
+    return $this->hasMany(
+        EmployeeAttendance::class,
         'employee_id'
     );
 }

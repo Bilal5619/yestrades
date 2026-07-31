@@ -857,7 +857,139 @@ Route::delete(
             ->name('company.roles.toggle-status');
     });
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Announcements
+    |--------------------------------------------------------------------------
+    */
+
+    Route::prefix('hr/announcements')->group(function () {
+
+        Route::get('/', 'Company\AnnouncementController@index')
+            ->middleware('company.permission:announcements.view')
+            ->name('company.hr.announcements.index');
+
+        Route::get('/create', 'Company\AnnouncementController@create')
+            ->middleware('company.permission:announcements.manage')
+            ->name('company.hr.announcements.create');
+
+        Route::post('/', 'Company\AnnouncementController@store')
+            ->middleware('company.permission:announcements.manage')
+            ->name('company.hr.announcements.store');
+
+        Route::get('/{announcement}', 'Company\AnnouncementController@show')
+            ->middleware('company.permission:announcements.view')
+            ->name('company.hr.announcements.show');
+
+        Route::get('/{announcement}/edit', 'Company\AnnouncementController@edit')
+            ->middleware('company.permission:announcements.manage')
+            ->name('company.hr.announcements.edit');
+
+        Route::put('/{announcement}', 'Company\AnnouncementController@update')
+            ->middleware('company.permission:announcements.manage')
+            ->name('company.hr.announcements.update');
+
+        Route::delete('/{announcement}', 'Company\AnnouncementController@destroy')
+            ->middleware('company.permission:announcements.manage')
+            ->name('company.hr.announcements.destroy');
+    });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Job Sheet
+    |--------------------------------------------------------------------------
+    */
+
+    Route::prefix('hr/jobs')->group(function () {
+
+        Route::get('/', 'Company\JobSheetController@index')
+            ->middleware('company.permission:jobs.view')
+            ->name('company.hr.jobs.index');
+
+        Route::get('/create', 'Company\JobSheetController@create')
+            ->middleware('company.permission:jobs.manage')
+            ->name('company.hr.jobs.create');
+
+        Route::post('/', 'Company\JobSheetController@store')
+            ->middleware('company.permission:jobs.manage')
+            ->name('company.hr.jobs.store');
+
+        Route::get('/{job}', 'Company\JobSheetController@show')
+            ->middleware('company.permission:jobs.view')
+            ->name('company.hr.jobs.show');
+
+        Route::get('/{job}/edit', 'Company\JobSheetController@edit')
+            ->middleware('company.permission:jobs.manage')
+            ->name('company.hr.jobs.edit');
+
+        Route::put('/{job}', 'Company\JobSheetController@update')
+            ->middleware('company.permission:jobs.manage')
+            ->name('company.hr.jobs.update');
+
+        Route::delete('/{job}', 'Company\JobSheetController@destroy')
+            ->middleware('company.permission:jobs.manage')
+            ->name('company.hr.jobs.destroy');
+    });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Rota and Shifts
+    |--------------------------------------------------------------------------
+    */
+
+    Route::prefix('hr/shifts')->group(function () {
+
+        Route::get('/', 'Company\ShiftController@index')
+            ->middleware('company.permission:rota.manage')
+            ->name('company.hr.shifts.index');
+
+        Route::get('/create', 'Company\ShiftController@create')
+            ->middleware('company.permission:rota.manage')
+            ->name('company.hr.shifts.create');
+
+        Route::post('/', 'Company\ShiftController@store')
+            ->middleware('company.permission:rota.manage')
+            ->name('company.hr.shifts.store');
+
+        Route::get('/{shift}/edit', 'Company\ShiftController@edit')
+            ->middleware('company.permission:rota.manage')
+            ->name('company.hr.shifts.edit');
+
+        Route::put('/{shift}', 'Company\ShiftController@update')
+            ->middleware('company.permission:rota.manage')
+            ->name('company.hr.shifts.update');
+
+        Route::delete('/{shift}', 'Company\ShiftController@destroy')
+            ->middleware('company.permission:rota.manage')
+            ->name('company.hr.shifts.destroy');
+    });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Attendance
+    |--------------------------------------------------------------------------
+    */
+
+    Route::prefix('hr/attendance')->group(function () {
+
+        Route::get('/', 'Company\AttendanceController@index')
+            ->middleware('company.permission:attendance.manage')
+            ->name('company.hr.attendance.index');
+
+        Route::get('/create', 'Company\AttendanceController@create')
+            ->middleware('company.permission:attendance.manage')
+            ->name('company.hr.attendance.create');
+
+        Route::post('/', 'Company\AttendanceController@store')
+            ->middleware('company.permission:attendance.manage')
+            ->name('company.hr.attendance.store');
+    });
+
 });
 
-       
+
 });

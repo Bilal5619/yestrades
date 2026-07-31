@@ -129,6 +129,13 @@
         @include('company.partials.header')
 
         <main class="company-content">
+            @if (session('success') || session('error') || session('warning'))
+                <div style="margin-bottom: 20px; padding: 14px 18px; border-radius: 8px; font-size: 14px;
+                    background: {{ session('success') ? 'rgba(46,191,114,0.16)' : (session('warning') ? 'rgba(255,179,71,0.16)' : 'rgba(255,99,99,0.16)') }};
+                    color: {{ session('success') ? '#59dc96' : (session('warning') ? '#ffc46f' : '#ff8a92') }};">
+                    {{ session('success') ?? session('warning') ?? session('error') }}
+                </div>
+            @endif
             @yield('content')
         </main>
 

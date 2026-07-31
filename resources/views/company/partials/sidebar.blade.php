@@ -159,6 +159,8 @@
     $canSeeStaffMenu =
         $companyUser->hasPermission('attendance.manage') ||
         $companyUser->hasPermission('rota.manage') ||
+        $companyUser->hasPermission('jobs.view') ||
+        $companyUser->hasPermission('jobs.manage') ||
         $companyUser->hasPermission('expenses.manage') ||
         $companyUser->hasPermission('training.manage') ||
         $companyUser->hasPermission('equipment-vehicles.manage');
@@ -381,16 +383,26 @@
             <div class="company-submenu" id="staff-submenu">
 
                 @if ($companyUser->hasPermission('attendance.manage'))
-                    <a href="#"
-                       class="company-submenu-link">
+                    <a href="{{ route('company.hr.attendance.index') }}"
+                       class="company-submenu-link
+                       {{ request()->routeIs('company.hr.attendance.*') ? 'active' : '' }}">
                         Attendance
                     </a>
                 @endif
 
                 @if ($companyUser->hasPermission('rota.manage'))
-                    <a href="#"
-                       class="company-submenu-link">
+                    <a href="{{ route('company.hr.shifts.index') }}"
+                       class="company-submenu-link
+                       {{ request()->routeIs('company.hr.shifts.*') ? 'active' : '' }}">
                         Rota and Shifts
+                    </a>
+                @endif
+
+                @if ($companyUser->hasPermission('jobs.view') || $companyUser->hasPermission('jobs.manage'))
+                    <a href="{{ route('company.hr.jobs.index') }}"
+                       class="company-submenu-link
+                       {{ request()->routeIs('company.hr.jobs.*') ? 'active' : '' }}">
+                        Job Sheet
                     </a>
                 @endif
 
@@ -424,8 +436,9 @@
     @if ($canSeeAnnouncements)
         <div class="company-menu-item">
 
-            <a href="#"
-               class="company-menu-link">
+            <a href="{{ route('company.hr.announcements.index') }}"
+               class="company-menu-link
+               {{ request()->routeIs('company.hr.announcements.*') ? 'active' : '' }}">
 
                 <i class="fas fa-bullhorn"></i>
                 <span>Announcements</span>

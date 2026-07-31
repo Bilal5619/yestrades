@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AutoSeoWebhookController;
+use App\Http\Controllers\Api\EmployeeAuthController;
 use App\Http\Controllers\Api\VendorAuthController;
 use App\Http\Controllers\Api\VendorMobileController;
 use App\Models\Question;
@@ -52,6 +53,16 @@ Route::prefix('v1/vendor')->group(function () {
 
     Route::get('/available-jobs', [VendorMobileController::class, 'availableJobs']);
     Route::post('/available-jobs/{id}/claim', [VendorMobileController::class, 'claimAvailableJob']);
+  });
+});
+
+Route::prefix('v1/employee')->group(function () {
+  Route::post('/activate', [EmployeeAuthController::class, 'activate']);
+  Route::post('/login', [EmployeeAuthController::class, 'login']);
+
+  Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me', [EmployeeAuthController::class, 'me']);
+    Route::post('/logout', [EmployeeAuthController::class, 'logout']);
   });
 });
 
