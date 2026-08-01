@@ -132,6 +132,13 @@ Route::prefix('company-own')->group(function () {
     )
         ->middleware('company.permission:employees.edit')
         ->name('company.hr.employees.update');
+
+    Route::post(
+        '/hr/employees/{employee}/send-activation',
+        'Company\EmployeeController@sendActivation'
+    )
+        ->middleware('company.permission:employees.edit')
+        ->name('company.hr.employees.send-activation');
    
       Route::get(
     '/hr/employees/{employee}/documents',

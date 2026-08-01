@@ -279,6 +279,14 @@
                     $employee->employment_status
                 )) }}
             </span>
+
+            <span class="employee-status" style="
+                margin-left: 8px;
+                background: {{ $employee->activation_status === 'activated' ? 'rgba(46,191,114,0.16)' : ($employee->activation_status === 'link_expired' ? 'rgba(255,99,99,0.16)' : ($employee->activation_status === 'activation_sent' ? 'rgba(255,179,71,0.16)' : 'rgba(170,180,202,0.14)')) }};
+                color: {{ $employee->activation_status === 'activated' ? '#59dc96' : ($employee->activation_status === 'link_expired' ? '#ff8a92' : ($employee->activation_status === 'activation_sent' ? '#ffc46f' : '#c4ccdc')) }};
+            ">
+                App account: {{ $employee->activation_status_label }}
+            </span>
         </div>
 
     </div>
@@ -294,6 +302,16 @@
                 <i class="fas fa-edit"></i>
                 Edit Employee
             </a>
+
+            @if ($employee->activation_status !== 'activated')
+                <form method="POST" action="{{ route('company.hr.employees.send-activation', $employee) }}" style="display:inline;">
+                    @csrf
+                    <button type="submit" class="employee-profile-button employee-profile-button-secondary">
+                        <i class="fas fa-paper-plane"></i>
+                        {{ in_array($employee->activation_status, ['activation_sent', 'link_expired']) ? 'Resend Activation Link' : 'Send Activation Link' }}
+                    </button>
+                </form>
+            @endif
         @endif
 
         <a href="{{ route('company.hr.employees.index') }}"

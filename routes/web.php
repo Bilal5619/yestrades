@@ -37,6 +37,16 @@ Route::middleware('change.lang')->group(function () {
     ->middleware('throttle:10,1')
     ->name('frontend.quote.response.decline');
 
+  // Employee mobile-app account activation (set password) — link emailed from HR portal.
+  Route::get('/employee/activate/{token}', 'FrontEnd\EmployeeActivationController@show')
+    ->where('token', '[A-Za-z0-9]{64}')
+    ->middleware('throttle:30,1')
+    ->name('frontend.employee.activate.show');
+  Route::post('/employee/activate/{token}', 'FrontEnd\EmployeeActivationController@store')
+    ->where('token', '[A-Za-z0-9]{64}')
+    ->middleware('throttle:10,1')
+    ->name('frontend.employee.activate.store');
+
   //services route
   Route::prefix('services')->group(function () {
     Route::get('/', 'FrontEnd\Services\ServiceController@index')->name('frontend.services');

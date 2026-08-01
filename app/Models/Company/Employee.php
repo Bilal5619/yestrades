@@ -153,6 +153,43 @@ class Employee extends Model implements AuthenticatableContract
 
         return $token;
     }
+
+    public function activateWithPassword(string $password): void
+    {
+        $this->forceFill([
+            'password' => \Illuminate\Support\Facades\Hash::make($password),
+            'activation_token' => null,
+            'activation_token_expires_at' => null,
+            'activated_at' => now(),
+        ])->save();
+    }
+
+    public function getActivationStatusAttribute(): string
+    {
+        if ($this->activated_at) {
+            return 'activated';
+        }
+
+        if ($this->activation_token && $this->activation_token_expires_at && $this->activation_token_expires_at->isFuture()) {
+            return 'activation_sent';
+        }
+
+        if ($this->activation_token) {
+            return 'link_expired';
+        }
+
+        return 'not_activated';
+    }
+
+    public function getActivationStatusLabelAttribute(): string
+    {
+        return match ($this->activation_status) {
+            'activated' => 'Activated',
+            'activation_sent' => 'Activation sent',
+            'link_expired' => 'Link expired',
+            default => 'Not activated',
+        };
+    }
     public function documents()
 {
     return $this->hasMany(

@@ -30,12 +30,7 @@ class EmployeeAuthController extends Controller
       ], 422);
     }
 
-    $employee->forceFill([
-      'password' => Hash::make($data['password']),
-      'activation_token' => null,
-      'activation_token_expires_at' => null,
-      'activated_at' => now(),
-    ])->save();
+    $employee->activateWithPassword($data['password']);
 
     $token = $employee->createToken('employee-mobile')->plainTextToken;
 

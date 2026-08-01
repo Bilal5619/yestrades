@@ -539,6 +539,29 @@ $completedTrainingRecords = $employee->trainingRecords
     )
 );
 }
+
+public function sendActivation(Employee $employee)
+{
+    $loginEmail = $employee->loginEmail();
+
+    if (!$loginEmail) {
+        return back()->with('error', 'This employee has no work or personal email on file, so an activation link cannot be sent.');
+    }
+
+    $token = $employee->generateActivationToken();
+    $activationUrl = route('frontend.employee.activate.show', $token);
+
+    try {
+        \Illuminate\Support\Facades\Mail::to($loginEmail)->send(
+            new \App\Mail\Company\EmployeeActivationMail($employee, $activationUrl)
+        );
+    } catch (\Throwable $exception) {
+        return back()->with('warning', 'Activation link was generated, but the email could not be sent: ' . $exception->getMessage());
+    }
+
+    return back()->with('success', 'Activation link sent to ' . $loginEmail . '.');
+}
+
 public function edit(Employee $employee)
 {
     $managers = Employee::query()
