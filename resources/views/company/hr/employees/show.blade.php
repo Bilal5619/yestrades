@@ -32,7 +32,14 @@
                 ->exists()
                     ? 'Verified'
                     : 'Not Verified',
-    ];
+       ];
+
+    $bankDetails = \App\Models\Company\EmployeeOnboardingPersonalDetail::query()
+        ->with('verifiedByUser')
+        ->whereHas('onboarding', function ($query) use ($employee) {
+            $query->where('employee_id', $employee->id);
+        })
+        ->first();
 @endphp
 <style>
     .employee-profile-header {
@@ -412,6 +419,20 @@
         View Payslips
     </a>
 @endif
+@if (
+    $employee->is_sponsored_worker
+    && $employee->sponsoredWorkerRecord
+)
+    <a
+        href="{{ route(
+            'company.hr.sponsor-compliance.sponsored-workers.show',
+            $employee->sponsoredWorkerRecord
+        ) }}"
+        class="employee-tab"
+    >
+        Sponsor Compliance
+    </a>
+@endif
 </div>
 
 <div class="employee-profile-grid">
@@ -595,92 +616,155 @@
 
     </div>
 
-    <div class="employee-profile-card">
-        <h2>Emergency Contact</h2>
+   <div class="employee-profile-card">
+    <h2>Emergency Contact</h2>
 
-        <div class="employee-detail-row">
-            <div class="employee-detail-label">Name</div>
-            <div class="employee-detail-value">
-                {{ $employee->emergency_contact_name
-                    ?: 'Not provided'
-                }}
-            </div>
+    <div class="employee-detail-row">
+        <div class="employee-detail-label">Name</div>
+        <div class="employee-detail-value">
+            {{ $employee->emergency_contact_name
+                ?: 'Not provided'
+            }}
         </div>
-
-        <div class="employee-detail-row">
-            <div class="employee-detail-label">Relationship</div>
-            <div class="employee-detail-value">
-                {{ $employee->emergency_contact_relationship
-                    ?: 'Not provided'
-                }}
-            </div>
-        </div>
-
-        <div class="employee-detail-row">
-            <div class="employee-detail-label">Phone</div>
-            <div class="employee-detail-value">
-                {{ $employee->emergency_contact_phone
-                    ?: 'Not provided'
-                }}
-            </div>
-        </div>
-
-        <div class="employee-detail-row">
-            <div class="employee-detail-label">Address</div>
-            <div class="employee-detail-value">
-                {{ $employee->emergency_contact_address
-                    ?: 'Not provided'
-                }}
-            </div>
-        </div>
-
     </div>
 
-    <div class="employee-profile-card">
-        <h2>Record Information</h2>
-
-        <div class="employee-detail-row">
-            <div class="employee-detail-label">Created by</div>
-            <div class="employee-detail-value">
-                {{ optional($employee->createdBy)->full_name
-                    ?? 'Unknown'
-                }}
-            </div>
+    <div class="employee-detail-row">
+        <div class="employee-detail-label">Relationship</div>
+        <div class="employee-detail-value">
+            {{ $employee->emergency_contact_relationship
+                ?: 'Not provided'
+            }}
         </div>
+    </div>
 
-        <div class="employee-detail-row">
-            <div class="employee-detail-label">Created</div>
-            <div class="employee-detail-value">
-                {{ $employee->created_at->format('d M Y H:i') }}
-            </div>
+    <div class="employee-detail-row">
+        <div class="employee-detail-label">Phone</div>
+        <div class="employee-detail-value">
+            {{ $employee->emergency_contact_phone
+                ?: 'Not provided'
+            }}
         </div>
+    </div>
 
-        <div class="employee-detail-row">
-            <div class="employee-detail-label">Last updated by</div>
-            <div class="employee-detail-value">
-                {{ optional($employee->updatedBy)->full_name
-                    ?? 'Unknown'
-                }}
-            </div>
+    <div class="employee-detail-row">
+        <div class="employee-detail-label">Address</div>
+        <div class="employee-detail-value">
+            {{ $employee->emergency_contact_address
+                ?: 'Not provided'
+            }}
         </div>
-
-        <div class="employee-detail-row">
-            <div class="employee-detail-label">Last updated</div>
-            <div class="employee-detail-value">
-                {{ $employee->updated_at->format('d M Y H:i') }}
-            </div>
-        </div>
-
-        <div class="employee-detail-row">
-            <div class="employee-detail-label">Internal notes</div>
-            <div class="employee-detail-value">
-                {{ $employee->employment_notes ?: 'No notes added' }}
-            </div>
-        </div>
-
     </div>
 
 </div>
+
+<div class="employee-profile-card">
+    <h2>Bank Details</h2>
+
+    <div class="employee-detail-row">
+        <div class="employee-detail-label">
+            Account holder name
+        </div>
+
+        <div class="employee-detail-value">
+            {{ $bankDetails?->account_holder_name
+                ?: 'Not provided'
+            }}
+        </div>
+    </div>
+
+    <div class="employee-detail-row">
+        <div class="employee-detail-label">
+            Bank name
+        </div>
+
+        <div class="employee-detail-value">
+            {{ $bankDetails?->bank_name
+                ?: 'Not provided'
+            }}
+        </div>
+    </div>
+
+    <div class="employee-detail-row">
+        <div class="employee-detail-label">
+            Sort code
+        </div>
+
+        <div class="employee-detail-value">
+            @if ($bankDetails?->sort_code)
+                @php
+                    $cleanSortCode = preg_replace(
+                        '/\D/',
+                        '',
+                        $bankDetails->sort_code
+                    );
+                @endphp
+
+                **-**-{{ substr($cleanSortCode, -2) }}
+            @else
+                Not provided
+            @endif
+        </div>
+    </div>
+
+    <div class="employee-detail-row">
+        <div class="employee-detail-label">
+            Account number
+        </div>
+
+        <div class="employee-detail-value">
+            @if ($bankDetails?->account_number)
+                ****{{ substr(
+                    $bankDetails->account_number,
+                    -4
+                ) }}
+            @else
+                Not provided
+            @endif
+        </div>
+    </div>
+
+    <div class="employee-detail-row">
+        <div class="employee-detail-label">
+            Verification status
+        </div>
+
+        <div class="employee-detail-value">
+            {{ $bankDetails?->details_verified
+                ? 'Verified'
+                : 'Not verified'
+            }}
+        </div>
+    </div>
+
+    <div class="employee-detail-row">
+        <div class="employee-detail-label">
+            Verified by
+        </div>
+
+        <div class="employee-detail-value">
+            {{ $bankDetails?->verifiedByUser?->full_name
+                ?: 'Not verified'
+            }}
+        </div>
+    </div>
+
+    <div class="employee-detail-row">
+        <div class="employee-detail-label">
+            Verified date
+        </div>
+
+        <div class="employee-detail-value">
+            {{ $bankDetails?->verified_at
+                ? $bankDetails->verified_at->format('d M Y H:i')
+                : 'Not verified'
+            }}
+        </div>
+    </div>
+
+</div>
+
+</div>
+
 @if (
     auth('company')->user()
         ->hasPermission('holidays.view')
@@ -1292,8 +1376,10 @@
 
 </div>
 
+
 @endif
-<div class="employee-holiday-section">
+
+<div class="employee-holiday-section">  
 
     <div class="employee-holiday-header">
 

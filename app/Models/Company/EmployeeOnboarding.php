@@ -181,4 +181,5 @@ public function latestContract()
         'employee_onboarding_id'
     )->latestOfMany();
 }
+
 }

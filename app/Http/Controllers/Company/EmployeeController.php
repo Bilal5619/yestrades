@@ -74,7 +74,7 @@ class EmployeeController extends Controller
         );
     }
 
-    public function create()
+   public function create()
 {
     $managers = Employee::query()
         ->whereNotIn('employment_status', [
@@ -90,7 +90,6 @@ class EmployeeController extends Controller
         compact('managers')
     );
 }
-
 public function store(Request $request)
 {
     $validated = $request->validate([
@@ -254,6 +253,10 @@ public function store(Request $request)
             'min:0',
             'max:168',
         ],
+        'is_sponsored_worker' => [
+    'required',
+    'boolean',
+],
         'pay_type' => [
             'nullable',
             Rule::in([
@@ -320,7 +323,20 @@ public function store(Request $request)
     $validated['updated_by'] = auth('company')->id();
 
     $employee = Employee::create($validated);
+    if ($employee->is_sponsored_worker) {
+    \App\Models\Company\SponsoredWorkerRecord::firstOrCreate(
+        [
+            'employee_id' => $employee->id,
+        ],
+        [
+            'record_status' => 'active',
+            'created_by' => auth('company')->id(),
+            'updated_by' => auth('company')->id(),
+        ]
+    );
+}
     $employee->generateRequiredDocumentChecklist();
+    $employee->generateSponsoredWorkerDocumentChecklist();
 
     return redirect()
         ->route('company.hr.employees.index')
@@ -335,6 +351,7 @@ public function show(Employee $employee)
         'manager',
         'createdBy',
         'updatedBy',
+        'sponsoredWorkerRecord',
         'currentHolidayAllowance',
         
         'holidays' => function ($query) {
@@ -745,6 +762,10 @@ public function update(Request $request, Employee $employee)
             'min:0',
             'max:168',
         ],
+        'is_sponsored_worker' => [
+    'required',
+    'boolean',
+],
         'pay_type' => [
             'nullable',
             Rule::in([
@@ -816,6 +837,31 @@ public function update(Request $request, Employee $employee)
     $validated['updated_by'] = auth('company')->id();
 
     $employee->update($validated);
+    if ($employee->is_sponsored_worker) {
+    $sponsoredWorkerRecord =
+        \App\Models\Company\SponsoredWorkerRecord::firstOrCreate(
+            [
+                'employee_id' => $employee->id,
+            ],
+            [
+                'record_status' => 'active',
+                'created_by' => auth('company')->id(),
+                'updated_by' => auth('company')->id(),
+            ]
+        );
+
+    if ($sponsoredWorkerRecord->record_status === 'inactive') {
+        $sponsoredWorkerRecord->update([
+            'record_status' => 'active',
+            'updated_by' => auth('company')->id(),
+        ]);
+    }
+} elseif ($employee->sponsoredWorkerRecord) {
+    $employee->sponsoredWorkerRecord->update([
+        'record_status' => 'inactive',
+        'updated_by' => auth('company')->id(),
+    ]);
+}
     if (
     $employee->employment_status === 'onboarding'
 ) {
@@ -824,7 +870,9 @@ public function update(Request $request, Employee $employee)
         auth('company')->id()
     );
 }
-
+if ($employee->is_sponsored_worker) {
+    $employee->generateSponsoredWorkerDocumentChecklist();
+}
     return redirect()
         ->route(
             'company.hr.employees.show',

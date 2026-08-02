@@ -778,6 +778,44 @@
 
         </div>
     </div>
+<div class="form-group">
+    <label for="is_sponsored_worker">
+        Sponsored worker
+    </label>
+
+    <select
+        name="is_sponsored_worker"
+        id="is_sponsored_worker"
+        class="form-control"
+    >
+        <option value="0"
+            {{ old(
+                'is_sponsored_worker',
+                isset($employee)
+                    ? (int) $employee->is_sponsored_worker
+                    : 0
+            ) === 0 ? 'selected' : '' }}
+        >
+            No
+        </option>
+
+        <option value="1"
+            {{ old(
+                'is_sponsored_worker',
+                isset($employee)
+                    ? (int) $employee->is_sponsored_worker
+                    : 0
+            ) === 1 ? 'selected' : '' }}
+        >
+            Yes
+        </option>
+    </select>
+
+    <small>
+        Select Yes if this employee is sponsored under the
+        company sponsor licence.
+    </small>
+</div>
 
     {{-- Pay details --}}
     <div class="employee-form-section">

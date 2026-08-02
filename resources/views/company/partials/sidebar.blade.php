@@ -360,6 +360,20 @@
         Payslips
     </a>
 @endif
+@if ($companyUser->hasPermission('sponsor-compliance.view'))
+<a
+    href="{{ route(
+        'company.hr.sponsor-compliance.sponsored-workers.index'
+    ) }}"
+    class="company-submenu-link
+        {{ request()->routeIs(
+            'company.hr.sponsor-compliance.sponsored-workers.*'
+        ) ? 'active' : '' }}"
+>
+
+    <span>Sponsored Workers</span>
+</a>
+@endif
             </div>
         </div>
     @endif

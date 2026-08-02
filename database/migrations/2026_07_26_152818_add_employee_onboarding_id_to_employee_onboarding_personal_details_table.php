@@ -1,18 +1,25 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up()
     {
-        // No action required.
-        // The column, unique index and foreign key
-        // are already created in the original migration.
+        Schema::table('employees', function (Blueprint $table) {
+            $table->boolean('is_sponsored_worker')
+                ->default(false)
+                ->index('employees_sponsored_idx');
+        });
     }
 
     public function down()
     {
-        // No action required.
+        Schema::table('employees', function (Blueprint $table) {
+            $table->dropIndex('employees_sponsored_idx');
+            $table->dropColumn('is_sponsored_worker');
+        });
     }
 };

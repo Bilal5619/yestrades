@@ -325,6 +325,18 @@ class CompanyPermissionSeeder extends Seeder
     'name' => 'Delete Payslips',
     'slug' => 'payslips.delete',
 ],
+[
+    'name' => 'View Sponsor Compliance',
+    'slug' => 'sponsor-compliance.view',
+],
+[
+    'name' => 'Edit Sponsor Compliance',
+    'slug' => 'sponsor-compliance.edit',
+],
+[
+    'name' => 'Review Sponsor Compliance',
+    'slug' => 'sponsor-compliance.review',
+],
         ];
 
         foreach ($permissions as $permission) {

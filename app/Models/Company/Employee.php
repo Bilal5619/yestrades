@@ -56,6 +56,7 @@ class Employee extends Model implements AuthenticatableContract
         'pay_type',
         'pay_rate',
         'payroll_number',
+        'is_sponsored_worker',
         'emergency_contact_name',
         'emergency_contact_relationship',
         'emergency_contact_phone',
@@ -79,6 +80,7 @@ class Employee extends Model implements AuthenticatableContract
         'leaving_date' => 'date',
         'normal_weekly_hours' => 'decimal:2',
         'pay_rate' => 'decimal:2',
+        'is_sponsored_worker' => 'boolean',
         'activation_token_expires_at' => 'datetime',
         'activated_at' => 'datetime',
     ];
@@ -248,6 +250,49 @@ public function generateRequiredDocumentChecklist()
         );
     }
 }
+public function generateSponsoredWorkerDocumentChecklist()
+{
+    if (! $this->is_sponsored_worker) {
+        return;
+    }
+
+    $requiredSlugs = [
+        'passport',
+        'right-to-work-evidence',
+        'employment-contract',
+        'proof-of-address',
+        'immigration-status-evidence',
+        'certificate-of-sponsorship-evidence',
+        'sponsored-job-description',
+        'recruitment-evidence',
+        'qualification-evidence',
+        'salary-payment-evidence',
+    ];
+
+    $documentTypes = EmployeeDocumentType::query()
+        ->where('status', true)
+        ->whereIn('slug', $requiredSlugs)
+        ->get();
+
+    foreach ($documentTypes as $documentType) {
+        $this->documents()->firstOrCreate(
+            [
+                'document_type_id' => $documentType->id,
+            ],
+            [
+                'title' => $documentType->name,
+                'is_required' => true,
+                'review_status' => 'missing',
+                'created_by' => auth('company')->check()
+                    ? auth('company')->id()
+                    : null,
+                'updated_by' => auth('company')->check()
+                    ? auth('company')->id()
+                    : null,
+            ]
+        );
+    }
+}
 
 public function holidays()
 {
@@ -401,6 +446,13 @@ public function attendances()
 {
     return $this->hasMany(
         EmployeeAttendance::class,
+        'employee_id'
+    );
+}
+public function sponsoredWorkerRecord()
+{
+    return $this->hasOne(
+        SponsoredWorkerRecord::class,
         'employee_id'
     );
 }

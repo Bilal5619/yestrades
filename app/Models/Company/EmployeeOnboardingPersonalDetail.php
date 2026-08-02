@@ -51,11 +51,6 @@ class EmployeeOnboardingPersonalDetail extends Model
             'verified_by'
         );
     }
-    public function personalDetails()
-{
-    return $this->hasOne(
-        EmployeeOnboardingPersonalDetail::class,
-        'employee_onboarding_id'
-    );
-}
+    
+
 }

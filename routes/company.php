@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Company\HR\SponsoredWorkerController;
 /*
 |--------------------------------------------------------------------------
 | Company Own Routes
@@ -761,6 +761,93 @@ Route::delete(
     );
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Company users SPONSORSHIP
+    |--------------------------------------------------------------------------
+    */
+
+Route::prefix('hr/sponsor-compliance')
+    ->name('company.hr.sponsor-compliance.')
+    ->group(function () {
+        Route::get(
+            '/sponsored-workers',
+            [SponsoredWorkerController::class, 'index']
+        )->name('sponsored-workers.index');
+
+        Route::get(
+            '/sponsored-workers/{sponsoredWorker}',
+            [SponsoredWorkerController::class, 'show']
+        )->name('sponsored-workers.show');
+
+        Route::get(
+            '/sponsored-workers/{sponsoredWorker}/edit',
+            [SponsoredWorkerController::class, 'edit']
+        )->name('sponsored-workers.edit');
+
+        Route::put(
+            '/sponsored-workers/{sponsoredWorker}',
+            [SponsoredWorkerController::class, 'update']
+        )->name('sponsored-workers.update');
+    });
+
+
+    Route::prefix('hr/sponsor-compliance')
+    ->name('company.hr.sponsor-compliance.')
+    ->group(function () {
+
+        Route::get(
+            '/sponsored-workers',
+            [SponsoredWorkerController::class, 'index']
+        )
+            ->middleware('company.permission:sponsor-compliance.view')
+            ->name('sponsored-workers.index');
+
+        Route::get(
+            '/sponsored-workers/{sponsoredWorker}',
+            [SponsoredWorkerController::class, 'show']
+        )
+            ->middleware('company.permission:sponsor-compliance.view')
+            ->name('sponsored-workers.show');
+
+        Route::get(
+            '/sponsored-workers/{sponsoredWorker}/edit',
+            [SponsoredWorkerController::class, 'edit']
+        )
+            ->middleware('company.permission:sponsor-compliance.edit')
+            ->name('sponsored-workers.edit');
+
+        Route::put(
+            '/sponsored-workers/{sponsoredWorker}',
+            [SponsoredWorkerController::class, 'update']
+        )
+            ->middleware('company.permission:sponsor-compliance.edit')
+            ->name('sponsored-workers.update');
+            Route::post(
+    '/sponsored-workers/{sponsoredWorker}/changes',
+    [
+        SponsoredWorkerController::class,
+        'storeChange',
+    ]
+)
+    ->middleware(
+        'company.permission:sponsor-compliance.edit'
+    )
+    ->name('sponsored-workers.changes.store');
+
+Route::put(
+    '/sponsored-workers/{sponsoredWorker}/changes/{change}',
+    [
+        SponsoredWorkerController::class,
+        'reviewChange',
+    ]
+)
+    ->middleware(
+        'company.permission:sponsor-compliance.review'
+    )
+    ->name('sponsored-workers.changes.review');
+    });
+    
     /*
     |--------------------------------------------------------------------------
     | Company users
