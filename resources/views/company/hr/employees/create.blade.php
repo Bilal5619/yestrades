@@ -817,6 +817,61 @@
     </small>
 </div>
 
+<div class="employee-form-section">
+    <h2>Field Engineer &amp; Attendance</h2>
+
+    <div class="employee-form-group">
+        <label for="is_field_engineer">
+            Is this employee a field engineer?
+        </label>
+
+        <select
+            name="is_field_engineer"
+            id="is_field_engineer"
+            class="employee-form-control"
+        >
+            <option value="0" {{ old('is_field_engineer', 0) === 0 ? 'selected' : '' }}>
+                No — office staff
+            </option>
+            <option value="1" {{ old('is_field_engineer', 0) === 1 ? 'selected' : '' }}>
+                Yes — clocks in through assigned jobs
+            </option>
+        </select>
+
+        <small>
+            This is a standalone HR setting and is not connected to the Staff Management (Vendor Management) records.
+        </small>
+
+        @error('is_field_engineer')
+            <span class="employee-form-error">{{ $message }}</span>
+        @enderror
+    </div>
+
+    <div class="employee-form-group">
+        <label for="allow_manual_attendance">
+            Allow manual Clock In/Out for this field engineer
+        </label>
+
+        <select
+            name="allow_manual_attendance"
+            id="allow_manual_attendance"
+            class="employee-form-control"
+        >
+            <option value="0" {{ old('allow_manual_attendance', 0) === 0 ? 'selected' : '' }}>
+                No — clock in through assigned jobs only
+            </option>
+            <option value="1" {{ old('allow_manual_attendance', 0) === 1 ? 'selected' : '' }}>
+                Yes — also allow normal Clock In/Out
+            </option>
+        </select>
+
+        <small>
+            Only applies when "field engineer" above is Yes. Office staff can always clock in/out manually.
+            Useful for training, office work, meetings or non-job duties.
+        </small>
+    </div>
+</div>
+
     {{-- Pay details --}}
     <div class="employee-form-section">
         <h2>Pay and Payroll</h2>

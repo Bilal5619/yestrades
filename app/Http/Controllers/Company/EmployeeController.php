@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Company;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company\Employee;
-use App\Models\Staff\Staff;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -320,6 +319,9 @@ public function store(Request $request)
     $validated['country'] =
         $validated['country'] ?? 'United Kingdom';
 
+    $validated['is_field_engineer'] = $request->boolean('is_field_engineer');
+    $validated['allow_manual_attendance'] = $request->boolean('allow_manual_attendance');
+
     $validated['created_by'] = auth('company')->id();
     $validated['updated_by'] = auth('company')->id();
 
@@ -592,11 +594,9 @@ public function edit(Employee $employee)
         ->orderBy('last_name')
         ->get();
 
-    $staffMembers = Staff::with('StaffContent')->orderByDesc('id')->get();
-
     return view(
         'company.hr.employees.edit',
-        compact('employee', 'managers', 'staffMembers')
+        compact('employee', 'managers')
     );
 }
 
@@ -817,10 +817,6 @@ public function update(Request $request, Employee $employee)
             'string',
             'max:5000',
         ],
-        'staff_id' => [
-            'nullable',
-            'exists:staff,id',
-        ],
     ]);
 
     if ($request->hasFile('profile_photo')) {
@@ -841,6 +837,7 @@ public function update(Request $request, Employee $employee)
     $validated['country'] =
         $validated['country'] ?? 'United Kingdom';
 
+    $validated['is_field_engineer'] = $request->boolean('is_field_engineer');
     $validated['allow_manual_attendance'] = $request->boolean('allow_manual_attendance');
 
     $validated['updated_by'] = auth('company')->id();

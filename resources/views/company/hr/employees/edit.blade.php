@@ -906,30 +906,28 @@
     <h2>Field Engineer &amp; Attendance</h2>
 
     <div class="employee-form-group">
-        <label for="staff_id">
-            Linked field-engineer (Staff) record
+        <label for="is_field_engineer">
+            Is this employee a field engineer?
         </label>
 
         <select
-            name="staff_id"
-            id="staff_id"
+            name="is_field_engineer"
+            id="is_field_engineer"
             class="employee-form-control"
         >
-            <option value="">Not a field engineer</option>
-            @foreach ($staffMembers as $staff)
-                @php($staffName = optional($staff->StaffContent->first())->name ?: ($staff->username ?: $staff->email))
-                <option value="{{ $staff->id }}" @selected(old('staff_id', $employee->staff_id) == $staff->id)>
-                    {{ $staffName }}
-                </option>
-            @endforeach
+            <option value="0" {{ old('is_field_engineer', (int) $employee->is_field_engineer) === 0 ? 'selected' : '' }}>
+                No — office staff
+            </option>
+            <option value="1" {{ old('is_field_engineer', (int) $employee->is_field_engineer) === 1 ? 'selected' : '' }}>
+                Yes — clocks in through assigned jobs
+            </option>
         </select>
 
         <small>
-            Link this employee to their Staff/field-engineer record if they also do field jobs.
-            Leave blank for office-only employees.
+            This is a standalone HR setting and is not connected to the Staff Management (Vendor Management) records.
         </small>
 
-        @error('staff_id')
+        @error('is_field_engineer')
             <span class="employee-form-error">{{ $message }}</span>
         @enderror
     </div>

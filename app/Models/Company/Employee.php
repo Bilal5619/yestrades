@@ -22,6 +22,7 @@ class Employee extends Model implements AuthenticatableContract
     protected $fillable = [
         'employee_number',
         'staff_id',
+        'is_field_engineer',
         'allow_manual_attendance',
         'first_name',
         'middle_name',
@@ -82,11 +83,18 @@ class Employee extends Model implements AuthenticatableContract
         'normal_weekly_hours' => 'decimal:2',
         'pay_rate' => 'decimal:2',
         'is_sponsored_worker' => 'boolean',
+        'is_field_engineer' => 'boolean',
         'allow_manual_attendance' => 'boolean',
         'activation_token_expires_at' => 'datetime',
         'activated_at' => 'datetime',
     ];
 
+    // NOTE: staff_id/staff() intentionally still exist on this model but are
+    // no longer used to determine field-engineer status. That column points
+    // at the separate vendor-booking Staff table (business admin's "Staff
+    // Management"), which must stay fully independent from HR/Employee data
+    // per explicit client instruction. Do not use $this->staff for
+    // field-engineer logic — use is_field_engineer below instead.
     public function staff()
     {
         return $this->belongsTo(
@@ -95,13 +103,14 @@ class Employee extends Model implements AuthenticatableContract
         );
     }
 
-    // A "field engineer" is an Employee linked to a Staff (booking-engine)
-    // record. Office-only staff have no staff_id and always get normal
-    // manual Clock In/Out; field engineers clock in via their jobs unless
-    // admin has explicitly switched on manual attendance for them.
+    // A "field engineer" is a simple, standalone flag set directly on the
+    // Employee record by HR — completely independent of the vendor Staff
+    // table. Office-only staff always get normal manual Clock In/Out; field
+    // engineers clock in via their jobs unless admin has explicitly switched
+    // on manual attendance for them.
     public function isFieldEngineer(): bool
     {
-        return $this->staff_id !== null;
+        return (bool) $this->is_field_engineer;
     }
 
     public function canUseManualAttendance(): bool
