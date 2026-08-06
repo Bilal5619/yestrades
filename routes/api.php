@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AutoSeoWebhookController;
 use App\Http\Controllers\Api\EmployeeAuthController;
+use App\Http\Controllers\Api\EmployeeDashboardController;
+use App\Http\Controllers\Api\EmployeeMobileController;
 use App\Http\Controllers\Api\VendorAuthController;
 use App\Http\Controllers\Api\VendorMobileController;
 use App\Models\Question;
@@ -63,6 +65,28 @@ Route::prefix('v1/employee')->group(function () {
   Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [EmployeeAuthController::class, 'me']);
     Route::post('/logout', [EmployeeAuthController::class, 'logout']);
+    Route::get('/dashboard', [EmployeeDashboardController::class, 'index']);
+
+    Route::get('/profile', [EmployeeMobileController::class, 'profile']);
+    Route::put('/profile', [EmployeeMobileController::class, 'updateProfile']);
+    Route::get('/holidays', [EmployeeMobileController::class, 'holidays']);
+    Route::post('/holidays', [EmployeeMobileController::class, 'requestHoliday']);
+    Route::post('/holidays/{holiday}/cancel', [EmployeeMobileController::class, 'cancelHoliday']);
+    Route::get('/training', [EmployeeMobileController::class, 'training']);
+    Route::get('/training/{record}/certificate', [EmployeeMobileController::class, 'downloadTrainingCertificate']);
+    Route::get('/contract', [EmployeeMobileController::class, 'contract']);
+    Route::get('/contracts/{id}/download', [EmployeeMobileController::class, 'downloadContract']);
+    Route::get('/payslips', [EmployeeMobileController::class, 'payslips']);
+    Route::get('/payslips/{payslip}', [EmployeeMobileController::class, 'payslip']);
+    Route::get('/payslips/{payslip}/download', [EmployeeMobileController::class, 'downloadPayslip']);
+    Route::get('/announcements', [EmployeeMobileController::class, 'announcements']);
+    Route::post('/announcements/{announcement}/read', [EmployeeMobileController::class, 'markAnnouncementRead']);
+    Route::get('/notifications', [EmployeeMobileController::class, 'notifications']);
+    Route::get('/jobs', [EmployeeMobileController::class, 'jobs']);
+    Route::get('/jobs/{job}', [EmployeeMobileController::class, 'job']);
+    Route::post('/jobs/{job}/status', [EmployeeMobileController::class, 'updateJobStatus']);
+    Route::get('/shifts', [EmployeeMobileController::class, 'shifts']);
+    Route::post('/attendance/clock', [EmployeeMobileController::class, 'clock']);
   });
 });
 
