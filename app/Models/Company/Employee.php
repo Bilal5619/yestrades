@@ -22,6 +22,7 @@ class Employee extends Model implements AuthenticatableContract
     protected $fillable = [
         'employee_number',
         'staff_id',
+        'allow_manual_attendance',
         'first_name',
         'middle_name',
         'last_name',
@@ -81,6 +82,7 @@ class Employee extends Model implements AuthenticatableContract
         'normal_weekly_hours' => 'decimal:2',
         'pay_rate' => 'decimal:2',
         'is_sponsored_worker' => 'boolean',
+        'allow_manual_attendance' => 'boolean',
         'activation_token_expires_at' => 'datetime',
         'activated_at' => 'datetime',
     ];
@@ -91,6 +93,20 @@ class Employee extends Model implements AuthenticatableContract
             Staff::class,
             'staff_id'
         );
+    }
+
+    // A "field engineer" is an Employee linked to a Staff (booking-engine)
+    // record. Office-only staff have no staff_id and always get normal
+    // manual Clock In/Out; field engineers clock in via their jobs unless
+    // admin has explicitly switched on manual attendance for them.
+    public function isFieldEngineer(): bool
+    {
+        return $this->staff_id !== null;
+    }
+
+    public function canUseManualAttendance(): bool
+    {
+        return !$this->isFieldEngineer() || (bool) $this->allow_manual_attendance;
     }
 
     public function manager()

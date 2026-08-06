@@ -46,6 +46,13 @@
                         {{ $job->scheduled_start_time ?? 'No time set' }}
                         &middot; {{ optional($job->employee)->full_name ?? 'Unassigned' }}
                         @if ($job->customer_name) &middot; {{ $job->customer_name }} @endif
+                        @if ($job->actualDurationMinutes() !== null)
+                            &middot; {{ $job->actualDurationMinutes() }}m actual
+                            @php($diff = $job->durationDifferenceMinutes())
+                            @if ($diff !== null && $diff !== 0)
+                                <span class="{{ $diff > 0 ? 'jobsheet-duration-over' : 'jobsheet-duration-under' }}">({{ $diff > 0 ? '+' : '' }}{{ $diff }}m)</span>
+                            @endif
+                        @endif
                     </div>
                 </div>
                 <div style="display:flex; gap:8px; align-items:center;">

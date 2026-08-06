@@ -14,6 +14,7 @@ class EmployeeAttendance extends Model
   protected $fillable = [
     'employee_id',
     'shift_id',
+    'job_id',
     'clock_type',
     'server_timestamp',
     'device_timestamp',
@@ -44,6 +45,11 @@ class EmployeeAttendance extends Model
   public function shift()
   {
     return $this->belongsTo(EmployeeShift::class, 'shift_id');
+  }
+
+  public function job()
+  {
+    return $this->belongsTo(EmployeeJob::class, 'job_id');
   }
 
   public function recordedBy()

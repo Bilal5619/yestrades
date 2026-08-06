@@ -492,8 +492,9 @@
                 @endif
 
                 @if ($companyUser->hasPermission('reports.attendance'))
-                    <a href="#"
-                       class="company-submenu-link">
+                    <a href="{{ route('company.hr.timesheet.index') }}"
+                       class="company-submenu-link
+                       {{ request()->routeIs('company.hr.timesheet.*') ? 'active' : '' }}">
                         Attendance Report
                     </a>
                 @endif

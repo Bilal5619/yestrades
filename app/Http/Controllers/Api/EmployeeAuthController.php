@@ -117,6 +117,8 @@ class EmployeeAuthController extends Controller
       'id' => $employee->id,
       'employee_number' => $employee->employee_number,
       'staff_id' => $employee->staff_id,
+      'is_field_engineer' => $employee->isFieldEngineer(),
+      'can_use_manual_attendance' => $employee->canUseManualAttendance(),
       'full_name' => $employee->full_name,
       'first_name' => $employee->first_name,
       'last_name' => $employee->last_name,

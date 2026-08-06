@@ -85,6 +85,8 @@ Route::prefix('v1/employee')->group(function () {
     Route::get('/jobs', [EmployeeMobileController::class, 'jobs']);
     Route::get('/jobs/{job}', [EmployeeMobileController::class, 'job']);
     Route::post('/jobs/{job}/status', [EmployeeMobileController::class, 'updateJobStatus']);
+    Route::post('/jobs/{job}/start', [EmployeeMobileController::class, 'startJob']);
+    Route::post('/jobs/{job}/finish', [EmployeeMobileController::class, 'finishJob']);
     Route::get('/shifts', [EmployeeMobileController::class, 'shifts']);
     Route::post('/attendance/clock', [EmployeeMobileController::class, 'clock']);
   });

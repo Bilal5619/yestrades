@@ -423,6 +423,114 @@ class EmployeeMobileController extends Controller
     return response()->json(['success' => true, 'message' => 'Job status updated.', 'data' => ['job' => $this->jobPayload($job->fresh())]]);
   }
 
+  public function startJob(Request $request, EmployeeJob $job): JsonResponse
+  {
+    $employee = $request->user();
+    abort_unless($job->employee_id === $employee->id, 404);
+
+    if (in_array($job->status, ['cancelled', 'completed', 'awaiting_review'], true)) {
+      return response()->json(['success' => false, 'message' => 'This job cannot be started.'], 422);
+    }
+
+    if ($job->started_at !== null) {
+      return response()->json(['success' => false, 'message' => 'This job has already been started.'], 422);
+    }
+
+    if ($this->hasActiveJob($employee)) {
+      return response()->json(['success' => false, 'message' => 'You already have another job in progress. Finish it before starting a new one.'], 422);
+    }
+
+    if ($this->hasActiveShiftClockIn($employee)) {
+      return response()->json(['success' => false, 'message' => 'You are already clocked in on a shift. Clock out before starting a job.'], 422);
+    }
+
+    $data = $request->validate([
+      'device_timestamp' => ['nullable', 'date'],
+      'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+      'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+      'accuracy_meters' => ['nullable', 'numeric', 'min:0', 'max:10000'],
+      'device_platform' => ['nullable', 'string', 'max:80'],
+    ]);
+
+    $job->update(['started_at' => now(), 'status' => 'in_progress']);
+
+    $employee->attendances()->create([
+      'job_id' => $job->id,
+      'clock_type' => 'in',
+      'server_timestamp' => now(),
+      'device_timestamp' => $data['device_timestamp'] ?? null,
+      'latitude' => $data['latitude'] ?? null,
+      'longitude' => $data['longitude'] ?? null,
+      'accuracy_meters' => $data['accuracy_meters'] ?? null,
+      'expected_location' => $job->site_address,
+      'device_platform' => $data['device_platform'] ?? null,
+    ]);
+
+    return response()->json(['success' => true, 'message' => 'Job started.', 'data' => ['job' => $this->jobPayload($job->fresh())]]);
+  }
+
+  public function finishJob(Request $request, EmployeeJob $job): JsonResponse
+  {
+    $employee = $request->user();
+    abort_unless($job->employee_id === $employee->id, 404);
+
+    if ($job->started_at === null) {
+      return response()->json(['success' => false, 'message' => 'This job has not been started yet.'], 422);
+    }
+
+    if ($job->finished_at !== null) {
+      return response()->json(['success' => false, 'message' => 'This job has already been finished.'], 422);
+    }
+
+    $data = $request->validate([
+      'device_timestamp' => ['nullable', 'date'],
+      'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+      'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+      'accuracy_meters' => ['nullable', 'numeric', 'min:0', 'max:10000'],
+      'device_platform' => ['nullable', 'string', 'max:80'],
+    ]);
+
+    $job->update(['finished_at' => now(), 'status' => 'completed']);
+
+    $employee->attendances()->create([
+      'job_id' => $job->id,
+      'clock_type' => 'out',
+      'server_timestamp' => now(),
+      'device_timestamp' => $data['device_timestamp'] ?? null,
+      'latitude' => $data['latitude'] ?? null,
+      'longitude' => $data['longitude'] ?? null,
+      'accuracy_meters' => $data['accuracy_meters'] ?? null,
+      'expected_location' => $job->site_address,
+      'device_platform' => $data['device_platform'] ?? null,
+    ]);
+
+    return response()->json(['success' => true, 'message' => 'Job finished.', 'data' => ['job' => $this->jobPayload($job->fresh())]]);
+  }
+
+  // "Active" means started but not finished/clocked-out yet — used to block
+  // an employee from starting a second job, or starting a job while still
+  // clocked in on a shift (and vice versa in clock()).
+  private function hasActiveJob(Employee $employee, ?int $excludeJobId = null): bool
+  {
+    return $employee->jobs()
+      ->whereNotNull('started_at')
+      ->whereNull('finished_at')
+      ->when($excludeJobId, fn ($query) => $query->where('id', '!=', $excludeJobId))
+      ->exists();
+  }
+
+  private function hasActiveShiftClockIn(Employee $employee): bool
+  {
+    foreach ($employee->shifts()->where('status', 'scheduled')->with('attendances')->get() as $shift) {
+      $last = $shift->attendances->sortByDesc('server_timestamp')->first();
+      if ($last && $last->clock_type === 'in') {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   public function shifts(Request $request): JsonResponse
   {
     $start = \Carbon\Carbon::parse($request->query('start', today()->startOfWeek()->toDateString()))->startOfDay();
@@ -457,6 +565,13 @@ class EmployeeMobileController extends Controller
   {
     $employee = $request->user();
 
+    if (!$employee->canUseManualAttendance()) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Manual clock in/out is not enabled for your account. Please use your assigned jobs to clock in.',
+      ], 403);
+    }
+
     $data = $request->validate([
       'shift_id' => ['required', 'integer'],
       'clock_type' => ['required', Rule::in(['in', 'out'])],
@@ -474,6 +589,13 @@ class EmployeeMobileController extends Controller
       return response()->json([
         'success' => false,
         'message' => 'This shift already has the latest Clock '.ucfirst($data['clock_type']).' action.',
+      ], 422);
+    }
+
+    if ($data['clock_type'] === 'in' && $this->hasActiveJob($employee)) {
+      return response()->json([
+        'success' => false,
+        'message' => 'You already have a job in progress. Finish it before clocking in on a shift.',
       ], 422);
     }
 
@@ -584,8 +706,12 @@ class EmployeeMobileController extends Controller
       'site_address' => $job->site_address,
       'site_postcode' => $job->site_postcode,
       'scheduled_date' => optional($job->scheduled_date)->toDateString(),
-      'scheduled_start_time' => $job->scheduled_start_time,
+      'scheduled_start_time' => $job->scheduled_start_time ? substr($job->scheduled_start_time, 0, 5) : null,
       'expected_duration_minutes' => $job->expected_duration_minutes,
+      'started_at' => optional($job->started_at)->toIso8601String(),
+      'finished_at' => optional($job->finished_at)->toIso8601String(),
+      'actual_duration_minutes' => $job->actualDurationMinutes(),
+      'duration_difference_minutes' => $job->durationDifferenceMinutes(),
       'priority' => $job->priority,
       'status' => $job->status,
       'internal_notes' => $job->internal_notes,
@@ -600,14 +726,14 @@ class EmployeeMobileController extends Controller
     return [
       'id' => $shift->id,
       'shift_date' => optional($shift->shift_date)->toDateString(),
-      'start_time' => $shift->start_time,
-      'end_time' => $shift->end_time,
+      'start_time' => substr($shift->start_time, 0, 5),
+      'end_time' => substr($shift->end_time, 0, 5),
       'break_minutes' => $shift->break_minutes,
       'work_location' => $shift->work_location,
       'status' => $shift->status,
       'actual_clock_in' => optional(optional($clockIn)->server_timestamp)->toIso8601String(),
       'actual_clock_out' => optional(optional($clockOut)->server_timestamp)->toIso8601String(),
-      'next_clock_action' => !$clockIn ? 'in' : (!$clockOut && $shift->status === 'scheduled' ? 'out' : null),
+      'next_clock_action' => $shift->status !== 'scheduled' ? null : (!$clockIn ? 'in' : (!$clockOut ? 'out' : null)),
     ];
   }
 
@@ -616,6 +742,7 @@ class EmployeeMobileController extends Controller
     return [
       'id' => $attendance->id,
       'shift_id' => $attendance->shift_id,
+      'job_id' => $attendance->job_id,
       'clock_type' => $attendance->clock_type,
       'server_timestamp' => optional($attendance->server_timestamp)->toIso8601String(),
       'device_timestamp' => optional($attendance->device_timestamp)->toIso8601String(),

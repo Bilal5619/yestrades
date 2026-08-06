@@ -14,7 +14,7 @@ class EmployeeJob extends Model
   protected $table = 'employee_jobs';
 
   public const PRIORITIES = ['low', 'medium', 'high', 'urgent'];
-  public const STATUSES = ['assigned', 'accepted', 'en_route', 'on_site', 'completed', 'cancelled'];
+  public const STATUSES = ['assigned', 'accepted', 'en_route', 'on_site', 'in_progress', 'completed', 'awaiting_review', 'cancelled'];
 
   protected $fillable = [
     'employee_id',
@@ -27,6 +27,8 @@ class EmployeeJob extends Model
     'scheduled_date',
     'scheduled_start_time',
     'expected_duration_minutes',
+    'started_at',
+    'finished_at',
     'priority',
     'status',
     'internal_notes',
@@ -36,11 +38,43 @@ class EmployeeJob extends Model
 
   protected $casts = [
     'scheduled_date' => 'date',
+    'started_at' => 'datetime',
+    'finished_at' => 'datetime',
   ];
 
   public function employee()
   {
     return $this->belongsTo(Employee::class);
+  }
+
+  public function attendances()
+  {
+    return $this->hasMany(EmployeeAttendance::class, 'job_id');
+  }
+
+  public function isInProgress(): bool
+  {
+    return $this->started_at !== null && $this->finished_at === null;
+  }
+
+  public function actualDurationMinutes(): ?int
+  {
+    if (!$this->started_at || !$this->finished_at) {
+      return null;
+    }
+
+    return $this->started_at->diffInMinutes($this->finished_at);
+  }
+
+  public function durationDifferenceMinutes(): ?int
+  {
+    $actual = $this->actualDurationMinutes();
+
+    if ($actual === null || $this->expected_duration_minutes === null) {
+      return null;
+    }
+
+    return $actual - (int) $this->expected_duration_minutes;
   }
 
   public function createdBy()

@@ -294,6 +294,16 @@
             ">
                 App account: {{ $employee->activation_status_label }}
             </span>
+
+            @if ($employee->isFieldEngineer())
+                <span class="employee-status" style="
+                    margin-left: 8px;
+                    background: {{ $employee->allow_manual_attendance ? 'rgba(46,191,114,0.16)' : 'rgba(170,180,202,0.14)' }};
+                    color: {{ $employee->allow_manual_attendance ? '#59dc96' : '#c4ccdc' }};
+                ">
+                    Field engineer &middot; Manual clock-in {{ $employee->allow_manual_attendance ? 'allowed' : 'off (jobs only)' }}
+                </span>
+            @endif
         </div>
 
     </div>

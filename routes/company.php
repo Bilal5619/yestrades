@@ -1083,6 +1083,17 @@ Route::put(
             ->name('company.hr.attendance.store');
     });
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Timesheet
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('hr/timesheet', 'Company\TimesheetController@index')
+        ->middleware('company.permission:reports.attendance')
+        ->name('company.hr.timesheet.index');
+
 });
 
 

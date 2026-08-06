@@ -126,8 +126,12 @@
     .jobsheet-status-accepted { background: rgba(40,120,220,0.16); color: #6fa8ee; }
     .jobsheet-status-en_route { background: rgba(255,179,71,0.16); color: #ffc46f; }
     .jobsheet-status-on_site { background: rgba(255,179,71,0.16); color: #ffc46f; }
+    .jobsheet-status-in_progress { background: rgba(40,120,220,0.16); color: #6fa8ee; }
     .jobsheet-status-completed { background: rgba(46,191,114,0.16); color: #59dc96; }
+    .jobsheet-status-awaiting_review { background: rgba(255,179,71,0.16); color: #ffc46f; }
     .jobsheet-status-cancelled { background: rgba(255,99,99,0.16); color: #ff8a92; }
+    .jobsheet-duration-over { color: #ff8a92; font-weight: 700; }
+    .jobsheet-duration-under { color: #59dc96; font-weight: 700; }
 
     .jobsheet-form-card {
         padding: 24px;

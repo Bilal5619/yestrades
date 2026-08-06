@@ -901,6 +901,64 @@
         company sponsor licence.
     </small>
 </div>
+
+<div class="employee-form-section">
+    <h2>Field Engineer &amp; Attendance</h2>
+
+    <div class="employee-form-group">
+        <label for="staff_id">
+            Linked field-engineer (Staff) record
+        </label>
+
+        <select
+            name="staff_id"
+            id="staff_id"
+            class="employee-form-control"
+        >
+            <option value="">Not a field engineer</option>
+            @foreach ($staffMembers as $staff)
+                @php($staffName = optional($staff->StaffContent->first())->name ?: ($staff->username ?: $staff->email))
+                <option value="{{ $staff->id }}" @selected(old('staff_id', $employee->staff_id) == $staff->id)>
+                    {{ $staffName }}
+                </option>
+            @endforeach
+        </select>
+
+        <small>
+            Link this employee to their Staff/field-engineer record if they also do field jobs.
+            Leave blank for office-only employees.
+        </small>
+
+        @error('staff_id')
+            <span class="employee-form-error">{{ $message }}</span>
+        @enderror
+    </div>
+
+    <div class="employee-form-group">
+        <label for="allow_manual_attendance">
+            Allow manual Clock In/Out for this field engineer
+        </label>
+
+        <select
+            name="allow_manual_attendance"
+            id="allow_manual_attendance"
+            class="employee-form-control"
+        >
+            <option value="0" {{ old('allow_manual_attendance', (int) $employee->allow_manual_attendance) === 0 ? 'selected' : '' }}>
+                No — clock in through assigned jobs only
+            </option>
+            <option value="1" {{ old('allow_manual_attendance', (int) $employee->allow_manual_attendance) === 1 ? 'selected' : '' }}>
+                Yes — also allow normal Clock In/Out
+            </option>
+        </select>
+
+        <small>
+            Only applies when linked to a field-engineer record above. Office-only employees can always clock in/out manually.
+            Useful for training, office work, meetings or non-job duties.
+        </small>
+    </div>
+</div>
+
     {{-- Pay details --}}
     <div class="employee-form-section">
         <h2>Pay and Payroll</h2>

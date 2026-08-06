@@ -40,6 +40,31 @@
         <div class="jobsheet-detail-value">{{ $job->expected_duration_minutes ? $job->expected_duration_minutes . ' minutes' : '—' }}</div>
     </div>
     <div class="jobsheet-detail-row">
+        <div class="jobsheet-detail-label">Started</div>
+        <div class="jobsheet-detail-value">{{ $job->started_at ? $job->started_at->format('d M Y H:i') : 'Not started' }}</div>
+    </div>
+    <div class="jobsheet-detail-row">
+        <div class="jobsheet-detail-label">Finished</div>
+        <div class="jobsheet-detail-value">{{ $job->finished_at ? $job->finished_at->format('d M Y H:i') : '—' }}</div>
+    </div>
+    @if ($job->actualDurationMinutes() !== null)
+        <div class="jobsheet-detail-row">
+            <div class="jobsheet-detail-label">Actual Duration</div>
+            <div class="jobsheet-detail-value">{{ $job->actualDurationMinutes() }} minutes</div>
+        </div>
+        @if ($job->durationDifferenceMinutes() !== null)
+            <div class="jobsheet-detail-row">
+                <div class="jobsheet-detail-label">Vs Estimated</div>
+                <div class="jobsheet-detail-value">
+                    @php($diff = $job->durationDifferenceMinutes())
+                    <span class="{{ $diff > 0 ? 'jobsheet-duration-over' : ($diff < 0 ? 'jobsheet-duration-under' : '') }}">
+                        {{ $diff > 0 ? '+' : '' }}{{ $diff }} minutes
+                    </span>
+                </div>
+            </div>
+        @endif
+    @endif
+    <div class="jobsheet-detail-row">
         <div class="jobsheet-detail-label">Customer</div>
         <div class="jobsheet-detail-value">{{ $job->customer_name ?? '—' }} {{ $job->customer_phone ? '(' . $job->customer_phone . ')' : '' }}</div>
     </div>
