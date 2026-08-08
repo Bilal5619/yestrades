@@ -585,6 +585,14 @@ class EmployeeMobileController extends Controller
     $shift = $employee->shifts()->where('status', 'scheduled')->findOrFail($data['shift_id']);
 
     $lastClock = $shift->attendances()->latest('server_timestamp')->first();
+
+    if ($data['clock_type'] === 'out' && !$lastClock) {
+      return response()->json([
+        'success' => false,
+        'message' => 'You must clock in before you can clock out.',
+      ], 422);
+    }
+
     if ($lastClock && $lastClock->clock_type === $data['clock_type']) {
       return response()->json([
         'success' => false,

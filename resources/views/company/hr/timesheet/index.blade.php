@@ -63,12 +63,20 @@
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 16px;
+        margin-bottom: 16px;
+    }
+    .timesheet-stats-secondary {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
         margin-bottom: 24px;
     }
     .timesheet-stat-card { padding: 18px; border-radius: 10px; background: #1e2a44; }
+    .timesheet-stat-card-muted { background: #182136; }
     .timesheet-stat-label { color: #aab4ca; font-size: 12px; margin-bottom: 8px; }
     .timesheet-stat-value { font-size: 24px; font-weight: 700; }
     .timesheet-stat-value-warning { color: #ffc46f; }
+    .timesheet-job-number { display: block; color: #aab4ca; font-size: 11px; margin-top: 2px; }
 
     .timesheet-section { margin-bottom: 28px; }
     .timesheet-section h2 { font-size: 16px; margin-bottom: 14px; }
@@ -145,6 +153,21 @@
     </div>
 </div>
 
+<div class="timesheet-stats-secondary">
+    <div class="timesheet-stat-card">
+        <div class="timesheet-stat-label">Late Starts</div>
+        <div class="timesheet-stat-value {{ $lateStarts > 0 ? 'timesheet-stat-value-warning' : '' }}">{{ $lateStarts }}</div>
+    </div>
+    <div class="timesheet-stat-card">
+        <div class="timesheet-stat-label">Overtime (Total)</div>
+        <div class="timesheet-stat-value {{ $overtimeMinutesTotal > 0 ? 'timesheet-stat-value-warning' : '' }}">{{ formatMinutes($overtimeMinutesTotal) }}</div>
+    </div>
+    <div class="timesheet-stat-card timesheet-stat-card-muted">
+        <div class="timesheet-stat-label">Hours Today / This Week / This Month</div>
+        <div class="timesheet-stat-value">{{ formatMinutes($dailyMinutes) }} <span style="color:#aab4ca; font-size:14px; font-weight:400;">/ {{ formatMinutes($weeklyMinutes) }} / {{ formatMinutes($monthlyMinutes) }}</span></div>
+    </div>
+</div>
+
 <div class="timesheet-section">
     <h2>Office Staff Attendance</h2>
     <div class="timesheet-card">
@@ -174,6 +197,12 @@
                                 @else
                                     <span class="timesheet-badge timesheet-badge-muted">{{ ucfirst($row['status']) }}</span>
                                 @endif
+                                @if ($row['is_late'])
+                                    <span class="timesheet-badge timesheet-badge-warning">Late start</span>
+                                @endif
+                                @if ($row['overtime_minutes'] > 0)
+                                    <span class="timesheet-badge timesheet-badge-warning">+{{ formatMinutes($row['overtime_minutes']) }} OT</span>
+                                @endif
                             </td>
                         </tr>
                     @empty
@@ -192,7 +221,7 @@
             <table class="timesheet-table">
                 <thead>
                     <tr>
-                        <th>Engineer</th><th>Job</th><th>Customer</th><th>Started</th><th>Finished</th>
+                        <th>Engineer</th><th>Job Number</th><th>Job</th><th>Customer</th><th>Started</th><th>Finished</th>
                         <th>Estimated</th><th>Actual</th><th>Difference</th><th>Status</th>
                     </tr>
                 </thead>
@@ -200,6 +229,7 @@
                     @forelse ($fieldRows as $row)
                         <tr>
                             <td>{{ optional($row['employee'])->full_name ?? 'Unknown' }}</td>
+                            <td>{{ $row['job_number'] }}</td>
                             <td><a href="{{ route('company.hr.jobs.show', $row['job']) }}" style="color:#6fa8ee;">{{ $row['job']->title }}</a></td>
                             <td>{{ $row['job']->customer_name ?? '—' }}</td>
                             <td>{{ $row['job']->started_at?->format('d M H:i') }}</td>
@@ -221,10 +251,13 @@
                                 @else
                                     <span class="timesheet-badge timesheet-badge-muted">{{ ucwords(str_replace('_', ' ', $row['job']->status)) }}</span>
                                 @endif
+                                @if ($row['is_late'])
+                                    <span class="timesheet-badge timesheet-badge-warning">Late start</span>
+                                @endif
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="9" class="timesheet-empty">No field engineer jobs started in this period.</td></tr>
+                        <tr><td colspan="10" class="timesheet-empty">No field engineer jobs started in this period.</td></tr>
                     @endforelse
                 </tbody>
             </table>
