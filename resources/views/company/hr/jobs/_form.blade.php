@@ -29,6 +29,36 @@
                 {{ $message }}
             </div>
         @enderror
+        @if(
+    auth('company')
+        ->user()
+        ->hasPermission(
+            'jobs.manage'
+        )
+)
+
+    <div style="
+        margin-top:6px;
+        font-size:12px;
+    ">
+
+        <a
+            href="{{
+                route(
+                    'company.clients.create'
+                )
+            }}"
+            style="
+                color:#6fa8ee;
+                text-decoration:none;
+            "
+        >
+            + Add New Client / Partner
+        </a>
+
+    </div>
+
+@endif
     </div>
 
 
@@ -67,6 +97,26 @@
                 {{ $message }}
             </div>
         @enderror
+        <div
+    id="add-property-link"
+    style="
+        margin-top:6px;
+        font-size:12px;
+        display:none;
+    "
+>
+
+    <a
+        href="#"
+        style="
+            color:#6fa8ee;
+            text-decoration:none;
+        "
+    >
+        + Add Property for Selected Client
+    </a>
+
+</div>
     </div>
 
 
@@ -573,3 +623,224 @@
     @endif
 
 </div>
+
+<script>
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
+
+        const clientSelect =
+            document.getElementById(
+                'client_id'
+            );
+
+        const propertySelect =
+            document.getElementById(
+                'client_property_id'
+            );
+
+        const addPropertyLink =
+            document.getElementById(
+                'add-property-link'
+            );
+
+
+        if (
+            !clientSelect
+            ||
+            !propertySelect
+        ) {
+            return;
+        }
+
+
+        const propertyOptions =
+            Array.from(
+                propertySelect.options
+            )
+            .filter(
+                option =>
+                    option.value
+            )
+            .map(
+                option => ({
+                    value:
+                        option.value,
+
+                    text:
+                        option.text,
+
+                    client:
+                        option.dataset.client
+                        || ''
+                })
+            );
+
+
+        const selectedProperty =
+            @json(
+                old(
+                    'client_property_id',
+                    optional($job)
+                        ->client_property_id
+                )
+            );
+
+
+        function refreshProperties() {
+
+            const clientId =
+                clientSelect.value;
+
+
+            const currentProperty =
+                propertySelect.value
+                ||
+                selectedProperty
+                ||
+                '';
+
+
+            propertySelect.innerHTML =
+                '';
+
+
+            const manualOption =
+                document.createElement(
+                    'option'
+                );
+
+
+            manualOption.value = '';
+
+            manualOption.textContent =
+                'Enter address manually';
+
+
+            propertySelect.appendChild(
+                manualOption
+            );
+
+
+            if (!clientId) {
+
+                if (
+                    addPropertyLink
+                ) {
+                    addPropertyLink
+                        .style
+                        .display =
+                            'none';
+                }
+
+                return;
+            }
+
+
+            propertyOptions
+                .filter(
+                    item =>
+                        String(
+                            item.client
+                        )
+                        ===
+                        String(
+                            clientId
+                        )
+                )
+                .forEach(
+                    item => {
+
+                        const option =
+                            document
+                                .createElement(
+                                    'option'
+                                );
+
+
+                        option.value =
+                            item.value;
+
+
+                        option.textContent =
+                            item.text;
+
+
+                        option.dataset.client =
+                            item.client;
+
+
+                        if (
+                            String(
+                                item.value
+                            )
+                            ===
+                            String(
+                                currentProperty
+                            )
+                        ) {
+                            option.selected =
+                                true;
+                        }
+
+
+                        propertySelect
+                            .appendChild(
+                                option
+                            );
+
+                    }
+                );
+
+
+            if (
+                addPropertyLink
+            ) {
+
+                addPropertyLink
+                    .style
+                    .display =
+                        'block';
+
+
+                const link =
+                    addPropertyLink
+                        .querySelector(
+                            'a'
+                        );
+
+
+                link.href =
+                    "{{
+                        url(
+                            '/company-own/clients'
+                        )
+                    }}/"
+                    +
+                    clientId
+                    +
+                    "/properties/create";
+            }
+
+        }
+
+
+        clientSelect
+            .addEventListener(
+                'change',
+                function () {
+
+                    propertySelect.value =
+                        '';
+
+                    refreshProperties();
+
+                }
+            );
+
+
+        refreshProperties();
+
+    }
+);
+</script>

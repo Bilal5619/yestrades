@@ -411,12 +411,47 @@
                         Rota and Shifts
                     </a>
                 @endif
+                @if(
+    $companyUser
+        ->hasPermission(
+            'jobs.view'
+        )
+    ||
+    $companyUser
+        ->hasPermission(
+            'jobs.manage'
+        )
+)
+
+    <a
+        href="{{
+            route(
+                'company.clients.index'
+            )
+        }}"
+        class="
+            company-submenu-link
+
+            {{
+                request()
+                    ->routeIs(
+                        'company.clients.*'
+                    )
+                    ? 'active'
+                    : ''
+            }}
+        "
+    >
+        Clients / Accounts
+    </a>
+
+@endif
 
                 @if ($companyUser->hasPermission('jobs.view') || $companyUser->hasPermission('jobs.manage'))
                     <a href="{{ route('company.hr.jobs.index') }}"
                        class="company-submenu-link
                        {{ request()->routeIs('company.hr.jobs.*') ? 'active' : '' }}">
-                        Job Sheet
+                        Jobs
                     </a>
                 @endif
 

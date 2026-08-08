@@ -1054,7 +1054,136 @@ Route::put(
         ->middleware('company.permission:jobs.manage')
         ->name('company.hr.jobs.destroy');
 });
+/*
+|--------------------------------------------------------------------------
+| Clients / Accounts
+|--------------------------------------------------------------------------
+*/
 
+Route::prefix('clients')
+    ->group(function () {
+
+        Route::get(
+            '/',
+            'Company\CompanyClientController@index'
+        )
+            ->middleware(
+                'company.permission:jobs.view'
+            )
+            ->name(
+                'company.clients.index'
+            );
+
+        Route::get(
+            '/create',
+            'Company\CompanyClientController@create'
+        )
+            ->middleware(
+                'company.permission:jobs.manage'
+            )
+            ->name(
+                'company.clients.create'
+            );
+
+        Route::post(
+            '/',
+            'Company\CompanyClientController@store'
+        )
+            ->middleware(
+                'company.permission:jobs.manage'
+            )
+            ->name(
+                'company.clients.store'
+            );
+
+        Route::get(
+            '/{client}',
+            'Company\CompanyClientController@show'
+        )
+            ->middleware(
+                'company.permission:jobs.view'
+            )
+            ->name(
+                'company.clients.show'
+            );
+
+        Route::get(
+            '/{client}/edit',
+            'Company\CompanyClientController@edit'
+        )
+            ->middleware(
+                'company.permission:jobs.manage'
+            )
+            ->name(
+                'company.clients.edit'
+            );
+
+        Route::put(
+            '/{client}',
+            'Company\CompanyClientController@update'
+        )
+            ->middleware(
+                'company.permission:jobs.manage'
+            )
+            ->name(
+                'company.clients.update'
+            );
+
+        Route::get(
+            '/{client}/properties/create',
+            'Company\CompanyClientController@createProperty'
+        )
+            ->middleware(
+                'company.permission:jobs.manage'
+            )
+            ->name(
+                'company.clients.properties.create'
+            );
+
+        Route::post(
+            '/{client}/properties',
+            'Company\CompanyClientController@storeProperty'
+        )
+            ->middleware(
+                'company.permission:jobs.manage'
+            )
+            ->name(
+                'company.clients.properties.store'
+            );
+
+        Route::get(
+            '/{client}/properties/{property}/edit',
+            'Company\CompanyClientController@editProperty'
+        )
+            ->middleware(
+                'company.permission:jobs.manage'
+            )
+            ->name(
+                'company.clients.properties.edit'
+            );
+
+        Route::put(
+            '/{client}/properties/{property}',
+            'Company\CompanyClientController@updateProperty'
+        )
+            ->middleware(
+                'company.permission:jobs.manage'
+            )
+            ->name(
+                'company.clients.properties.update'
+            );
+
+        Route::delete(
+            '/{client}/properties/{property}',
+            'Company\CompanyClientController@destroyProperty'
+        )
+            ->middleware(
+                'company.permission:jobs.manage'
+            )
+            ->name(
+                'company.clients.properties.destroy'
+            );
+    });
 
     /*
     |--------------------------------------------------------------------------
