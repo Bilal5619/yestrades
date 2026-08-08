@@ -483,14 +483,90 @@ class EmployeeMobileController extends Controller
     }
 
     $data = $request->validate([
-      'device_timestamp' => ['nullable', 'date'],
-      'latitude' => ['nullable', 'numeric', 'between:-90,90'],
-      'longitude' => ['nullable', 'numeric', 'between:-180,180'],
-      'accuracy_meters' => ['nullable', 'numeric', 'min:0', 'max:10000'],
-      'device_platform' => ['nullable', 'string', 'max:80'],
-    ]);
+    'device_timestamp' => [
+        'nullable',
+        'date',
+    ],
 
-    $job->update(['finished_at' => now(), 'status' => 'completed']);
+    'latitude' => [
+        'nullable',
+        'numeric',
+        'between:-90,90',
+    ],
+
+    'longitude' => [
+        'nullable',
+        'numeric',
+        'between:-180,180',
+    ],
+
+    'accuracy_meters' => [
+        'nullable',
+        'numeric',
+        'min:0',
+        'max:10000',
+    ],
+
+    'device_platform' => [
+        'nullable',
+        'string',
+        'max:80',
+    ],
+
+    'work_summary' => [
+        'nullable',
+        'string',
+        'max:5000',
+    ],
+
+    'completion_notes' => [
+        'nullable',
+        'string',
+        'max:5000',
+    ],
+
+    'payment_collected' => [
+        'nullable',
+        'boolean',
+    ],
+]);
+
+  $jobUpdate = [
+    'finished_at' => now(),
+
+    /*
+     * Engineer has completed the physical work,
+     * but the office may still need payment,
+     * invoice or certificate action.
+     */
+    'status' => 'awaiting_review',
+
+    'work_summary' =>
+        $data['work_summary'] ?? null,
+
+    'completion_notes' =>
+        $data['completion_notes'] ?? null,
+];
+
+if (
+    $job->payment_required
+    &&
+    ($data['payment_collected'] ?? false)
+) {
+    $jobUpdate['payment_status'] = 'paid';
+    $jobUpdate['paid_at'] = now();
+}
+
+if (
+    $job->certificate_required
+    &&
+    $job->certificate_status === 'not_required'
+) {
+    $jobUpdate['certificate_status'] =
+        'required';
+}
+
+$job->update($jobUpdate);
 
     $employee->attendances()->create([
       'job_id' => $job->id,
@@ -703,29 +779,145 @@ class EmployeeMobileController extends Controller
     ];
   }
 
-  private function jobPayload(EmployeeJob $job): array
-  {
-    return [
-      'id' => $job->id,
-      'title' => $job->title,
-      'description' => $job->description,
-      'customer_name' => $job->customer_name,
-      'customer_phone' => $job->customer_phone,
-      'site_address' => $job->site_address,
-      'site_postcode' => $job->site_postcode,
-      'scheduled_date' => optional($job->scheduled_date)->toDateString(),
-      'scheduled_start_time' => $job->scheduled_start_time ? substr($job->scheduled_start_time, 0, 5) : null,
-      'expected_duration_minutes' => $job->expected_duration_minutes,
-      'started_at' => optional($job->started_at)->toIso8601String(),
-      'finished_at' => optional($job->finished_at)->toIso8601String(),
-      'actual_duration_minutes' => $job->actualDurationMinutes(),
-      'duration_difference_minutes' => $job->durationDifferenceMinutes(),
-      'priority' => $job->priority,
-      'status' => $job->status,
-      'internal_notes' => $job->internal_notes,
-    ];
-  }
+ private function jobPayload(EmployeeJob $job): array
+{
+    $job->loadMissing([
+        'client',
+        'property',
+    ]);
 
+    return [
+        'id' => $job->id,
+
+        'job_reference' => $job->job_reference,
+
+        'title' => $job->title,
+        'description' => $job->description,
+
+        'client' => $job->client
+            ? [
+                'id' => $job->client->id,
+                'name' => $job->client->name,
+            ]
+            : null,
+
+        'property' => $job->property
+            ? [
+                'id' => $job->property->id,
+                'address' =>
+                    $job->property->full_address,
+                'access_notes' =>
+                    $job->property->access_notes,
+            ]
+            : null,
+
+        'customer_name' =>
+            $job->customer_name,
+
+        'customer_phone' =>
+            $job->customer_phone,
+
+        'customer_email' =>
+            $job->customer_email,
+
+        'site_address' =>
+            $job->site_address,
+
+        'site_postcode' =>
+            $job->site_postcode,
+
+        'scheduled_date' =>
+            optional(
+                $job->scheduled_date
+            )->toDateString(),
+
+        'scheduled_start_time' =>
+            $job->scheduled_start_time
+                ? substr(
+                    $job->scheduled_start_time,
+                    0,
+                    5
+                )
+                : null,
+
+        'expected_duration_minutes' =>
+            $job->expected_duration_minutes,
+
+        'started_at' =>
+            optional(
+                $job->started_at
+            )->toIso8601String(),
+
+        'finished_at' =>
+            optional(
+                $job->finished_at
+            )->toIso8601String(),
+
+        'actual_duration_minutes' =>
+            $job->actualDurationMinutes(),
+
+        'duration_difference_minutes' =>
+            $job->durationDifferenceMinutes(),
+
+        'priority' => $job->priority,
+
+        'status' => $job->status,
+
+        'internal_notes' =>
+            $job->internal_notes,
+
+        /*
+        |--------------------------------------------------------------------------
+        | Payment
+        |--------------------------------------------------------------------------
+        */
+
+        'payment' => [
+            'required' =>
+                $job->payment_required,
+
+            'amount' =>
+                $job->agreed_amount !== null
+                    ? (float) $job->agreed_amount
+                    : null,
+
+            'method' =>
+                $job->payment_method,
+
+            'status' =>
+                $job->payment_status,
+
+            'invoice_number' =>
+                $job->invoice_number,
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | Certificate
+        |--------------------------------------------------------------------------
+        */
+
+        'certificate' => [
+            'required' =>
+                $job->certificate_required,
+
+            'type' =>
+                $job->certificate_type,
+
+            'status' =>
+                $job->certificate_status,
+        ],
+
+        'work_summary' =>
+            $job->work_summary,
+
+        'completion_notes' =>
+            $job->completion_notes,
+
+        'admin_status' =>
+            $job->admin_status,
+    ];
+}
   private function shiftPayload(EmployeeShift $shift): array
   {
     $clockIn = $shift->attendances->where('clock_type', 'in')->sortByDesc('server_timestamp')->first();

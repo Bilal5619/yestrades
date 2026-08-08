@@ -998,34 +998,62 @@ Route::put(
 
     Route::prefix('hr/jobs')->group(function () {
 
-        Route::get('/', 'Company\JobSheetController@index')
-            ->middleware('company.permission:jobs.view')
-            ->name('company.hr.jobs.index');
+    Route::get(
+        '/',
+        'Company\JobSheetController@index'
+    )
+        ->middleware('company.permission:jobs.view')
+        ->name('company.hr.jobs.index');
 
-        Route::get('/create', 'Company\JobSheetController@create')
-            ->middleware('company.permission:jobs.manage')
-            ->name('company.hr.jobs.create');
+    Route::get(
+        '/create',
+        'Company\JobSheetController@create'
+    )
+        ->middleware('company.permission:jobs.manage')
+        ->name('company.hr.jobs.create');
 
-        Route::post('/', 'Company\JobSheetController@store')
-            ->middleware('company.permission:jobs.manage')
-            ->name('company.hr.jobs.store');
+    Route::post(
+        '/',
+        'Company\JobSheetController@store'
+    )
+        ->middleware('company.permission:jobs.manage')
+        ->name('company.hr.jobs.store');
 
-        Route::get('/{job}', 'Company\JobSheetController@show')
-            ->middleware('company.permission:jobs.view')
-            ->name('company.hr.jobs.show');
+    Route::post(
+        '/{job}/close',
+        'Company\JobSheetController@close'
+    )
+        ->middleware('company.permission:jobs.manage')
+        ->name('company.hr.jobs.close');
 
-        Route::get('/{job}/edit', 'Company\JobSheetController@edit')
-            ->middleware('company.permission:jobs.manage')
-            ->name('company.hr.jobs.edit');
+    Route::get(
+        '/{job}',
+        'Company\JobSheetController@show'
+    )
+        ->middleware('company.permission:jobs.view')
+        ->name('company.hr.jobs.show');
 
-        Route::put('/{job}', 'Company\JobSheetController@update')
-            ->middleware('company.permission:jobs.manage')
-            ->name('company.hr.jobs.update');
+    Route::get(
+        '/{job}/edit',
+        'Company\JobSheetController@edit'
+    )
+        ->middleware('company.permission:jobs.manage')
+        ->name('company.hr.jobs.edit');
 
-        Route::delete('/{job}', 'Company\JobSheetController@destroy')
-            ->middleware('company.permission:jobs.manage')
-            ->name('company.hr.jobs.destroy');
-    });
+    Route::put(
+        '/{job}',
+        'Company\JobSheetController@update'
+    )
+        ->middleware('company.permission:jobs.manage')
+        ->name('company.hr.jobs.update');
+
+    Route::delete(
+        '/{job}',
+        'Company\JobSheetController@destroy'
+    )
+        ->middleware('company.permission:jobs.manage')
+        ->name('company.hr.jobs.destroy');
+});
 
 
     /*

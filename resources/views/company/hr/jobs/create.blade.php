@@ -9,12 +9,15 @@
 <div class="jobsheet-header">
     <div>
         <h1>New Job</h1>
-        <p>Assign a job to an employee. It appears in their weekly job sheet in the app.</p>
-    </div>
+    <p>
+    Create a Yes Trades job and assign it to a field engineer.
+    The engineer will receive the job in the staff app.
+</p>
+  </div>
 
     <a href="{{ route('company.hr.jobs.index') }}" class="jobsheet-back">
         <i class="fas fa-arrow-left"></i>
-        Job Sheet
+       Jobs
     </a>
 </div>
 
