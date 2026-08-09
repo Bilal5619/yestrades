@@ -36,7 +36,6 @@ Route::prefix('v1/vendor')->group(function () {
     Route::get('/dashboard', [VendorMobileController::class, 'dashboard']);
     Route::post('/profile', [VendorMobileController::class, 'updateProfile']);
     Route::post('/change-password', [VendorMobileController::class, 'changePassword']);
-Route::post('/push-token', [EmployeeMobileController::class, 'storePushToken']);
     Route::get('/account-setup', [VendorMobileController::class, 'accountSetup']);
     Route::post('/business-type', [VendorMobileController::class, 'updateBusinessType']);
     Route::post('/registration-numbers', [VendorMobileController::class, 'storeRegistrationNumber']);
@@ -66,6 +65,7 @@ Route::prefix('v1/employee')->group(function () {
     Route::get('/me', [EmployeeAuthController::class, 'me']);
     Route::post('/logout', [EmployeeAuthController::class, 'logout']);
     Route::get('/dashboard', [EmployeeDashboardController::class, 'index']);
+Route::post('/push-token', [EmployeeMobileController::class, 'storePushToken']);
 
     Route::get('/profile', [EmployeeMobileController::class, 'profile']);
     Route::put('/profile', [EmployeeMobileController::class, 'updateProfile']);
