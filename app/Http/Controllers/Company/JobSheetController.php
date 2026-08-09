@@ -127,14 +127,19 @@ class JobSheetController extends Controller
         $validated['updated_by'] =
             auth('company')->id();
 
-        EmployeeJob::create($validated);
+       $job = EmployeeJob::create($validated);
 
-        return redirect()
-            ->route('company.hr.jobs.index')
-            ->with(
-                'success',
-                'Job created and assigned successfully.'
-            );
+if ($job->employee) {
+    app(\App\Services\EmployeePushNotificationService::class)
+        ->sendJobAssigned($job->employee, $job);
+}
+
+return redirect()
+    ->route('company.hr.jobs.index')
+    ->with(
+        'success',
+        'Job created and assigned successfully.'
+    );
     }
 
     public function show(EmployeeJob $job)
