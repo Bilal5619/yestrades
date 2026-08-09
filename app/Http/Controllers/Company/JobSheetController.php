@@ -10,6 +10,7 @@ use App\Models\Company\EmployeeJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
+use App\Models\Company\EmployeeJobVisit;
 
 class JobSheetController extends Controller
 {
@@ -138,13 +139,20 @@ class JobSheetController extends Controller
 
     public function show(EmployeeJob $job)
     {
-        $job->load([
-            'employee',
-            'client',
-            'property',
-            'createdBy',
-            'attendances',
-        ]);
+       $job->load([
+    'employee',
+    'client',
+    'property',
+    'createdBy',
+    'attendances',
+
+    'visits' => function ($query) {
+        $query
+            ->with('employee')
+            ->orderBy('visit_date')
+            ->orderBy('start_time');
+    },
+      ]);
 
         return view(
             'company.hr.jobs.show',
@@ -320,7 +328,223 @@ class JobSheetController extends Controller
             }
         }
     }
+    public function createVisit(
+    EmployeeJob $job
+) {
+    return view(
+        'company.hr.jobs.visits.create',
+        [
+            'job' => $job,
 
+            'employees' =>
+                $this->fieldEngineers(),
+        ]
+    );
+}
+
+
+public function storeVisit(
+    Request $request,
+    EmployeeJob $job
+) {
+    $validated =
+        $this->validateVisit(
+            $request
+        );
+
+    $validated['job_id'] =
+        $job->id;
+
+    $validated['created_by'] =
+        auth('company')->id();
+
+    $validated['updated_by'] =
+        auth('company')->id();
+
+    $visit =
+        EmployeeJobVisit::create(
+            $validated
+        );
+
+    /*
+     * Parent job is not completed automatically.
+     * Admin controls overall completion.
+     */
+
+    if (
+        in_array(
+            $job->status,
+            [
+                'assigned',
+                'accepted',
+            ],
+            true
+        )
+    ) {
+        $job->update([
+            'status' => 'in_progress',
+            'updated_by' =>
+                auth('company')->id(),
+        ]);
+    }
+
+    return redirect()
+        ->route(
+            'company.hr.jobs.show',
+            $job
+        )
+        ->with(
+            'success',
+            'Visit scheduled successfully.'
+        );
+}
+
+
+public function editVisit(
+    EmployeeJob $job,
+    EmployeeJobVisit $visit
+) {
+    abort_unless(
+        $visit->job_id
+        === $job->id,
+        404
+    );
+
+    return view(
+        'company.hr.jobs.visits.edit',
+        [
+            'job' => $job,
+
+            'visit' => $visit,
+
+            'employees' =>
+                $this->fieldEngineers(),
+        ]
+    );
+}
+
+
+public function updateVisit(
+    Request $request,
+    EmployeeJob $job,
+    EmployeeJobVisit $visit
+) {
+    abort_unless(
+        $visit->job_id
+        === $job->id,
+        404
+    );
+
+    $validated =
+        $this->validateVisit(
+            $request
+        );
+
+    $validated['updated_by'] =
+        auth('company')->id();
+
+    $visit->update(
+        $validated
+    );
+
+    /*
+     * Do NOT automatically complete
+     * the parent job here.
+     */
+
+    return redirect()
+        ->route(
+            'company.hr.jobs.show',
+            $job
+        )
+        ->with(
+            'success',
+            'Visit updated successfully.'
+        );
+}
+
+
+public function destroyVisit(
+    EmployeeJob $job,
+    EmployeeJobVisit $visit
+) {
+    abort_unless(
+        $visit->job_id
+        === $job->id,
+        404
+    );
+
+    $visit->delete();
+
+    return redirect()
+        ->route(
+            'company.hr.jobs.show',
+            $job
+        )
+        ->with(
+            'success',
+            'Visit removed successfully.'
+        );
+}
+
+
+private function validateVisit(
+    Request $request
+): array {
+    return $request->validate([
+
+        'employee_id' => [
+            'nullable',
+
+            Rule::exists(
+                'employees',
+                'id'
+            )
+                ->where(
+                    fn ($query) =>
+                    $query
+                        ->where(
+                            'employment_status',
+                            'active'
+                        )
+                        ->where(
+                            'is_field_engineer',
+                            1
+                        )
+                ),
+        ],
+
+        'visit_date' => [
+            'required',
+            'date',
+        ],
+
+        'start_time' => [
+            'nullable',
+            'date_format:H:i',
+        ],
+
+        'expected_duration_minutes' => [
+            'nullable',
+            'integer',
+            'min:1',
+        ],
+
+        'status' => [
+            'required',
+
+            Rule::in(
+                EmployeeJobVisit::STATUSES
+            ),
+        ],
+
+        'notes' => [
+            'nullable',
+            'string',
+            'max:5000',
+        ],
+    ]);
+}
     private function validateJob(
         Request $request
     ): array {

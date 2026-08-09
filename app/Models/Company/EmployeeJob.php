@@ -196,6 +196,13 @@ public const APPOINTMENT_STATUSES = [
             'client_property_id'
         );
     }
+    public function visits()
+{
+    return $this->hasMany(
+        EmployeeJobVisit::class,
+        'job_id'
+    );
+}
 
     public function attendances()
     {

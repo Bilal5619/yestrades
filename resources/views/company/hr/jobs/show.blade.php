@@ -255,7 +255,193 @@
             </div>
         </div>
     @endif
+<hr>
 
+
+<div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    flex-wrap:wrap;
+">
+
+    <h3>
+        Visits / Work Days
+    </h3>
+
+
+    @if(
+        auth('company')
+            ->user()
+            ->hasPermission(
+                'jobs.manage'
+            )
+    )
+
+        <a
+            href="{{
+                route(
+                    'company.hr.jobs.visits.create',
+                    $job
+                )
+            }}"
+            class="jobsheet-save"
+            style="
+                text-decoration:none;
+            "
+        >
+            + Add Visit
+        </a>
+
+    @endif
+
+</div>
+
+
+@if($job->visits->count())
+
+    @foreach(
+        $job->visits as $visit
+    )
+
+        <div class="
+            jobsheet-detail-row
+        ">
+
+            <div class="
+                jobsheet-detail-label
+            ">
+
+                {{
+                    $visit
+                        ->visit_date
+                        ->format(
+                            'd M Y'
+                        )
+                }}
+
+            </div>
+
+
+            <div class="
+                jobsheet-detail-value
+            ">
+
+                <strong>
+
+                    {{
+                        $visit
+                            ->start_time
+                            ?: 'No time set'
+                    }}
+
+                </strong>
+
+
+                &middot;
+
+                {{
+                    optional(
+                        $visit->employee
+                    )
+                    ->full_name
+                    ?? 'Unassigned'
+                }}
+
+
+                &middot;
+
+                {{
+                    ucwords(
+                        str_replace(
+                            '_',
+                            ' ',
+                            $visit->status
+                        )
+                    )
+                }}
+
+
+                @if(
+                    $visit
+                        ->expected_duration_minutes
+                )
+
+                    &middot;
+
+                    {{
+                        $visit
+                            ->expected_duration_minutes
+                    }}
+                    minutes
+
+                @endif
+
+
+                @if(
+                    auth('company')
+                        ->user()
+                        ->hasPermission(
+                            'jobs.manage'
+                        )
+                )
+
+                    &middot;
+
+                    <a
+                        href="{{
+                            route(
+                                'company.hr.jobs.visits.edit',
+                                [
+                                    $job,
+                                    $visit
+                                ]
+                            )
+                        }}"
+                    >
+                        Edit
+                    </a>
+
+                @endif
+
+
+                @if($visit->notes)
+
+                    <div
+                        style="
+                            margin-top:6px;
+                            color:#aab4ca;
+                        "
+                    >
+
+                        {{
+                            $visit
+                                ->notes
+                        }}
+
+                    </div>
+
+                @endif
+
+            </div>
+
+        </div>
+
+    @endforeach
+
+@else
+
+    <div
+        style="
+            color:#aab4ca;
+            margin-bottom:20px;
+        "
+    >
+        No visits scheduled yet.
+    </div>
+
+@endif
 
     <hr>
 

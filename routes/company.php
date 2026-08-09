@@ -1264,6 +1264,64 @@ Route::prefix('clients')
     Route::get('hr/timesheet', 'Company\TimesheetController@index')
         ->middleware('company.permission:reports.attendance')
         ->name('company.hr.timesheet.index');
+        Route::get(
+    '/hr/jobs/{job}/visits/create',
+    'Company\JobSheetController@createVisit'
+)
+    ->middleware(
+        'company.permission:jobs.manage'
+    )
+    ->name(
+        'company.hr.jobs.visits.create'
+    );
+
+
+Route::post(
+    '/hr/jobs/{job}/visits',
+    'Company\JobSheetController@storeVisit'
+)
+    ->middleware(
+        'company.permission:jobs.manage'
+    )
+    ->name(
+        'company.hr.jobs.visits.store'
+    );
+
+
+Route::get(
+    '/hr/jobs/{job}/visits/{visit}/edit',
+    'Company\JobSheetController@editVisit'
+)
+    ->middleware(
+        'company.permission:jobs.manage'
+    )
+    ->name(
+        'company.hr.jobs.visits.edit'
+    );
+
+
+Route::put(
+    '/hr/jobs/{job}/visits/{visit}',
+    'Company\JobSheetController@updateVisit'
+)
+    ->middleware(
+        'company.permission:jobs.manage'
+    )
+    ->name(
+        'company.hr.jobs.visits.update'
+    );
+
+
+Route::delete(
+    '/hr/jobs/{job}/visits/{visit}',
+    'Company\JobSheetController@destroyVisit'
+)
+    ->middleware(
+        'company.permission:jobs.manage'
+    )
+    ->name(
+        'company.hr.jobs.visits.destroy'
+    );
 
 });
 
