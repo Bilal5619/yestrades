@@ -531,7 +531,7 @@
           </div>
           <blockquote>{{ __('Booked Friday night and the boiler was fixed Saturday morning. Clear price, quick arrival, no drama.') }}</blockquote>
           <div class="yt-review-meta">
-            <span><strong>{{ __('Sarah M') }}</strong>{{ __('Croydon') }}</span>
+            <span><strong>{{ __('iram') }}</strong>{{ __('Livingston') }}</span>
             <span class="yt-review-tag">{{ __('Boiler repair') }}</span>
           </div>
         </article>
@@ -546,7 +546,7 @@
           </div>
           <blockquote>{{ __('Needed an EICR for a rental property. The engineer arrived on time and the report was easy to share with my agent.') }}</blockquote>
           <div class="yt-review-meta">
-            <span><strong>{{ __('Imran K') }}</strong>{{ __('Ilford') }}</span>
+            <span><strong>{{ __('Alison') }}</strong>{{ __('LIVIGNSTON') }}</span>
             <span class="yt-review-tag">{{ __('EICR') }}</span>
           </div>
         </article>
@@ -559,10 +559,10 @@
             <i class="fas fa-star"></i>
             <i class="fas fa-star"></i>
           </div>
-          <blockquote>{{ __('End-of-tenancy cleaning was spotless. Booking took less than a minute and the team kept me updated.') }}</blockquote>
+          <blockquote>{{ __('Our kitchen rebuild was handled smoothly from quote to finish. The team kept the site tidy and updated us at every stage.') }}</blockquote>
           <div class="yt-review-meta">
-            <span><strong>{{ __('Amelia R') }}</strong>{{ __('Wembley') }}</span>
-            <span class="yt-review-tag">{{ __('Cleaning') }}</span>
+            <span><strong>{{ __('Amelia R') }}</strong>{{ __('Bathgate') }}</span>
+            <span class="yt-review-tag">{{ __('Kitchen rebuild') }}</span>
           </div>
         </article>
       </div>
