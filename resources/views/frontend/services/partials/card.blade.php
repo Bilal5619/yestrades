@@ -48,9 +48,6 @@
       @if ($service->zoom_meeting == 1)
         <span><i class="fal fa-video"></i>{{ __('Online') }}</span>
       @endif
-      @if (!empty($service->address))
-        <span><i class="fal fa-map-marker-alt"></i>{{ truncateString($service->address, 26) }}</span>
-      @endif
     </div>
     <div class="sv-card-footer">
       @if ($service->isQuoteType())
