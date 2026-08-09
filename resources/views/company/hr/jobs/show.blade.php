@@ -164,9 +164,9 @@
         <div class="jobsheet-detail-value">
             {{
                 $job->started_at
-                    ? $job->started_at->format(
-                        'd M Y H:i'
-                    )
+            ->copy()
+            ->timezone('Europe/London')
+            ->format('d M Y H:i')
                     : 'Not started'
             }}
         </div>
@@ -180,10 +180,10 @@
 
         <div class="jobsheet-detail-value">
             {{
-                $job->finished_at
-                    ? $job->finished_at->format(
-                        'd M Y H:i'
-                    )
+                 $job->finished_at
+            ->copy()
+            ->timezone('Europe/London')
+            ->format('d M Y H:i')
                     : '—'
             }}
         </div>
