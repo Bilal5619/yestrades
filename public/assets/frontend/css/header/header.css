@@ -66,10 +66,11 @@
 .header-area .main-navbar .navbar .navbar-brand {
   padding: 0;
   margin: 0;
-  background-color: #fff !important;
+  background-color: transparent !important;
 }
 .header-area .header-wordmark {
   display: inline-flex;
+  background: transparent !important;
   align-items: center;
   gap: 8px;
   color: #1e3a8a;
@@ -102,7 +103,8 @@
   display: block;
   width: auto;
   height: 36px;
-  border-radius: 4px;
+  background: transparent !important;
+  border-radius: 0;
 }
 .header-area .main-navbar .nav-item {
   position: relative;
