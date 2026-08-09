@@ -1238,6 +1238,20 @@ Route::prefix('clients')
         Route::post('/', 'Company\AttendanceController@store')
             ->middleware('company.permission:attendance.manage')
             ->name('company.hr.attendance.store');
+            Route::get(
+    '/employee/{employee}/{date}',
+    'Company\AttendanceController@showDay'
+)
+    ->middleware(
+        'company.permission:attendance.manage'
+    )
+    ->where(
+        'date',
+        '\d{4}-\d{2}-\d{2}'
+    )
+    ->name(
+        'company.hr.attendance.show-day'
+    );
     });
 
 
