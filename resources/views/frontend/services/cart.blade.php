@@ -3005,36 +3005,17 @@
           const cards = Array.from(item.querySelectorAll('.question-card')).filter(function (card) {
             return card.style.display !== 'none';
           });
-          const requiredCards = cards.filter(function (card) {
-            return card.dataset.required === 'true';
-          });
-
-          if (requiredCards.length === 0) {
-            cards.forEach(function (card) {
-              card.classList.remove('is-sequence-hidden');
-            });
-            return;
-          }
 
           cards.forEach(function (card) {
             card.classList.add('is-sequence-hidden');
           });
 
-          let revealOptionalQuestions = true;
-
-          for (const card of requiredCards) {
+          for (const card of cards) {
             card.classList.remove('is-sequence-hidden');
 
-            if (!isCartQuestionAnswered(card)) {
-              revealOptionalQuestions = false;
+            if (card.dataset.required === 'true' && !isCartQuestionAnswered(card)) {
               break;
             }
-          }
-
-          if (revealOptionalQuestions) {
-            cards.forEach(function (card) {
-              card.classList.remove('is-sequence-hidden');
-            });
           }
         });
       }
