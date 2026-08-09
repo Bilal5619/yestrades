@@ -334,7 +334,10 @@ public function holidayAllowances()
         'employee_id'
     );
 }
-
+public function pushTokens()
+{
+    return $this->hasMany(EmployeePushToken::class);
+}
 public function currentHolidayAllowance()
 {
     return $this->hasOne(

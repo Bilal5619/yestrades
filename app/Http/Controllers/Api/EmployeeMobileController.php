@@ -16,7 +16,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-
+use App\Models\Company\EmployeePushToken;
 class EmployeeMobileController extends Controller
 {
   public function profile(Request $request): JsonResponse
@@ -956,4 +956,40 @@ $job->update($jobUpdate);
       'shift_date' => optional(optional($attendance->shift)->shift_date)->toDateString(),
     ];
   }
+  public function storePushToken(Request $request): JsonResponse
+{
+    $data = $request->validate([
+        'expo_push_token' => [
+            'required',
+            'string',
+            'max:1000',
+        ],
+        'platform' => [
+            'nullable',
+            Rule::in(['android', 'ios']),
+        ],
+    ]);
+
+    /** @var Employee $employee */
+    $employee = $request->user();
+
+    $token = EmployeePushToken::updateOrCreate(
+        [
+            'expo_push_token' => $data['expo_push_token'],
+        ],
+        [
+            'employee_id' => $employee->id,
+            'platform' => $data['platform'] ?? null,
+            'last_used_at' => now(),
+        ]
+    );
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Push notification device registered.',
+        'data' => [
+            'token_id' => $token->id,
+        ],
+    ]);
+}
 }
