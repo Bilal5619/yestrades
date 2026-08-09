@@ -56,6 +56,22 @@ class JobSheetController extends Controller
             ->groupBy(function ($job) {
                 return $job->scheduled_date->toDateString();
             });
+            $unscheduledJobs = EmployeeJob::query()
+    ->with([
+        'employee',
+        'client',
+        'property',
+    ])
+    ->whereNull('scheduled_date')
+    ->whereNotIn(
+        'status',
+        [
+            'completed',
+            'cancelled',
+        ]
+    )
+    ->orderBy('created_at')
+    ->get();
 
         $employees = $this->fieldEngineers();
 
@@ -85,6 +101,7 @@ class JobSheetController extends Controller
             'paymentOutstandingCount' => $paymentOutstandingCount,
             'certificateOutstandingCount' =>
                 $certificateOutstandingCount,
+            'unscheduledJobs' => $unscheduledJobs,
         ]);
     }
 
@@ -376,10 +393,17 @@ class JobSheetController extends Controller
                 'string',
                 'max:20',
             ],
+            'appointment_status' => [
+                'required',
+                Rule::in(
+                    EmployeeJob::APPOINTMENT_STATUSES
+                ),
+            ],
 
             'scheduled_date' => [
-                'required',
+                'nullable',
                 'date',
+                'required_if:appointment_status,confirmed',
             ],
 
             'scheduled_start_time' => [

@@ -30,7 +30,12 @@ class EmployeeJob extends Model
         'awaiting_review',
         'cancelled',
     ];
-
+public const APPOINTMENT_STATUSES = [
+    'not_confirmed',
+    'awaiting_customer',
+    'proposed',
+    'confirmed',
+];
     public const PAYMENT_STATUSES = [
         'not_required',
         'outstanding',
@@ -88,6 +93,8 @@ class EmployeeJob extends Model
 
         'site_address',
         'site_postcode',
+
+        'appointment_status',
 
         'scheduled_date',
         'scheduled_start_time',

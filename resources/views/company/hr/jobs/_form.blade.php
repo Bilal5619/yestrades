@@ -168,26 +168,122 @@
             </div>
         @enderror
     </div>
+<div class="jobsheet-field">
 
+    <label>
+        Appointment Status
+    </label>
 
-    {{-- DATE --}}
-    <div class="jobsheet-field">
-        <label>Scheduled Date</label>
+    <select
+        name="appointment_status"
+        id="appointment_status"
+        required
+    >
 
-        <input
-            type="date"
-            name="scheduled_date"
-            value="{{
+        <option
+            value="not_confirmed"
+            @selected(
                 old(
-                    'scheduled_date',
-                    optional($job)->scheduled_date?->toDateString()
+                    'appointment_status',
+                    optional($job)
+                        ->appointment_status
+                        ?? 'not_confirmed'
                 )
-            }}"
-            required
+                === 'not_confirmed'
+            )
         >
-    </div>
+            Date Not Confirmed
+        </option>
 
 
+        <option
+            value="awaiting_customer"
+            @selected(
+                old(
+                    'appointment_status',
+                    optional($job)
+                        ->appointment_status
+                        ?? 'not_confirmed'
+                )
+                === 'awaiting_customer'
+            )
+        >
+            Awaiting Customer / Tenant
+        </option>
+
+
+        <option
+            value="proposed"
+            @selected(
+                old(
+                    'appointment_status',
+                    optional($job)
+                        ->appointment_status
+                        ?? 'not_confirmed'
+                )
+                === 'proposed'
+            )
+        >
+            Date Proposed
+        </option>
+
+
+        <option
+            value="confirmed"
+            @selected(
+                old(
+                    'appointment_status',
+                    optional($job)
+                        ->appointment_status
+                        ?? 'not_confirmed'
+                )
+                === 'confirmed'
+            )
+        >
+            Confirmed
+        </option>
+
+    </select>
+
+</div>
+
+    <div class="jobsheet-field">
+
+    <label>
+        Scheduled Date
+    </label>
+
+    <input
+        type="date"
+        name="scheduled_date"
+        id="scheduled_date"
+        value="{{
+            old(
+                'scheduled_date',
+                optional($job)
+                    ->scheduled_date
+                    ?->toDateString()
+            )
+        }}"
+    >
+
+    <small
+        style="
+            color:#aab4ca;
+            font-size:11px;
+        "
+    >
+        Leave blank if the date
+        has not been confirmed.
+    </small>
+
+    @error('scheduled_date')
+        <div class="jobsheet-error">
+            {{ $message }}
+        </div>
+    @enderror
+
+</div>
     {{-- TIME --}}
     <div class="jobsheet-field">
         <label>Start Time</label>

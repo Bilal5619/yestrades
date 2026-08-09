@@ -1,4 +1,4 @@
-@php
+﻿@php
   if (Auth::guard('web')->check()) {
     $svUserId = Auth::guard('web')->user()->id;
     $svInWishlist = checkWishList($service->id, $svUserId);
@@ -47,6 +47,9 @@
     <div class="sv-card-meta">
       @if ($service->zoom_meeting == 1)
         <span><i class="fal fa-video"></i>{{ __('Online') }}</span>
+      @endif
+      @if (!empty($service->address))
+        <span><i class="fal fa-map-marker-alt"></i>{{ truncateString($service->address, 26) }}</span>
       @endif
     </div>
     <div class="sv-card-footer">
