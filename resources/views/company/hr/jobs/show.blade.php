@@ -143,51 +143,104 @@
     </div>
 
 
-    <div class="jobsheet-detail-row">
-        <div class="jobsheet-detail-label">
-            Appointment
-        </div>
-
-        <div class="jobsheet-detail-value">
-            {{ $job->scheduled_date->format('d M Y') }}
-
-            {{ $job->scheduled_start_time }}
-        </div>
+   <div class="jobsheet-detail-row">
+    <div class="jobsheet-detail-label">
+        Appointment
     </div>
 
+    <div class="jobsheet-detail-value">
 
-    <div class="jobsheet-detail-row">
-        <div class="jobsheet-detail-label">
-            Started
+        <div>
+            {{
+                ucwords(
+                    str_replace(
+                        '_',
+                        ' ',
+                        $job->appointment_status
+                            ?? 'not_confirmed'
+                    )
+                )
+            }}
         </div>
 
-        <div class="jobsheet-detail-value">
+        @if($job->scheduled_date)
+
+            <div style="margin-top:5px;">
+
+                {{ $job->scheduled_date->format('d M Y') }}
+
+                @if($job->scheduled_start_time)
+                    at {{ $job->scheduled_start_time }}
+                @endif
+
+            </div>
+
+        @else
+
+            <div
+                style="
+                    margin-top:5px;
+                    color:#ffc46f;
+                "
+            >
+                Date not confirmed
+            </div>
+
+        @endif
+
+    </div>
+</div>
+
+    <div class="jobsheet-detail-row">
+    <div class="jobsheet-detail-label">
+        Started
+    </div>
+
+    <div class="jobsheet-detail-value">
+
+        @if($job->started_at)
+
             {{
                 $job->started_at
-            ->copy()
-            ->timezone('Europe/London')
-            ->format('d M Y H:i')
-                    : 'Not started'
+                    ->copy()
+                    ->timezone('Europe/London')
+                    ->format('d M Y H:i')
             }}
-        </div>
+
+        @else
+
+            Not started
+
+        @endif
+
     </div>
+</div>
 
 
     <div class="jobsheet-detail-row">
-        <div class="jobsheet-detail-label">
-            Finished
-        </div>
-
-        <div class="jobsheet-detail-value">
-            {{
-                 $job->finished_at
-            ->copy()
-            ->timezone('Europe/London')
-            ->format('d M Y H:i')
-                    : '—'
-            }}
-        </div>
+    <div class="jobsheet-detail-label">
+        Finished
     </div>
+
+    <div class="jobsheet-detail-value">
+
+        @if($job->finished_at)
+
+            {{
+                $job->finished_at
+                    ->copy()
+                    ->timezone('Europe/London')
+                    ->format('d M Y H:i')
+            }}
+
+        @else
+
+            Not finished
+
+        @endif
+
+    </div>
+</div>
 
 
     @if($job->actualDurationMinutes() !== null)
