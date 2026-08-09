@@ -44,7 +44,69 @@
 
 </div>
 
+{{-- WEEK NAVIGATION --}}
+<div class="jobsheet-week-nav">
 
+    <a
+        href="{{
+            route(
+                'company.hr.jobs.index',
+                [
+                    'week' =>
+                        $weekStart
+                            ->copy()
+                            ->subWeek()
+                            ->toDateString()
+                ]
+            )
+        }}"
+    >
+        <i class="fas fa-chevron-left"></i>
+        Previous week
+    </a>
+
+
+    <div class="jobsheet-week-label">
+        {{
+            $weekStart->format('d M')
+        }}
+        –
+        {{
+            $weekEnd->format('d M Y')
+        }}
+    </div>
+
+
+    <a
+        href="{{
+            route(
+                'company.hr.jobs.index',
+                [
+                    'week' =>
+                        $weekStart
+                            ->copy()
+                            ->addWeek()
+                            ->toDateString()
+                ]
+            )
+        }}"
+    >
+        Next week
+        <i class="fas fa-chevron-right"></i>
+    </a>
+
+
+    <a
+        href="{{
+            route(
+                'company.hr.jobs.index'
+            )
+        }}"
+    >
+        This week
+    </a>
+
+</div>
 {{-- UNSCHEDULED JOBS --}}
 @if(
     isset($unscheduledJobs)
