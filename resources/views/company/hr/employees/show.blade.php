@@ -773,6 +773,36 @@
 
 </div>
 
+@if (auth('company')->user()->hasPermission('equipment-vehicles.manage'))
+<div class="employee-profile-card">
+    <h2>Equipment and Vehicles Assigned</h2>
+
+    @forelse ($employee->currentEquipmentAssignments as $assignment)
+        <div class="employee-detail-row">
+            <div class="employee-detail-label">
+                {{ optional($assignment->equipment)->name ?? 'Unknown item' }}
+            </div>
+
+            <div class="employee-detail-value">
+                {{ ucfirst(optional($assignment->equipment)->category ?? '') }}
+                &middot;
+                since {{ $assignment->assigned_at->format('d M Y') }}
+                @if (auth('company')->user()->hasPermission('equipment-vehicles.manage'))
+                    &middot;
+                    <a href="{{ route('company.hr.equipment.show', $assignment->equipment) }}" style="color:#6fa8ee;">Manage</a>
+                @endif
+            </div>
+        </div>
+    @empty
+        <div class="employee-detail-row">
+            <div class="employee-detail-value" style="color:#aab4ca;">
+                No equipment or vehicles currently checked out to this employee.
+            </div>
+        </div>
+    @endforelse
+</div>
+@endif
+
 </div>
 
 @if (

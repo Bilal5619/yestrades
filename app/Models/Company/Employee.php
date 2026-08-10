@@ -477,6 +477,19 @@ public function attendances()
         'employee_id'
     );
 }
+
+public function equipmentAssignments()
+{
+    return $this->hasMany(EquipmentAssignment::class, 'employee_id');
+}
+
+// Equipment/vehicles currently checked out to this employee (not yet returned).
+public function currentEquipmentAssignments()
+{
+    return $this->hasMany(EquipmentAssignment::class, 'employee_id')
+        ->whereNull('returned_at')
+        ->with('equipment');
+}
 public function sponsoredWorkerRecord()
 {
     return $this->hasOne(

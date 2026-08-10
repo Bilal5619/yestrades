@@ -177,11 +177,19 @@
         </p>
     </div>
 
-    <a href="{{ route('company.hr.holidays.index') }}"
-       class="request-button">
-        <i class="fas fa-arrow-left"></i>
-        Holiday Overview
-    </a>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="{{ route('company.hr.holidays.export', request()->query()) }}"
+           class="request-button" style="background: transparent; border: 1px solid rgba(255,255,255,0.16);">
+            <i class="fas fa-file-excel"></i>
+            Export to Excel
+        </a>
+
+        <a href="{{ route('company.hr.holidays.index') }}"
+           class="request-button">
+            <i class="fas fa-arrow-left"></i>
+            Holiday Overview
+        </a>
+    </div>
 
 </div>
 

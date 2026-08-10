@@ -27,6 +27,7 @@
 
     .timesheet-header h1 { margin: 0 0 7px; font-size: 28px; }
     .timesheet-header p { margin: 0; color: #aab4ca; }
+    .btn-outline-sm { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 7px; font-size: 13px; text-decoration: none; background: transparent; color: #c9d2e5; border: 1px solid rgba(255,255,255,0.16); }
 
     .timesheet-filter-bar {
         display: flex;
@@ -111,6 +112,9 @@
         <h1>Timesheet</h1>
         <p>Attendance and job hours by employee, with exceptions flagged for review.</p>
     </div>
+    <a href="{{ route('company.hr.timesheet.export', request()->query()) }}" class="btn-outline-sm">
+        <i class="fas fa-file-excel"></i> Export to Excel
+    </a>
 </div>
 
 <form method="GET" action="{{ route('company.hr.timesheet.index') }}" class="timesheet-filter-bar">

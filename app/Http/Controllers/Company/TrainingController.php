@@ -1413,6 +1413,65 @@ public function expiring(Request $request)
     );
 }
 
+public function exportExpiring(Request $request)
+{
+    $today = today();
+
+    $query = EmployeeTrainingRecord::query()
+        ->with(['employee', 'trainingCourse'])
+        ->where('status', 'completed')
+        ->whereNotNull('expiry_date')
+        ->whereHas('employee', function ($employeeQuery) {
+            $employeeQuery->whereNotIn('employment_status', ['archived', 'left_company']);
+        });
+
+    if ($request->filled('search')) {
+        $search = trim($request->search);
+
+        $query->where(function ($recordQuery) use ($search) {
+            $recordQuery
+                ->whereHas('employee', function ($employeeQuery) use ($search) {
+                    $employeeQuery
+                        ->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('employee_number', 'like', "%{$search}%");
+                })
+                ->orWhereHas('trainingCourse', function ($courseQuery) use ($search) {
+                    $courseQuery->where('name', 'like', "%{$search}%");
+                });
+        });
+    }
+
+    if ($request->filled('course_id')) {
+        $query->where('training_course_id', $request->course_id);
+    }
+
+    if ($request->filled('department')) {
+        $query->whereHas('employee', function ($employeeQuery) use ($request) {
+            $employeeQuery->where('department', $request->department);
+        });
+    }
+
+    $expiryPeriod = $request->get('expiry_period', '90_days');
+
+    if ($expiryPeriod === 'expired') {
+        $query->whereDate('expiry_date', '<', $today);
+    } elseif ($expiryPeriod === '30_days') {
+        $query->whereDate('expiry_date', '>=', $today)->whereDate('expiry_date', '<=', $today->copy()->addDays(30));
+    } elseif ($expiryPeriod === '60_days') {
+        $query->whereDate('expiry_date', '>=', $today)->whereDate('expiry_date', '<=', $today->copy()->addDays(60));
+    } else {
+        $query->whereDate('expiry_date', '>=', $today)->whereDate('expiry_date', '<=', $today->copy()->addDays(90));
+    }
+
+    $records = $query->orderBy('expiry_date')->get();
+
+    return \Maatwebsite\Excel\Facades\Excel::download(
+        new \App\Exports\TrainingDueExport($records),
+        'training-due-report-' . now()->format('Y-m-d') . '.xlsx'
+    );
+}
+
 public function history(Request $request)
 {
     $query = EmployeeTrainingRecord::query()

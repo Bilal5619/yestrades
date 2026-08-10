@@ -170,13 +170,24 @@
         </p>
     </div>
 
-    <a href="{{ route(
-            'company.hr.training.index'
-        ) }}"
-       class="expiring-training-back">
-        <i class="fas fa-arrow-left"></i>
-        Training Overview
-    </a>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="{{ route(
+                'company.hr.training.expiring.export',
+                request()->query()
+            ) }}"
+           class="expiring-training-back" style="background: transparent; border: 1px solid rgba(255,255,255,0.16);">
+            <i class="fas fa-file-excel"></i>
+            Export to Excel
+        </a>
+
+        <a href="{{ route(
+                'company.hr.training.index'
+            ) }}"
+           class="expiring-training-back">
+            <i class="fas fa-arrow-left"></i>
+            Training Overview
+        </a>
+    </div>
 
 </div>
 

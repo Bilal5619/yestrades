@@ -162,7 +162,6 @@
         $companyUser->hasPermission('jobs.view') ||
         $companyUser->hasPermission('jobs.manage') ||
         $companyUser->hasPermission('expenses.manage') ||
-        $companyUser->hasPermission('training.manage') ||
         $companyUser->hasPermission('equipment-vehicles.manage');
 
     $canSeeAnnouncements =
@@ -456,22 +455,17 @@
                 @endif
 
                 @if ($companyUser->hasPermission('expenses.manage'))
-                    <a href="#"
-                       class="company-submenu-link">
+                    <a href="{{ route('company.hr.expenses.index') }}"
+                       class="company-submenu-link
+                       {{ request()->routeIs('company.hr.expenses.*') ? 'active' : '' }}">
                         Expenses
                     </a>
                 @endif
 
-                @if ($companyUser->hasPermission('training.manage'))
-                    <a href="#"
-                       class="company-submenu-link">
-                        Training
-                    </a>
-                @endif
-
                 @if ($companyUser->hasPermission('equipment-vehicles.manage'))
-                    <a href="#"
-                       class="company-submenu-link">
+                    <a href="{{ route('company.hr.equipment.index') }}"
+                       class="company-submenu-link
+                       {{ request()->routeIs('company.hr.equipment.*') ? 'active' : '' }}">
                         Equipment and Vehicles
                     </a>
                 @endif
@@ -513,15 +507,17 @@
             <div class="company-submenu" id="reports-submenu">
 
                 @if ($companyUser->hasPermission('reports.missing-documents'))
-                    <a href="#"
-                       class="company-submenu-link">
+                    <a href="{{ route('company.hr.employees.missing-documents') }}"
+                       class="company-submenu-link
+                       {{ request()->routeIs('company.hr.employees.missing-documents') ? 'active' : '' }}">
                         Missing Documents
                     </a>
                 @endif
 
                 @if ($companyUser->hasPermission('reports.holiday'))
-                    <a href="#"
-                       class="company-submenu-link">
+                    <a href="{{ route('company.hr.holidays.requests') }}"
+                       class="company-submenu-link
+                       {{ request()->routeIs('company.hr.holidays.requests') ? 'active' : '' }}">
                         Holiday Report
                     </a>
                 @endif
@@ -535,22 +531,25 @@
                 @endif
 
                 @if ($companyUser->hasPermission('reports.overtime'))
-                    <a href="#"
-                       class="company-submenu-link">
+                    <a href="{{ route('company.hr.reports.overtime') }}"
+                       class="company-submenu-link
+                       {{ request()->routeIs('company.hr.reports.overtime') ? 'active' : '' }}">
                         Overtime Report
                     </a>
                 @endif
 
                 @if ($companyUser->hasPermission('reports.expense'))
-                    <a href="#"
-                       class="company-submenu-link">
+                    <a href="{{ route('company.hr.expenses.index') }}"
+                       class="company-submenu-link
+                       {{ request()->routeIs('company.hr.expenses.*') ? 'active' : '' }}">
                         Expense Report
                     </a>
                 @endif
 
                 @if ($companyUser->hasPermission('reports.training-due'))
-                    <a href="#"
-                       class="company-submenu-link">
+                    <a href="{{ route('company.hr.training.expiring') }}"
+                       class="company-submenu-link
+                       {{ request()->routeIs('company.hr.training.expiring') ? 'active' : '' }}">
                         Training Due
                     </a>
                 @endif

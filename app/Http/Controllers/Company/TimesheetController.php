@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Company;
 
+use App\Exports\AttendanceReportExport;
+use App\Exports\OvertimeReportExport;
 use App\Http\Controllers\Controller;
 use App\Models\Company\Employee;
 use App\Models\Company\EmployeeAttendance;
@@ -9,6 +11,7 @@ use App\Models\Company\EmployeeJob;
 use App\Models\Company\EmployeeShift;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TimesheetController extends Controller
 {
@@ -17,6 +20,109 @@ class TimesheetController extends Controller
 
     public function index(Request $request)
     {
+        [$dateFrom, $dateTo, $employeeId] = $this->resolveFilters($request);
+
+        $officeRows = $this->buildOfficeRows($dateFrom, $dateTo, $employeeId);
+        $fieldRows = $this->buildFieldRows($dateFrom, $dateTo, $employeeId);
+
+        // ---- Totals & exceptions for the selected filter range ----
+        $officeTotalMinutes = $officeRows->sum('worked_minutes');
+        $fieldTotalMinutes = $fieldRows->sum('actual_minutes');
+        $missingClockOuts = $officeRows->where('missing_clock_out', true)->count() + $fieldRows->where('missing_finish', true)->count();
+        $lateStarts = $officeRows->where('is_late', true)->count() + $fieldRows->where('is_late', true)->count();
+        $overtimeMinutesTotal = $officeRows->sum('overtime_minutes') + $fieldRows->filter(fn ($row) => ($row['difference_minutes'] ?? 0) > 0)->sum('difference_minutes');
+        $manualAdjustments = EmployeeAttendance::query()
+            ->whereBetween('server_timestamp', [$dateFrom->startOfDay(), $dateTo->endOfDay()])
+            ->where('is_manual_entry', true)
+            ->when($employeeId, fn ($query) => $query->where('employee_id', $employeeId))
+            ->with(['employee', 'recordedBy'])
+            ->orderByDesc('server_timestamp')
+            ->get();
+
+        // ---- Daily / weekly / monthly totals, independent of the filter above ----
+        $today = Carbon::now();
+        $dailyMinutes = $this->totalMinutesForRange($today->copy()->startOfDay(), $today->copy()->endOfDay(), $employeeId);
+        $weeklyMinutes = $this->totalMinutesForRange($today->copy()->startOfWeek(), $today->copy()->endOfWeek(), $employeeId);
+        $monthlyMinutes = $this->totalMinutesForRange($today->copy()->startOfMonth(), $today->copy()->endOfMonth(), $employeeId);
+
+        return view('company.hr.timesheet.index', [
+            'dateFrom' => $dateFrom,
+            'dateTo' => $dateTo,
+            'employees' => $this->activeEmployees(),
+            'officeRows' => $officeRows->sortBy('shift_date')->values(),
+            'fieldRows' => $fieldRows->sortBy(fn ($row) => $row['job']->started_at)->values(),
+            'officeTotalMinutes' => $officeTotalMinutes,
+            'fieldTotalMinutes' => $fieldTotalMinutes,
+            'missingClockOuts' => $missingClockOuts,
+            'lateStarts' => $lateStarts,
+            'overtimeMinutesTotal' => $overtimeMinutesTotal,
+            'manualAdjustments' => $manualAdjustments,
+            'dailyMinutes' => $dailyMinutes,
+            'weeklyMinutes' => $weeklyMinutes,
+            'monthlyMinutes' => $monthlyMinutes,
+        ]);
+    }
+
+    public function export(Request $request)
+    {
+        [$dateFrom, $dateTo, $employeeId] = $this->resolveFilters($request);
+
+        $officeRows = $this->buildOfficeRows($dateFrom, $dateTo, $employeeId);
+        $fieldRows = $this->buildFieldRows($dateFrom, $dateTo, $employeeId);
+
+        return Excel::download(
+            new AttendanceReportExport($officeRows, $fieldRows),
+            'attendance-report-' . $dateFrom->format('Y-m-d') . '-to-' . $dateTo->format('Y-m-d') . '.xlsx'
+        );
+    }
+
+    // Dedicated "Overtime Report" view — the same underlying rows as the
+    // main Timesheet, filtered down to only the ones with overtime logged.
+    public function overtime(Request $request)
+    {
+        [$dateFrom, $dateTo, $employeeId] = $this->resolveFilters($request);
+
+        $officeRows = $this->buildOfficeRows($dateFrom, $dateTo, $employeeId)
+            ->filter(fn ($row) => ($row['overtime_minutes'] ?? 0) > 0)
+            ->sortByDesc('overtime_minutes')
+            ->values();
+
+        $fieldRows = $this->buildFieldRows($dateFrom, $dateTo, $employeeId)
+            ->filter(fn ($row) => ($row['difference_minutes'] ?? 0) > 0)
+            ->sortByDesc('difference_minutes')
+            ->values();
+
+        return view('company.hr.reports.overtime', [
+            'dateFrom' => $dateFrom,
+            'dateTo' => $dateTo,
+            'employees' => $this->activeEmployees(),
+            'officeRows' => $officeRows,
+            'fieldRows' => $fieldRows,
+            'officeOvertimeMinutes' => $officeRows->sum('overtime_minutes'),
+            'fieldOvertimeMinutes' => $fieldRows->sum('difference_minutes'),
+        ]);
+    }
+
+    public function exportOvertime(Request $request)
+    {
+        [$dateFrom, $dateTo, $employeeId] = $this->resolveFilters($request);
+
+        $officeRows = $this->buildOfficeRows($dateFrom, $dateTo, $employeeId)
+            ->filter(fn ($row) => ($row['overtime_minutes'] ?? 0) > 0)
+            ->values();
+
+        $fieldRows = $this->buildFieldRows($dateFrom, $dateTo, $employeeId)
+            ->filter(fn ($row) => ($row['difference_minutes'] ?? 0) > 0)
+            ->values();
+
+        return Excel::download(
+            new OvertimeReportExport($officeRows, $fieldRows),
+            'overtime-report-' . $dateFrom->format('Y-m-d') . '-to-' . $dateTo->format('Y-m-d') . '.xlsx'
+        );
+    }
+
+    private function resolveFilters(Request $request): array
+    {
         $dateFrom = $request->filled('date_from')
             ? Carbon::parse($request->input('date_from'))
             : Carbon::now()->startOfWeek();
@@ -24,9 +130,20 @@ class TimesheetController extends Controller
             ? Carbon::parse($request->input('date_to'))
             : Carbon::now()->endOfWeek();
 
-        $employeeId = $request->input('employee_id');
+        return [$dateFrom, $dateTo, $request->input('employee_id')];
+    }
 
-        // ---- Office staff: shift-based attendance ----
+    private function activeEmployees()
+    {
+        return Employee::query()
+            ->where('employment_status', 'active')
+            ->orderBy('first_name')
+            ->get(['id', 'first_name', 'last_name']);
+    }
+
+    // ---- Office staff: shift-based attendance ----
+    private function buildOfficeRows(Carbon $dateFrom, Carbon $dateTo, $employeeId)
+    {
         $shifts = EmployeeShift::query()
             ->with(['employee', 'attendances'])
             ->whereBetween('shift_date', [$dateFrom->toDateString(), $dateTo->toDateString()])
@@ -34,7 +151,7 @@ class TimesheetController extends Controller
             ->orderBy('shift_date')
             ->get();
 
-        $officeRows = $shifts->map(function (EmployeeShift $shift) {
+        return $shifts->map(function (EmployeeShift $shift) {
             $clockIn = $shift->attendances->where('clock_type', 'in')->sortByDesc('server_timestamp')->first();
             $clockOut = $shift->attendances->where('clock_type', 'out')->sortByDesc('server_timestamp')->first();
 
@@ -68,8 +185,11 @@ class TimesheetController extends Controller
                 'is_manual' => $isManual,
             ];
         });
+    }
 
-        // ---- Field engineers: job-based clocking ----
+    // ---- Field engineers: job-based clocking ----
+    private function buildFieldRows(Carbon $dateFrom, Carbon $dateTo, $employeeId)
+    {
         $jobs = EmployeeJob::query()
             ->with('employee')
             ->whereNotNull('started_at')
@@ -78,7 +198,7 @@ class TimesheetController extends Controller
             ->orderBy('started_at')
             ->get();
 
-        $fieldRows = $jobs->map(function (EmployeeJob $job) {
+        return $jobs->map(function (EmployeeJob $job) {
             $isLate = $job->started_at && $job->scheduled_start_time && $job->started_at->gt(
                 Carbon::parse($job->scheduled_date->toDateString().' '.$job->scheduled_start_time)->addMinutes(self::LATE_GRACE_MINUTES)
             );
@@ -94,48 +214,6 @@ class TimesheetController extends Controller
                 'missing_finish' => $job->started_at && !$job->finished_at,
             ];
         });
-
-        // ---- Totals & exceptions for the selected filter range ----
-        $officeTotalMinutes = $officeRows->sum('worked_minutes');
-        $fieldTotalMinutes = $fieldRows->sum('actual_minutes');
-        $missingClockOuts = $officeRows->where('missing_clock_out', true)->count() + $fieldRows->where('missing_finish', true)->count();
-        $lateStarts = $officeRows->where('is_late', true)->count() + $fieldRows->where('is_late', true)->count();
-        $overtimeMinutesTotal = $officeRows->sum('overtime_minutes') + $fieldRows->filter(fn ($row) => ($row['difference_minutes'] ?? 0) > 0)->sum('difference_minutes');
-        $manualAdjustments = EmployeeAttendance::query()
-            ->whereBetween('server_timestamp', [$dateFrom->startOfDay(), $dateTo->endOfDay()])
-            ->where('is_manual_entry', true)
-            ->when($employeeId, fn ($query) => $query->where('employee_id', $employeeId))
-            ->with(['employee', 'recordedBy'])
-            ->orderByDesc('server_timestamp')
-            ->get();
-
-        // ---- Daily / weekly / monthly totals, independent of the filter above ----
-        $today = Carbon::now();
-        $dailyMinutes = $this->totalMinutesForRange($today->copy()->startOfDay(), $today->copy()->endOfDay(), $employeeId);
-        $weeklyMinutes = $this->totalMinutesForRange($today->copy()->startOfWeek(), $today->copy()->endOfWeek(), $employeeId);
-        $monthlyMinutes = $this->totalMinutesForRange($today->copy()->startOfMonth(), $today->copy()->endOfMonth(), $employeeId);
-
-        $employees = Employee::query()
-            ->where('employment_status', 'active')
-            ->orderBy('first_name')
-            ->get(['id', 'first_name', 'last_name']);
-
-        return view('company.hr.timesheet.index', [
-            'dateFrom' => $dateFrom,
-            'dateTo' => $dateTo,
-            'employees' => $employees,
-            'officeRows' => $officeRows->sortBy('shift_date')->values(),
-            'fieldRows' => $fieldRows->sortBy(fn ($row) => $row['job']->started_at)->values(),
-            'officeTotalMinutes' => $officeTotalMinutes,
-            'fieldTotalMinutes' => $fieldTotalMinutes,
-            'missingClockOuts' => $missingClockOuts,
-            'lateStarts' => $lateStarts,
-            'overtimeMinutesTotal' => $overtimeMinutesTotal,
-            'manualAdjustments' => $manualAdjustments,
-            'dailyMinutes' => $dailyMinutes,
-            'weeklyMinutes' => $weeklyMinutes,
-            'monthlyMinutes' => $monthlyMinutes,
-        ]);
     }
 
     // Combined office (shift) + field (job) worked minutes for a fixed

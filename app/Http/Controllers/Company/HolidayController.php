@@ -653,6 +653,43 @@ public function requests(Request $request)
     );
 }
 
+public function exportRequests(Request $request)
+{
+    $query = EmployeeHoliday::query()->with('employee');
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    if ($request->filled('holiday_type')) {
+        $query->where('holiday_type', $request->holiday_type);
+    }
+
+    if ($request->filled('year')) {
+        $query->whereYear('start_date', $request->year);
+    }
+
+    if ($request->filled('search')) {
+        $search = trim($request->search);
+
+        $query->whereHas('employee', function ($employeeQuery) use ($search) {
+            $employeeQuery->where(function ($nameQuery) use ($search) {
+                $nameQuery
+                    ->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('employee_number', 'like', "%{$search}%");
+            });
+        });
+    }
+
+    $holidays = $query->latest('requested_at')->get();
+
+    return \Maatwebsite\Excel\Facades\Excel::download(
+        new \App\Exports\HolidayReportExport($holidays),
+        'holiday-report-' . now()->format('Y-m-d') . '.xlsx'
+    );
+}
+
 public function show(EmployeeHoliday $holiday)
 {
     $holiday->load([

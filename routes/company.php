@@ -81,6 +81,15 @@ Route::prefix('company-own')->group(function () {
         'company.permission:employee-documents.view'
     )
     ->name('company.hr.employees.missing-documents');
+
+    Route::get(
+    '/hr/employees/missing-documents/export',
+    'Company\EmployeeController@exportMissingDocuments'
+)
+    ->middleware(
+        'company.permission:employee-documents.view'
+    )
+    ->name('company.hr.employees.missing-documents.export');
  Route::get(
     '/hr/employees/expiring-documents',
     'Company\EmployeeDocumentController@expiring'
@@ -249,6 +258,13 @@ Route::get(
     ->name('company.hr.holidays.requests');
 
 Route::get(
+    '/hr/holidays/export',
+    'Company\HolidayController@exportRequests'
+)
+    ->middleware('company.permission:holidays.view')
+    ->name('company.hr.holidays.export');
+
+Route::get(
     '/hr/holidays/{holiday}',
     'Company\HolidayController@show'
 )
@@ -409,6 +425,13 @@ Route::get(
 )
     ->middleware('company.permission:training.view')
     ->name('company.hr.training.expiring');
+
+Route::get(
+    '/hr/training/expiring/export',
+    'Company\TrainingController@exportExpiring'
+)
+    ->middleware('company.permission:training.view')
+    ->name('company.hr.training.expiring.export');
 
  Route::get(
     '/hr/training/history',
@@ -759,6 +782,104 @@ Route::delete(
     ->name(
         'company.hr.payslips.destroy'
     );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Expenses
+    |--------------------------------------------------------------------------
+    */
+
+Route::get(
+    '/hr/expenses',
+    'Company\ExpenseController@index'
+)
+    ->middleware('company.permission:expenses.manage')
+    ->name('company.hr.expenses.index');
+
+Route::post(
+    '/hr/expenses',
+    'Company\ExpenseController@store'
+)
+    ->middleware('company.permission:expenses.manage')
+    ->name('company.hr.expenses.store');
+
+Route::get(
+    '/hr/expenses/export',
+    'Company\ExpenseController@export'
+)
+    ->middleware('company.permission:expenses.manage')
+    ->name('company.hr.expenses.export');
+
+Route::post(
+    '/hr/expenses/{expense}/approve',
+    'Company\ExpenseController@approve'
+)
+    ->middleware('company.permission:expenses.manage')
+    ->name('company.hr.expenses.approve');
+
+Route::post(
+    '/hr/expenses/{expense}/reject',
+    'Company\ExpenseController@reject'
+)
+    ->middleware('company.permission:expenses.manage')
+    ->name('company.hr.expenses.reject');
+
+Route::get(
+    '/hr/expenses/{expense}/receipt',
+    'Company\ExpenseController@downloadReceipt'
+)
+    ->middleware('company.permission:expenses.manage')
+    ->name('company.hr.expenses.receipt');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Equipment and Vehicles
+    |--------------------------------------------------------------------------
+    */
+
+Route::get(
+    '/hr/equipment',
+    'Company\EquipmentController@index'
+)
+    ->middleware('company.permission:equipment-vehicles.manage')
+    ->name('company.hr.equipment.index');
+
+Route::post(
+    '/hr/equipment',
+    'Company\EquipmentController@store'
+)
+    ->middleware('company.permission:equipment-vehicles.manage')
+    ->name('company.hr.equipment.store');
+
+Route::get(
+    '/hr/equipment/{equipmentItem}',
+    'Company\EquipmentController@show'
+)
+    ->middleware('company.permission:equipment-vehicles.manage')
+    ->name('company.hr.equipment.show');
+
+Route::post(
+    '/hr/equipment/{equipmentItem}',
+    'Company\EquipmentController@update'
+)
+    ->middleware('company.permission:equipment-vehicles.manage')
+    ->name('company.hr.equipment.update');
+
+Route::post(
+    '/hr/equipment/{equipmentItem}/assign',
+    'Company\EquipmentController@assign'
+)
+    ->middleware('company.permission:equipment-vehicles.manage')
+    ->name('company.hr.equipment.assign');
+
+Route::post(
+    '/hr/equipment/{equipmentItem}/return',
+    'Company\EquipmentController@returnItem'
+)
+    ->middleware('company.permission:equipment-vehicles.manage')
+    ->name('company.hr.equipment.return');
 
 
     /*
@@ -1264,6 +1385,19 @@ Route::prefix('clients')
     Route::get('hr/timesheet', 'Company\TimesheetController@index')
         ->middleware('company.permission:reports.attendance')
         ->name('company.hr.timesheet.index');
+
+    Route::get('hr/timesheet/export', 'Company\TimesheetController@export')
+        ->middleware('company.permission:reports.attendance')
+        ->name('company.hr.timesheet.export');
+
+    Route::get('hr/reports/overtime', 'Company\TimesheetController@overtime')
+        ->middleware('company.permission:reports.overtime')
+        ->name('company.hr.reports.overtime');
+
+    Route::get('hr/reports/overtime/export', 'Company\TimesheetController@exportOvertime')
+        ->middleware('company.permission:reports.overtime')
+        ->name('company.hr.reports.overtime.export');
+
         Route::get(
     '/hr/jobs/{job}/visits/create',
     'Company\JobSheetController@createVisit'

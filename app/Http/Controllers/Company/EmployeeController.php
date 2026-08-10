@@ -365,6 +365,7 @@ public function show(Employee $employee)
             ->with('trainingCourse')
             ->orderByDesc('created_at');
     },
+        'currentEquipmentAssignments.equipment',
     ]);
 
     $rightToWorkDocument = $employee->documents()
@@ -988,6 +989,58 @@ public function missingDocuments(Request $request)
         compact('employees', 'departments')
     );
 }
+
+public function exportMissingDocuments(Request $request)
+{
+    $query = Employee::query()
+        ->where('employment_status', '!=', 'archived')
+        ->whereHas('documents', function ($documentQuery) {
+            $documentQuery
+                ->where('is_required', true)
+                ->where(function ($missingQuery) {
+                    $missingQuery
+                        ->whereNull('file_path')
+                        ->orWhere('review_status', 'missing');
+                });
+        })
+        ->with([
+            'documents' => function ($documentQuery) {
+                $documentQuery
+                    ->where('is_required', true)
+                    ->where(function ($missingQuery) {
+                        $missingQuery
+                            ->whereNull('file_path')
+                            ->orWhere('review_status', 'missing');
+                    })
+                    ->with('documentType');
+            },
+        ]);
+
+    if ($request->filled('search')) {
+        $search = trim($request->search);
+
+        $query->where(function ($employeeQuery) use ($search) {
+            $employeeQuery
+                ->where('employee_number', 'like', "%{$search}%")
+                ->orWhere('first_name', 'like', "%{$search}%")
+                ->orWhere('last_name', 'like', "%{$search}%")
+                ->orWhere('job_title', 'like', "%{$search}%")
+                ->orWhere('department', 'like', "%{$search}%");
+        });
+    }
+
+    if ($request->filled('department')) {
+        $query->where('department', $request->department);
+    }
+
+    $employees = $query->orderBy('first_name')->orderBy('last_name')->get();
+
+    return \Maatwebsite\Excel\Facades\Excel::download(
+        new \App\Exports\MissingDocumentsExport($employees),
+        'missing-documents-report-' . now()->format('Y-m-d') . '.xlsx'
+    );
+}
+
 public function archived(Request $request)
 {
     $query = Employee::query()
