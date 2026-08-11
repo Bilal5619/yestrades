@@ -293,6 +293,89 @@ class EmployeeMobileController extends Controller
     ]);
   }
 
+  public function equipment(Request $request): JsonResponse
+  {
+    /** @var Employee $employee */
+    $employee = $request->user();
+
+    $assignments = $employee->currentEquipmentAssignments()
+      ->get()
+      ->map(fn (\App\Models\Company\EquipmentAssignment $assignment) => [
+        'id' => $assignment->id,
+        'assigned_at' => optional($assignment->assigned_at)->toIso8601String(),
+        'notes' => $assignment->notes,
+        'equipment' => $assignment->equipment ? [
+          'id' => $assignment->equipment->id,
+          'name' => $assignment->equipment->name,
+          'category' => $assignment->equipment->category,
+          'reference_number' => $assignment->equipment->reference_number,
+          'registration_number' => $assignment->equipment->registration_number,
+        ] : null,
+      ]);
+
+    return response()->json([
+      'success' => true,
+      'data' => ['assignments' => $assignments],
+    ]);
+  }
+
+  public function expenses(Request $request): JsonResponse
+  {
+    /** @var Employee $employee */
+    $employee = $request->user();
+
+    $expenses = $employee->expenses()
+      ->orderByDesc('expense_date')
+      ->get()
+      ->map(fn (\App\Models\Company\EmployeeExpense $expense) => $this->expensePayload($expense));
+
+    return response()->json([
+      'success' => true,
+      'data' => [
+        'categories' => \App\Models\Company\EmployeeExpense::CATEGORIES,
+        'expenses' => $expenses,
+      ],
+    ]);
+  }
+
+  public function storeExpense(Request $request): JsonResponse
+  {
+    /** @var Employee $employee */
+    $employee = $request->user();
+
+    $data = $request->validate([
+      'category' => ['nullable', Rule::in(\App\Models\Company\EmployeeExpense::CATEGORIES)],
+      'merchant' => ['required', 'string', 'max:255'],
+      'amount' => ['required', 'numeric', 'min:0.01'],
+      'expense_date' => ['required', 'date', 'before_or_equal:today'],
+      'description' => ['nullable', 'string', 'max:500'],
+      'receipt' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+    ]);
+
+    $receiptPath = $request->file('receipt')->store('expense-receipts', 'public');
+
+    $expense = $employee->expenses()->create([
+      'category' => $data['category'] ?? 'other',
+      'merchant' => $data['merchant'],
+      'amount' => $data['amount'],
+      'expense_date' => $data['expense_date'],
+      'description' => $data['description'] ?? null,
+      'receipt_path' => $receiptPath,
+      'status' => 'pending',
+      'source' => 'employee_app',
+    ]);
+
+    // Refresh so DB-level defaults (e.g. currency) are reflected in the
+    // response immediately, rather than only on the next fetch.
+    $expense->refresh();
+
+    return response()->json([
+      'success' => true,
+      'message' => 'Expense submitted for review.',
+      'data' => ['expense' => $this->expensePayload($expense)],
+    ], 201);
+  }
+
   public function announcements(Request $request): JsonResponse
   {
     $employee = $request->user();
@@ -779,6 +862,24 @@ $job->update($jobUpdate);
     ];
   }
 
+  private function expensePayload(\App\Models\Company\EmployeeExpense $expense): array
+  {
+    return [
+      'id' => $expense->id,
+      'category' => $expense->category,
+      'merchant' => $expense->merchant,
+      'amount' => (float) $expense->amount,
+      'currency' => $expense->currency,
+      'expense_date' => optional($expense->expense_date)->toDateString(),
+      'description' => $expense->description,
+      'has_receipt' => (bool) $expense->receipt_path,
+      'status' => $expense->status,
+      'rejection_reason' => $expense->rejection_reason,
+      'submitted_at' => optional($expense->created_at)->toIso8601String(),
+      'reviewed_at' => optional($expense->reviewed_at)->toIso8601String(),
+    ];
+  }
+
  private function jobPayload(EmployeeJob $job): array
 {
     $job->loadMissing([
@@ -923,6 +1024,14 @@ $job->update($jobUpdate);
     $clockIn = $shift->attendances->where('clock_type', 'in')->sortByDesc('server_timestamp')->first();
     $clockOut = $shift->attendances->where('clock_type', 'out')->sortByDesc('server_timestamp')->first();
 
+    $workedMinutes = null;
+    $overtimeMinutes = null;
+    if ($clockIn && $clockOut) {
+      $workedMinutes = max(0, $clockIn->server_timestamp->diffInMinutes($clockOut->server_timestamp) - $shift->break_minutes);
+      $scheduledMinutes = max(0, \Illuminate\Support\Carbon::parse($shift->start_time)->diffInMinutes(\Illuminate\Support\Carbon::parse($shift->end_time)) - $shift->break_minutes);
+      $overtimeMinutes = max(0, $workedMinutes - $scheduledMinutes);
+    }
+
     return [
       'id' => $shift->id,
       'shift_date' => optional($shift->shift_date)->toDateString(),
@@ -934,6 +1043,8 @@ $job->update($jobUpdate);
       'actual_clock_in' => optional(optional($clockIn)->server_timestamp)->toIso8601String(),
       'actual_clock_out' => optional(optional($clockOut)->server_timestamp)->toIso8601String(),
       'next_clock_action' => $shift->status !== 'scheduled' ? null : (!$clockIn ? 'in' : (!$clockOut ? 'out' : null)),
+      'worked_minutes' => $workedMinutes,
+      'overtime_minutes' => $overtimeMinutes,
     ];
   }
 

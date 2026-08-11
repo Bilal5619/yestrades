@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Company\Announcement;
 use App\Models\Company\Employee;
+use App\Models\Company\EmployeeShift;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class EmployeeDashboardController extends Controller
 {
@@ -64,6 +66,13 @@ class EmployeeDashboardController extends Controller
 
     $latestAnnouncement = (clone $publishedAnnouncements)->first();
 
+    $now = Carbon::now();
+    $hoursSummary = [
+      'today_minutes' => $this->workedMinutesForRange($employee, $now->copy()->startOfDay(), $now->copy()->endOfDay()),
+      'week_minutes' => $this->workedMinutesForRange($employee, $now->copy()->startOfWeek(), $now->copy()->endOfWeek()),
+      'month_minutes' => $this->workedMinutesForRange($employee, $now->copy()->startOfMonth(), $now->copy()->endOfMonth()),
+    ];
+
     return response()->json([
       'success' => true,
       'data' => [
@@ -94,6 +103,7 @@ class EmployeeDashboardController extends Controller
           'remaining' => $allowance ? round((float) $allowance->remaining_allowance, 2) : 0,
         ],
         'training_due_count' => $trainingDueCount,
+        'hours_summary' => $hoursSummary,
         'unread_announcements_count' => $unreadAnnouncementsCount,
         'latest_announcement' => $latestAnnouncement ? [
           'id' => $latestAnnouncement->id,
@@ -102,5 +112,33 @@ class EmployeeDashboardController extends Controller
         ] : null,
       ],
     ]);
+  }
+
+  // Combined office (shift) + field (job) worked minutes for this employee
+  // over a fixed date window. Mirrors Company\TimesheetController's
+  // equivalent admin-side calculation.
+  private function workedMinutesForRange(Employee $employee, Carbon $start, Carbon $end): int
+  {
+    $officeMinutes = $employee->shifts()
+      ->with('attendances')
+      ->whereBetween('shift_date', [$start->toDateString(), $end->toDateString()])
+      ->get()
+      ->sum(function (EmployeeShift $shift) {
+        $clockIn = $shift->attendances->where('clock_type', 'in')->sortByDesc('server_timestamp')->first();
+        $clockOut = $shift->attendances->where('clock_type', 'out')->sortByDesc('server_timestamp')->first();
+        if (!$clockIn || !$clockOut) {
+          return 0;
+        }
+        return max(0, $clockIn->server_timestamp->diffInMinutes($clockOut->server_timestamp) - $shift->break_minutes);
+      });
+
+    $fieldMinutes = $employee->jobs()
+      ->whereNotNull('started_at')
+      ->whereNotNull('finished_at')
+      ->whereBetween('scheduled_date', [$start->toDateString(), $end->toDateString()])
+      ->get()
+      ->sum(fn ($job) => $job->actualDurationMinutes() ?? 0);
+
+    return (int) ($officeMinutes + $fieldMinutes);
   }
 }

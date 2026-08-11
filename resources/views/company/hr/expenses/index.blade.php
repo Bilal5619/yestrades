@@ -174,6 +174,10 @@
                 </select>
             </div>
             <div class="expenses-form-field">
+                <label>From (merchant/vendor)</label>
+                <input type="text" name="merchant" placeholder="e.g. Shell Petrol Station">
+            </div>
+            <div class="expenses-form-field">
                 <label>Amount (&pound;)</label>
                 <input type="number" step="0.01" min="0.01" name="amount" required>
             </div>
@@ -238,8 +242,8 @@
         <table class="expenses-table">
             <thead>
                 <tr>
-                    <th>Employee</th><th>Category</th><th>Amount</th><th>Date</th>
-                    <th>Description</th><th>Status</th><th>Receipt</th><th>Actions</th>
+                    <th>Employee</th><th>Category</th><th>From</th><th>Amount</th><th>Date</th>
+                    <th>Description</th><th>Source</th><th>Status</th><th>Receipt</th><th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -247,9 +251,17 @@
                     <tr>
                         <td>{{ optional($expense->employee)->full_name ?? 'Unknown' }}</td>
                         <td>{{ ucfirst($expense->category) }}</td>
+                        <td>{{ $expense->merchant ?? '—' }}</td>
                         <td>&pound;{{ number_format($expense->amount, 2) }}</td>
                         <td>{{ $expense->expense_date->format('d-m-Y') }}</td>
                         <td>{{ $expense->description ?? '—' }}</td>
+                        <td>
+                            @if ($expense->source === 'employee_app')
+                                <span class="expenses-badge" style="background: rgba(111,168,238,0.16); color:#6fa8ee;">App</span>
+                            @else
+                                <span class="expenses-badge expenses-badge-pending" style="background: rgba(170,180,202,0.14); color:#c4ccdc;">Admin</span>
+                            @endif
+                        </td>
                         <td>
                             @if ($expense->status === 'pending')
                                 <span class="expenses-badge expenses-badge-pending">Pending</span>
@@ -283,7 +295,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="8" class="expenses-empty">No expenses recorded for this filter.</td></tr>
+                    <tr><td colspan="10" class="expenses-empty">No expenses recorded for this filter.</td></tr>
                 @endforelse
             </tbody>
         </table>

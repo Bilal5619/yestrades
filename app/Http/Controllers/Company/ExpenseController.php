@@ -59,6 +59,7 @@ class ExpenseController extends Controller
         $validated = $request->validate([
             'employee_id' => ['required', 'exists:employees,id'],
             'category' => ['required', 'in:' . implode(',', EmployeeExpense::CATEGORIES)],
+            'merchant' => ['nullable', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'expense_date' => ['required', 'date'],
             'description' => ['nullable', 'string', 'max:255'],
@@ -70,6 +71,7 @@ class ExpenseController extends Controller
         }
 
         $validated['status'] = 'pending';
+        $validated['source'] = 'admin';
         $validated['submitted_by'] = Auth::guard('company')->id();
 
         EmployeeExpense::create($validated);

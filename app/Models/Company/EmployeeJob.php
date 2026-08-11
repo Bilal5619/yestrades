@@ -102,6 +102,7 @@ public const APPOINTMENT_STATUSES = [
 
         'started_at',
         'finished_at',
+        'missed_finish_reminder_sent_at',
 
         'priority',
         'status',
@@ -135,6 +136,7 @@ public const APPOINTMENT_STATUSES = [
 
         'started_at' => 'datetime',
         'finished_at' => 'datetime',
+        'missed_finish_reminder_sent_at' => 'datetime',
 
         'payment_required' => 'boolean',
         'agreed_amount' => 'decimal:2',

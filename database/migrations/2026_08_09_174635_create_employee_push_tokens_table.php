@@ -15,7 +15,10 @@ return new class extends Migration
                 ->constrained('employees')
                 ->cascadeOnDelete();
 
-            $table->text('expo_push_token');
+            // Expo push tokens look like "ExponentPushToken[xxxxxxxxxxxx]" —
+            // always well under 255 chars. Needs to be a bounded string
+            // (not text/blob) so the unique index below is valid in MySQL.
+            $table->string('expo_push_token', 255);
 
             $table->string('platform', 20)->nullable();
 

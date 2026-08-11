@@ -23,6 +23,7 @@ class EmployeeShift extends Model
     'break_minutes',
     'work_location',
     'status',
+    'missed_clockout_reminder_sent_at',
     'notes',
     'created_by',
     'updated_by',
@@ -30,6 +31,7 @@ class EmployeeShift extends Model
 
   protected $casts = [
     'shift_date' => 'date',
+    'missed_clockout_reminder_sent_at' => 'datetime',
   ];
 
   public function employee()

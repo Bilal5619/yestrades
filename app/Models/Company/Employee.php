@@ -483,6 +483,11 @@ public function equipmentAssignments()
     return $this->hasMany(EquipmentAssignment::class, 'employee_id');
 }
 
+public function expenses()
+{
+    return $this->hasMany(EmployeeExpense::class, 'employee_id');
+}
+
 // Equipment/vehicles currently checked out to this employee (not yet returned).
 public function currentEquipmentAssignments()
 {

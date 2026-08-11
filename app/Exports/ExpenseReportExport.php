@@ -25,10 +25,12 @@ class ExpenseReportExport implements FromCollection, WithHeadings, WithMapping
         return [
             'Employee',
             'Category',
+            'From',
             'Amount',
             'Currency',
             'Date',
             'Description',
+            'Source',
             'Status',
             'Rejection Reason',
         ];
@@ -39,10 +41,12 @@ class ExpenseReportExport implements FromCollection, WithHeadings, WithMapping
         return [
             optional($expense->employee)->full_name ?? 'Unknown',
             ucfirst($expense->category),
+            $expense->merchant ?? '-',
             number_format((float) $expense->amount, 2),
             $expense->currency,
             $expense->expense_date->format('d-m-Y'),
             $expense->description ?? '-',
+            $expense->source === 'employee_app' ? 'App' : 'Admin',
             ucfirst($expense->status),
             $expense->rejection_reason ?? '-',
         ];

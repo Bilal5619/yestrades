@@ -206,7 +206,10 @@ class TimesheetController extends Controller
             return [
                 'employee' => $job->employee,
                 'job' => $job,
-                'job_number' => 'JOB-'.str_pad((string) $job->id, 5, '0', STR_PAD_LEFT),
+                // Reuses the same job_reference shown to the employee in the
+                // mobile app (e.g. "YT-000014"), so the number matches across
+                // admin and app rather than using a separate synthetic one.
+                'job_number' => $job->job_reference ?? ('YT-'.str_pad((string) $job->id, 6, '0', STR_PAD_LEFT)),
                 'estimated_minutes' => $job->expected_duration_minutes,
                 'actual_minutes' => $job->actualDurationMinutes(),
                 'difference_minutes' => $job->durationDifferenceMinutes(),

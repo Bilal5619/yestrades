@@ -28,6 +28,11 @@ class Kernel extends ConsoleKernel
     ->command('training:expire')
     ->dailyAt('00:10')
     ->withoutOverlapping();
+
+    $schedule
+    ->command('attendance:remind-missing-clockouts')
+    ->everyFifteenMinutes()
+    ->withoutOverlapping();
   }
 
   /**
