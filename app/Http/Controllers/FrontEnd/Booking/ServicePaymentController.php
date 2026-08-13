@@ -29,6 +29,7 @@ use App\Models\PostalCode;
 use App\Models\Question;
 use App\Models\QuestionOption;
 use App\Models\Vendor;
+use App\Services\TenantSlotService;
 use App\Models\BookingAnswer;
 use Auth;
 use Carbon\Carbon;
@@ -78,14 +79,37 @@ class ServicePaymentController extends Controller
     $currencyInfo = $this->getCurrencyInfo();
 
     if ($cartMode) {
-      if (!Auth::guard('web')->check()) {
+      $isAuthenticated = Auth::guard('web')->check();
+      $guestCheckout = !$isAuthenticated && $request->boolean('guest_checkout');
+
+      if (!$isAuthenticated && !$guestCheckout) {
         return response()->json([
           'error' => __('Please login before continuing to payment.'),
         ], 401);
       }
 
+      if ($guestCheckout) {
+        $guestValidator = Validator::make($request->all(), [
+          'name' => 'required|string|max:255',
+          'email' => 'required|email|max:255',
+          'phone' => 'required|string|max:50',
+        ], [
+          'name.required' => __('Please enter your name to continue as a guest.'),
+          'email.required' => __('Please enter your email to continue as a guest.'),
+          'email.email' => __('Please enter a valid email address.'),
+          'phone.required' => __('Please enter your phone number to continue as a guest.'),
+        ]);
+
+        if ($guestValidator->fails()) {
+          return response()->json([
+            'error' => __('Please check the highlighted fields and try again.'),
+            'errors' => $guestValidator->errors(),
+          ], 422);
+        }
+      }
+
       $request->merge([
-        'user_id' => Auth::guard('web')->id(),
+        'user_id' => $isAuthenticated ? Auth::guard('web')->id() : null,
       ]);
 
       if (trim((string) $request->input('zip_code')) === '') {
@@ -97,11 +121,53 @@ class ServicePaymentController extends Controller
         ], 422);
       }
 
+      $schedulingMode = $request->input('scheduling_mode', 'now');
+      $tenantDeferred = $schedulingMode === 'tenant';
+
+      if (!in_array($schedulingMode, ['now', 'tenant'], true)) {
+        return response()->json([
+          'error' => __('Please choose how the appointment date and time will be selected.'),
+        ], 422);
+      }
+
+      if ($tenantDeferred) {
+        $tenantValidator = Validator::make($request->all(), [
+          'tenant_name' => 'required|string|max:255',
+          'tenant_email' => 'nullable|email|max:255',
+          'tenant_phone' => 'nullable|string|max:50',
+          'tenant_note' => 'nullable|string|max:1000',
+        ]);
+
+        $tenantMissingContact = trim((string) $request->input('tenant_email')) === ''
+          && trim((string) $request->input('tenant_phone')) === '';
+
+        if ($tenantMissingContact) {
+          $tenantValidator->errors()->add('tenant_contact', __('Enter at least a tenant email address or phone number.'));
+        }
+
+        if ($tenantValidator->fails() || $tenantMissingContact) {
+          return response()->json([
+            'error' => __('Please complete the tenant/occupier contact details.'),
+            'errors' => $tenantValidator->errors(),
+          ], 422);
+        }
+
+        // Deferred scheduling is always a normal-price booking. Never trust an
+        // urgent fee, date, or slot submitted alongside tenant scheduling.
+        $request->merge([
+          'bookingDate' => null,
+          'serviceHourId' => null,
+          'urgency_surcharge_amount' => 0,
+          'urgency_surcharge_period' => null,
+        ]);
+      }
+
       $firstItem = $cartItems->first();
       $normalizedSlot = $this->normalizeCartTimeSlot($request->input('serviceHourId'));
       $questionAnswers = $this->decodeCartQuestionAnswers($request->input('question_answers', '{}'));
       $urgencySurcharge = (float) $request->input('urgency_surcharge_amount', 0);
       $urgencySurcharge = in_array($urgencySurcharge, [50.0, 100.0, 150.0], true) ? $urgencySurcharge : 0.0;
+      $urgencySurcharge = $tenantDeferred ? 0.0 : $urgencySurcharge;
       $urgencyPeriod = $this->resolveCartUrgencyPeriod($urgencySurcharge);
       $isWithinFourHoursUrgency = $urgencySurcharge === 150.0;
       $bookingDate = $request->input('bookingDate');
@@ -121,25 +187,31 @@ class ServicePaymentController extends Controller
         $bookingDateIsPast = true;
       }
 
-      if ($bookingDateIsPast || ($urgencySurcharge <= 0 && empty($bookingDate))) {
+      if (!$tenantDeferred && ($bookingDateIsPast || ($urgencySurcharge <= 0 && empty($bookingDate)))) {
         return response()->json([
           'error' => __('Please choose today or a future booking date.'),
         ], 422);
       }
 
-      $cartItems = $cartItems->map(function ($item) use ($request, $normalizedSlot, $questionAnswers, $isWithinFourHoursUrgency) {
-        $item['booking_date'] = $isWithinFourHoursUrgency
+      $cartItems = $cartItems->map(function ($item) use ($request, $normalizedSlot, $questionAnswers, $isWithinFourHoursUrgency, $tenantDeferred) {
+        $item['booking_date'] = ($isWithinFourHoursUrgency || $tenantDeferred)
           ? null
           : $request->input('bookingDate', $item['booking_date'] ?? null);
-        $item['service_hour_id'] = $isWithinFourHoursUrgency
+        $item['service_hour_id'] = ($isWithinFourHoursUrgency || $tenantDeferred)
           ? null
           : ($normalizedSlot['service_hour_id'] ?? ($item['service_hour_id'] ?? null));
-        $item['start_time'] = $isWithinFourHoursUrgency
+        $item['start_time'] = ($isWithinFourHoursUrgency || $tenantDeferred)
           ? null
           : ($normalizedSlot['start_time'] ?? ($item['start_time'] ?? null));
-        $item['end_time'] = $isWithinFourHoursUrgency
+        $item['end_time'] = ($isWithinFourHoursUrgency || $tenantDeferred)
           ? null
           : ($normalizedSlot['end_time'] ?? ($item['end_time'] ?? null));
+
+        if ($tenantDeferred) {
+          $item['zoom_status'] = 0;
+          $item['calendar_status'] = 0;
+        }
+
         $item['user_id'] = $request->input('user_id');
 
         if (isset($item['key'], $questionAnswers[$item['key']])) {
@@ -200,6 +272,13 @@ class ServicePaymentController extends Controller
         'total' => $payableTotal,
         'urgency_surcharge_amount' => $urgencySurcharge,
         'urgency_surcharge_period' => $urgencyPeriod,
+        'scheduling_mode' => $tenantDeferred ? 'tenant' : 'customer',
+        'tenant' => $tenantDeferred ? [
+          'name' => trim((string) $request->input('tenant_name')),
+          'email' => trim((string) $request->input('tenant_email')) ?: null,
+          'phone' => trim((string) $request->input('tenant_phone')) ?: null,
+          'note' => trim((string) $request->input('tenant_note')) ?: null,
+        ] : null,
         'customer' => [
           'name' => $request->input('name'),
           'phone' => $request->input('phone'),
@@ -252,6 +331,7 @@ class ServicePaymentController extends Controller
       $serviceData['service_ammount'] = $orderData['total'];
       $serviceData['urgency_surcharge_amount'] = $urgencySurcharge;
       $serviceData['urgency_surcharge_period'] = $urgencyPeriod;
+      $serviceData['scheduling_mode'] = $orderData['scheduling_mode'];
       $serviceData['zoom_status'] = $firstItem['zoom_status'] ?? ($serviceData['zoom_status'] ?? 0);
       $serviceData['calendar_status'] = $firstItem['calendar_status'] ?? ($serviceData['calendar_status'] ?? 0);
       $serviceData['question_answers'] = $request->input('question_answers', $serviceData['question_answers'] ?? '{}');
@@ -901,7 +981,10 @@ class ServicePaymentController extends Controller
     ]);
 
     if ($cartItems->isNotEmpty()) {
-      return $this->storeCartItems($arrData, $orderData);
+      $bookings = $this->storeCartItems($arrData, $orderData);
+      app(TenantSlotService::class)->sendInvitations($bookings);
+
+      return $bookings;
     }
 
     zoomCreate($arrData);
@@ -919,6 +1002,8 @@ class ServicePaymentController extends Controller
       $groupToken = Str::uuid()->toString();
       $customer = $orderData['customer'] ?? [];
       $currency = $orderData['currency'] ?? [];
+      $tenant = $orderData['tenant'] ?? [];
+      $tenantDeferred = ($orderData['scheduling_mode'] ?? 'customer') === 'tenant';
       $orders = collect();
       $itemIndex = 0;
       $remainingDiscount = round((float) ($orderData['discount'] ?? 0), 2);
@@ -968,6 +1053,28 @@ class ServicePaymentController extends Controller
         $itemArr['question_answers'] = $item['question_answers'] ?? ($arrData['question_answers'] ?? null);
         $itemArr['quote_request_id'] = $item['quote_request_id'] ?? null;
 
+        if ($tenantDeferred) {
+          $issuedToken = app(TenantSlotService::class)->issueToken();
+          $itemArr['scheduling_mode'] = 'tenant';
+          $itemArr['tenant_name'] = $tenant['name'] ?? null;
+          $itemArr['tenant_email'] = $tenant['email'] ?? null;
+          $itemArr['tenant_phone'] = $tenant['phone'] ?? null;
+          $itemArr['tenant_note'] = $tenant['note'] ?? null;
+          $itemArr['tenant_slot_status'] = TenantSlotService::STATUS_WAITING;
+          $itemArr['tenant_slot_plain_token'] = $issuedToken['plain'];
+          $itemArr['tenant_slot_token_hash'] = $issuedToken['hash'];
+          $itemArr['tenant_slot_expires_at'] = $issuedToken['expires_at'];
+          $itemArr['booking_date'] = null;
+          $itemArr['start_date'] = null;
+          $itemArr['end_date'] = null;
+          $itemArr['service_hour_id'] = null;
+          $itemArr['staff_id'] = null;
+          $itemArr['urgency_surcharge_amount'] = 0;
+          $itemArr['urgency_surcharge_period'] = null;
+          $itemArr['zoom_status'] = 0;
+          $itemArr['calender_status'] = 0;
+        }
+
         if (!empty($currency)) {
           $itemArr['currencyText'] = $currency['text'] ?? $itemArr['currencyText'];
           $itemArr['currencyTextPosition'] = $currency['text_position'] ?? $itemArr['currencyTextPosition'];
@@ -975,8 +1082,10 @@ class ServicePaymentController extends Controller
           $itemArr['currencySymbolPosition'] = $currency['symbol_position'] ?? $itemArr['currencySymbolPosition'];
         }
 
-        zoomCreate($itemArr);
-        calendarEventCreate($itemArr);
+        if (!$tenantDeferred) {
+          zoomCreate($itemArr);
+          calendarEventCreate($itemArr);
+        }
 
         $orders->push($this->storeData($itemArr));
         $itemIndex++;
@@ -1064,10 +1173,22 @@ class ServicePaymentController extends Controller
       'payment_status' => $arrData['paymentStatus'],
       'order_status' => $arrData['orderStatus'],
       'refund' => $arrData['refund'],
+      'scheduling_mode' => $arrData['scheduling_mode'] ?? 'customer',
+      'tenant_name' => $arrData['tenant_name'] ?? null,
+      'tenant_email' => $arrData['tenant_email'] ?? null,
+      'tenant_phone' => $arrData['tenant_phone'] ?? null,
+      'tenant_note' => $arrData['tenant_note'] ?? null,
+      'tenant_slot_status' => $arrData['tenant_slot_status'] ?? null,
+      'tenant_slot_token_hash' => $arrData['tenant_slot_token_hash'] ?? null,
+      'tenant_slot_expires_at' => $arrData['tenant_slot_expires_at'] ?? null,
       'attachment' => array_key_exists('attachment', $arrData) ? $arrData['attachment'] : null,
       'zoom_info' => session()->has('zoom_info') ? json_encode(session()->get('zoom_info')) : null,
       'quote_request_id' => $arrData['quote_request_id'] ?? null,
     ]);
+
+    if (!empty($arrData['tenant_slot_plain_token'])) {
+      $orderInfo->setAttribute('tenant_slot_plain_token', $arrData['tenant_slot_plain_token']);
+    }
 
     // This booking was created from an accepted Get-a-Quote request — close
     // the loop on the source QuoteRequest so admin sees it as converted.

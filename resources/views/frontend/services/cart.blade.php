@@ -743,6 +743,132 @@
       line-height: 1.5;
     }
 
+    .cart-scheduling-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      max-width: 720px;
+      margin: 0 auto 22px;
+    }
+
+    .cart-scheduling-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      min-height: 100px;
+      margin: 0;
+      padding: 16px;
+      color: #252a35;
+      background: #ffffff;
+      border: 1px solid #dfe4ec;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+    }
+
+    .cart-scheduling-option:hover,
+    .cart-scheduling-option.is-selected {
+      background: rgba(var(--color-primary-rgb), .045);
+      border-color: var(--color-primary);
+      box-shadow: 0 8px 20px rgba(var(--color-primary-rgb), .08);
+    }
+
+    .cart-scheduling-option input {
+      width: 19px;
+      height: 19px;
+      margin-top: 2px;
+      flex: 0 0 auto;
+      accent-color: var(--color-primary);
+    }
+
+    .cart-scheduling-option strong,
+    .cart-scheduling-option small {
+      display: block;
+    }
+
+    .cart-scheduling-option strong {
+      margin-bottom: 5px;
+      color: #151822;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .cart-scheduling-option small {
+      color: #737987;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    .cart-tenant-panel {
+      max-width: 720px;
+      margin: 0 auto 18px;
+      padding: 20px;
+      background: #f8fafc;
+      border: 1px solid #dfe5ed;
+      border-radius: 10px;
+    }
+
+    .cart-tenant-panel h4 {
+      margin: 0 0 5px;
+      color: #171923;
+      font-size: 17px;
+      font-weight: 900;
+    }
+
+    .cart-tenant-panel > p {
+      margin-bottom: 16px;
+      color: #737987;
+      font-size: 13px;
+    }
+
+    .cart-tenant-fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .cart-tenant-field.is-full {
+      grid-column: 1 / -1;
+    }
+
+    .cart-tenant-field input,
+    .cart-tenant-field textarea {
+      width: 100%;
+      border: 1px solid #dbe1ea;
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .cart-tenant-field input {
+      min-height: 48px;
+      padding: 10px 13px;
+    }
+
+    .cart-tenant-field textarea {
+      min-height: 92px;
+      padding: 12px 13px;
+      resize: vertical;
+    }
+
+    .cart-tenant-contact-note {
+      margin: 12px 0 0;
+      color: #5f6673;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    @media (max-width: 575px) {
+      .cart-scheduling-options,
+      .cart-tenant-fields {
+        grid-template-columns: 1fr;
+      }
+
+      .cart-tenant-field.is-full {
+        grid-column: auto;
+      }
+    }
+
     .cart-date-picker-wrap {
       max-width: 560px;
       margin: 0 auto 18px;
@@ -786,14 +912,27 @@
 
     .cart-auth-tabs {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 8px;
-      max-width: 560px;
+      max-width: 720px;
       margin-top: 24px;
       padding: 6px;
       background: #f6f7f9;
       border: 1px solid #e4e8ef;
       border-radius: 8px;
+    }
+
+    @media (max-width: 575px) {
+      .cart-auth-tabs {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .cart-guest-note {
+      margin: 20px 0;
+      color: #6c7280;
+      font-size: 14px;
+      line-height: 1.6;
     }
 
     .cart-auth-tab {
@@ -1544,8 +1683,26 @@
               <span class="checkout-step-icon"><i class="fal fa-calendar-check"></i></span>
               <div>
                 <h3>{{ __('2. Date and time') }}</h3>
-                <p>{{ __('Choose or confirm appointment slots for the services in your cart. Multi-service checkout keeps the selected slots visible before payment.') }}</p>
+                <p>{{ __('Choose the appointment now, or securely invite the tenant/occupier to choose a normal date and time later.') }}</p>
                 <div class="calender-area pt-4">
+                  <div class="cart-scheduling-options" role="radiogroup" aria-label="{{ __('Who will choose the appointment date and time?') }}">
+                    <label class="cart-scheduling-option is-selected" data-cart-scheduling-card>
+                      <input type="radio" name="cart_scheduling_mode" value="now" data-cart-scheduling-mode checked>
+                      <span>
+                        <strong>{{ __('I will choose date and time now') }}</strong>
+                        <small>{{ __('Continue with the existing date, time, and urgent booking options.') }}</small>
+                      </span>
+                    </label>
+                    <label class="cart-scheduling-option" data-cart-scheduling-card>
+                      <input type="radio" name="cart_scheduling_mode" value="tenant" data-cart-scheduling-mode>
+                      <span>
+                        <strong>{{ __('Let tenant/occupier choose date and time') }}</strong>
+                        <small>{{ __('We will send a secure 3-day link for normal appointment slots only.') }}</small>
+                      </span>
+                    </label>
+                  </div>
+
+                  <div data-cart-scheduling-now>
                   <div class="section-title title-center">
                     <h3 class="title">{{ __('Select Available Date & Time') }}</h3>
                     <p class="text-muted">{{ __('Choose from available time slots for this service') }}</p>
@@ -1597,6 +1754,36 @@
                       </div>
                     </div>
                   </div>
+                  </div>
+
+                  <div class="cart-tenant-panel" data-cart-scheduling-tenant hidden>
+                    <h4>{{ __('Tenant/occupier contact') }}</h4>
+                    <p>{{ __('The appointment will be created without a date or time until the secure link is completed.') }}</p>
+                    <div class="cart-tenant-fields">
+                      <div class="cart-tenant-field">
+                        <label class="cart-field-label" for="cart_tenant_name">{{ __('Tenant/occupier name') }} *</label>
+                        <input type="text" id="cart_tenant_name" data-cart-tenant="name" autocomplete="name">
+                        <span class="mt-2 mb-0 text-danger em" data-cart-tenant-error="name"></span>
+                      </div>
+                      <div class="cart-tenant-field">
+                        <label class="cart-field-label" for="cart_tenant_email">{{ __('Tenant/occupier email') }}</label>
+                        <input type="email" id="cart_tenant_email" data-cart-tenant="email" autocomplete="email">
+                        <span class="mt-2 mb-0 text-danger em" data-cart-tenant-error="email"></span>
+                      </div>
+                      <div class="cart-tenant-field">
+                        <label class="cart-field-label" for="cart_tenant_phone">{{ __('Tenant/occupier phone') }}</label>
+                        <input type="tel" id="cart_tenant_phone" data-cart-tenant="phone" autocomplete="tel">
+                        <span class="mt-2 mb-0 text-danger em" data-cart-tenant-error="phone"></span>
+                      </div>
+                      <div class="cart-tenant-field is-full">
+                        <label class="cart-field-label" for="cart_tenant_note">{{ __('Optional note/message to tenant') }}</label>
+                        <textarea id="cart_tenant_note" data-cart-tenant="note" maxlength="1000"></textarea>
+                      </div>
+                    </div>
+                    <p class="cart-tenant-contact-note">{{ __('Enter at least an email address or phone number.') }}</p>
+                    <span class="mt-2 mb-0 text-danger em" data-cart-tenant-error="contact"></span>
+                  </div>
+
                   <div class="cart-step-alert" data-cart-alert="date">
                     {{ __('Please choose a date and time slot before continuing.') }}
                   </div>
@@ -1616,11 +1803,14 @@
               <div class="checkout-step" data-cart-step-panel="auth">
                 <span class="checkout-step-icon"><i class="fal fa-user-lock"></i></span>
                 <div>
-                  <h3>{{ __('3. Login or Create Account') }}</h3>
-                  <p>{{ __('Sign in or create an account here so this booking stays connected to your customer profile.') }}</p>
+                  <h3>{{ __('3. Continue Your Booking') }}</h3>
+                  <p>{{ __('Continue as a guest, or sign in / create an account so this booking stays connected to your customer profile.') }}</p>
 
                   <div class="cart-auth-tabs" role="tablist" aria-label="{{ __('Checkout account options') }}">
-                    <button type="button" class="cart-auth-tab is-active" data-cart-auth-tab="login" role="tab" aria-selected="true">
+                    <button type="button" class="cart-auth-tab is-active" data-cart-auth-tab="guest" role="tab" aria-selected="true">
+                      {{ __('Continue as guest') }}
+                    </button>
+                    <button type="button" class="cart-auth-tab" data-cart-auth-tab="login" role="tab" aria-selected="false">
                       {{ __('Existing customer: Login') }}
                     </button>
                     <button type="button" class="cart-auth-tab" data-cart-auth-tab="signup" role="tab" aria-selected="false">
@@ -1628,7 +1818,21 @@
                     </button>
                   </div>
 
-                  <div class="cart-auth-panel is-active" data-cart-auth-panel="login" role="tabpanel">
+                  <div class="cart-auth-panel is-active" data-cart-auth-panel="guest" role="tabpanel">
+                    <p class="cart-guest-note">
+                      {{ __('No account needed — you\'ll enter your contact and site details on the next step. You can create an account later to view your booking history.') }}
+                    </p>
+                    <div class="cart-step-actions">
+                      <button type="button" class="cart-secondary-btn" data-cart-prev="date">
+                        <i class="fal fa-long-arrow-left"></i> {{ __('Prev Step') }}
+                      </button>
+                      <button type="button" class="cart-primary-btn" data-cart-guest-continue>
+                        {{ __('Continue as guest') }} <i class="fal fa-long-arrow-right"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="cart-auth-panel" data-cart-auth-panel="login" role="tabpanel">
                     <form id="cart-login-form" class="cart-auth-form">
                       <div class="form-group">
                         <label class="cart-field-label" for="cart_login_username">{{ __('Username or email') }} *</label>
@@ -1935,6 +2139,12 @@
                     <input hidden type="text" name="urgency_surcharge_period" id="urgency_surcharge_period_value" value="">
                     <input hidden type="text" name="weekend_request" id="weekend_request" value="0">
                     <input hidden type="text" name="quote_request" id="quote_request" value="0">
+                    <input hidden type="text" name="guest_checkout" id="guest_checkout" value="0">
+                    <input hidden type="text" name="scheduling_mode" id="scheduling_mode" value="now">
+                    <input hidden type="text" name="tenant_name" id="tenant_name">
+                    <input hidden type="text" name="tenant_email" id="tenant_email">
+                    <input hidden type="text" name="tenant_phone" id="tenant_phone">
+                    <input hidden type="text" name="tenant_note" id="tenant_note">
 
                     <span id="err_gateway" class="mt-2 mb-0 text-danger em d-block text-center"></span>
 
@@ -2072,12 +2282,14 @@
       const csrfMeta = document.querySelector('meta[name="csrf-token"]');
       const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') || '' : '';
       let cartIsAuthenticated = @json((bool) $authUser);
+      let cartGuestCheckout = false;
+      let cartSchedulingMode = 'now';
       let selectedUrgencyFee = 0;
       let selectedUrgencyLabel = '';
       let cartPostcodeCheckedValue = '';
 
       function isWithinFourHoursUrgency() {
-        return Number(selectedUrgencyFee || 0) === 150;
+        return cartSchedulingMode === 'now' && Number(selectedUrgencyFee || 0) === 150;
       }
       let appliedCoupon = {
         code: @json($serviceCouponCode),
@@ -2523,7 +2735,7 @@
         }
 
         bookingDate.min = getCartNormalBookingMinDateValue();
-        bookingDate.disabled = selectedUrgencyFee > 0;
+        bookingDate.disabled = selectedUrgencyFee > 0 || cartSchedulingMode === 'tenant';
 
         if (selectedUrgencyFee > 0) {
           bookingDate.value = '';
@@ -2543,7 +2755,7 @@
         const withinFourHours = isWithinFourHoursUrgency();
 
         if (serviceHour) {
-          serviceHour.disabled = withinFourHours;
+          serviceHour.disabled = withinFourHours || cartSchedulingMode === 'tenant';
 
           if (withinFourHours) {
             serviceHour.value = '';
@@ -2553,6 +2765,39 @@
         if (urgentTimeNote) {
           urgentTimeNote.style.display = withinFourHours ? 'block' : 'none';
         }
+      }
+
+      function tenantCartValue(field) {
+        const input = document.querySelector('[data-cart-tenant="' + field + '"]');
+        return input ? String(input.value || '').trim() : '';
+      }
+
+      function setCartSchedulingMode(mode) {
+        cartSchedulingMode = mode === 'tenant' ? 'tenant' : 'now';
+
+        document.querySelectorAll('[data-cart-scheduling-mode]').forEach(function (input) {
+          const selected = input.value === cartSchedulingMode;
+          input.checked = selected;
+          const card = input.closest('[data-cart-scheduling-card]');
+          if (card) card.classList.toggle('is-selected', selected);
+        });
+
+        const chooseNowPanel = document.querySelector('[data-cart-scheduling-now]');
+        const tenantPanel = document.querySelector('[data-cart-scheduling-tenant]');
+        if (chooseNowPanel) chooseNowPanel.hidden = cartSchedulingMode !== 'now';
+        if (tenantPanel) tenantPanel.hidden = cartSchedulingMode !== 'tenant';
+
+        if (cartSchedulingMode === 'tenant') {
+          selectedUrgencyFee = 0;
+          selectedUrgencyLabel = '';
+          document.querySelectorAll('[data-cart-urgency-fee]').forEach(function (button) {
+            button.setAttribute('aria-pressed', 'false');
+          });
+        }
+
+        updateCartDateAvailability();
+        updateCartTotals();
+        hideCartAlert('date');
       }
 
       function getCartTodayDateValue() {
@@ -2694,6 +2939,11 @@
       }
 
       document.addEventListener('change', function (event) {
+        if (event.target && event.target.matches && event.target.matches('[data-cart-scheduling-mode]')) {
+          setCartSchedulingMode(event.target.value);
+          return;
+        }
+
         if (event.target && event.target.id === 'cart_booking_date') {
           if (isPastCartBookingDate(event.target.value)) {
             event.target.value = '';
@@ -3124,6 +3374,43 @@
       }
 
       function validateCartDate() {
+        if (cartSchedulingMode === 'tenant') {
+          const name = tenantCartValue('name');
+          const email = tenantCartValue('email');
+          const phone = tenantCartValue('phone');
+          let valid = true;
+
+          document.querySelectorAll('[data-cart-tenant-error]').forEach(function (error) {
+            error.textContent = '';
+          });
+
+          if (!name) {
+            valid = false;
+            const nameError = document.querySelector('[data-cart-tenant-error="name"]');
+            if (nameError) nameError.textContent = @json(__('Tenant/occupier name is required.'));
+          }
+
+          if (!email && !phone) {
+            valid = false;
+            const contactError = document.querySelector('[data-cart-tenant-error="contact"]');
+            if (contactError) contactError.textContent = @json(__('Enter at least an email address or phone number.'));
+          }
+
+          if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            valid = false;
+            const emailError = document.querySelector('[data-cart-tenant-error="email"]');
+            if (emailError) emailError.textContent = @json(__('Please enter a valid email address.'));
+          }
+
+          if (valid) {
+            hideCartAlert('date');
+          } else {
+            showCartAlert('date', @json(__('Please complete the tenant/occupier contact details.')));
+          }
+
+          return valid;
+        }
+
         const date = document.getElementById('cart_booking_date');
         const time = document.getElementById('cart_service_hour_id');
         const hasPastDate = !!date && isPastCartBookingDate(date.value);
@@ -3143,7 +3430,7 @@
       }
 
       function validateCartAuth() {
-        if (cartIsAuthenticated) {
+        if (cartIsAuthenticated || cartGuestCheckout) {
           hideCartAlert('auth');
           return true;
         }
@@ -3261,6 +3548,7 @@
 
             if (response.success) {
               cartIsAuthenticated = true;
+              cartGuestCheckout = false;
               applyCartLoginData(response.billingData || {});
               hideCartAlert('auth');
 
@@ -3309,6 +3597,7 @@
 
             if (response.success) {
               cartIsAuthenticated = true;
+              cartGuestCheckout = false;
               applyCartLoginData(response.billingData || {});
               hideCartAlert('auth');
 
@@ -3439,14 +3728,24 @@
         const quoteRequestInput = document.getElementById('quote_request');
         const gatewayInput = document.getElementById('gateway');
         const stripeTokenInput = document.getElementById('stripeToken');
+        const schedulingModeInput = document.getElementById('scheduling_mode');
         const isRequestOnly = updateWeekendRequestMode();
 
+        if (schedulingModeInput) {
+          schedulingModeInput.value = cartSchedulingMode;
+        }
+
+        ['name', 'email', 'phone', 'note'].forEach(function (field) {
+          const target = document.getElementById('tenant_' + field);
+          if (target) target.value = tenantCartValue(field);
+        });
+
         if (bookingDateInput && bookingDate) {
-          bookingDateInput.value = bookingDate.value;
+          bookingDateInput.value = cartSchedulingMode === 'tenant' ? '' : bookingDate.value;
         }
 
         if (serviceHourInput && serviceHour) {
-          serviceHourInput.value = isWithinFourHoursUrgency() ? '' : serviceHour.value;
+          serviceHourInput.value = cartSchedulingMode === 'tenant' || isWithinFourHoursUrgency() ? '' : serviceHour.value;
         }
 
         if (totalInput) {
@@ -3471,6 +3770,12 @@
 
         if (quoteRequestInput) {
           quoteRequestInput.value = isCartQuoteRequestSelected() ? '1' : '0';
+        }
+
+        const guestCheckoutInput = document.getElementById('guest_checkout');
+
+        if (guestCheckoutInput) {
+          guestCheckoutInput.value = (!cartIsAuthenticated && cartGuestCheckout) ? '1' : '0';
         }
 
         if (gatewayInput) {
@@ -3592,12 +3897,20 @@
         const prev = event.target.closest('[data-cart-prev]');
         const login = event.target.closest('[data-cart-login]');
         const signup = event.target.closest('[data-cart-signup]');
+        const guestContinue = event.target.closest('[data-cart-guest-continue]');
         const authTab = event.target.closest('[data-cart-auth-tab]');
         const summaryPay = event.target.closest('[data-cart-summary-pay]');
         const pay = event.target.closest('[data-cart-pay]');
 
         if (authTab) {
-          setCartAuthMode(authTab.dataset.cartAuthTab || 'login');
+          setCartAuthMode(authTab.dataset.cartAuthTab || 'guest');
+          return;
+        }
+
+        if (guestContinue) {
+          cartGuestCheckout = true;
+          hideCartAlert('auth');
+          showCartStep('info');
           return;
         }
 
@@ -3629,7 +3942,7 @@
               return;
             }
 
-            if (!cartIsAuthenticated) {
+            if (!cartIsAuthenticated && !cartGuestCheckout) {
               showCartStep('auth');
               return;
             }
