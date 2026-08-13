@@ -37,6 +37,25 @@ Route::middleware('change.lang')->group(function () {
     ->middleware('throttle:10,1')
     ->name('frontend.quote.response.decline');
 
+  // Tenant/occupier deferred scheduling — secure emailed link lets the
+  // tenant pick a normal appointment slot, then the owner confirms it.
+  Route::get('/tenant/select-slot/{token}', 'FrontEnd\TenantSlotController@show')
+    ->where('token', '[A-Za-z0-9]{64}')
+    ->middleware('throttle:30,1')
+    ->name('tenant.slot.show');
+  Route::post('/tenant/select-slot/{token}', 'FrontEnd\TenantSlotController@store')
+    ->where('token', '[A-Za-z0-9]{64}')
+    ->middleware('throttle:10,1')
+    ->name('tenant.slot.store');
+  Route::get('/booking/confirm-tenant-slot/{token}', 'FrontEnd\TenantSlotController@showOwnerConfirmation')
+    ->where('token', '[A-Za-z0-9]{64}')
+    ->middleware('throttle:30,1')
+    ->name('tenant.slot.owner.show');
+  Route::post('/booking/confirm-tenant-slot/{token}', 'FrontEnd\TenantSlotController@confirmOwnerSelection')
+    ->where('token', '[A-Za-z0-9]{64}')
+    ->middleware('throttle:10,1')
+    ->name('tenant.slot.owner.confirm');
+
   // Employee mobile-app account activation (set password) — link emailed from HR portal.
   Route::get('/employee/activate/{token}', 'FrontEnd\EmployeeActivationController@show')
     ->where('token', '[A-Za-z0-9]{64}')

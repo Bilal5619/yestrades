@@ -33,6 +33,11 @@ class Kernel extends ConsoleKernel
     ->command('attendance:remind-missing-clockouts')
     ->everyFifteenMinutes()
     ->withoutOverlapping();
+
+    $schedule
+    ->command('tenant-slots:expire')
+    ->hourly()
+    ->withoutOverlapping();
   }
 
   /**
