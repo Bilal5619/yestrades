@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use App\Models\Company\EmployeeJobVisit;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class JobSheetController extends Controller
 {
@@ -179,7 +181,28 @@ return redirect()
         Request $request,
         EmployeeJob $job
     ) {
-        $validated = $this->validateJob($request);
+        Log::info('Company job update request received', [
+            'job_id' => $job->id,
+            'request_data' => $request->except([
+                '_token',
+                '_method',
+            ]),
+        ]);
+
+        try {
+            $validated = $this->validateJob($request);
+        } catch (ValidationException $exception) {
+            Log::info('Company job update validation failed', [
+                'job_id' => $job->id,
+                'request_data' => $request->except([
+                    '_token',
+                    '_method',
+                ]),
+                'validation_errors' => $exception->errors(),
+            ]);
+
+            throw $exception;
+        }
 
         $this->applyClientPropertyDetails($validated);
 
@@ -202,7 +225,24 @@ return redirect()
             $validated['invoice_sent_at'] = now();
         }
 
+        $dirtyPreview = (clone $job)
+            ->fill($validated)
+            ->getDirty();
+
+        Log::info('Company job update validated data', [
+            'job_id' => $job->id,
+            'validated_data' => $validated,
+            'dirty_before_save' => $dirtyPreview,
+        ]);
+
         $job->update($validated);
+
+        Log::info('Company job update persisted', [
+            'job_id' => $job->id,
+            'fresh_database_values' => $job
+                ->fresh()
+                ?->toArray(),
+        ]);
 
         return redirect()
             ->route(
