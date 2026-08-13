@@ -12,6 +12,12 @@ return new class extends Migration
         $columns = DB::select("SHOW COLUMNS FROM service_bookings LIKE 'tenant_name'");
         
         if (empty($columns)) {
+            // Check if tenant_note exists, if not add it first
+            $tenantNoteExists = DB::select("SHOW COLUMNS FROM service_bookings LIKE 'tenant_note'");
+            if (empty($tenantNoteExists)) {
+                DB::statement('ALTER TABLE service_bookings ADD COLUMN tenant_note TEXT NULL');
+            }
+            
             DB::statement('ALTER TABLE service_bookings 
                 ADD COLUMN tenant_name VARCHAR(255) NULL AFTER tenant_note,
                 ADD COLUMN tenant_email VARCHAR(255) NULL AFTER tenant_name,
@@ -30,18 +36,17 @@ return new class extends Migration
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE service_bookings 
-            DROP COLUMN tenant_name,
-            DROP COLUMN tenant_email,
-            DROP COLUMN tenant_phone,
-            DROP COLUMN tenant_slot_status,
-            DROP COLUMN tenant_slot_plain_token,
-            DROP COLUMN tenant_slot_token_hash,
-            DROP COLUMN tenant_slot_expires_at,
-            DROP COLUMN tenant_slot_selected_at,
-            DROP COLUMN tenant_slot_used_at,
-            DROP COLUMN tenant_owner_confirmation_token_hash,
-            DROP COLUMN tenant_owner_confirmed_at
-        ');
+        // Drop columns if they exist
+        $columns = ['tenant_name', 'tenant_email', 'tenant_phone', 'tenant_slot_status', 
+                    'tenant_slot_plain_token', 'tenant_slot_token_hash', 'tenant_slot_expires_at',
+                    'tenant_slot_selected_at', 'tenant_slot_used_at', 'tenant_owner_confirmation_token_hash',
+                    'tenant_owner_confirmed_at', 'tenant_note'];
+        
+        foreach ($columns as $column) {
+            $exists = DB::select("SHOW COLUMNS FROM service_bookings LIKE '$column'");
+            if (!empty($exists)) {
+                DB::statement("ALTER TABLE service_bookings DROP COLUMN $column");
+            }
+        }
     }
 };
