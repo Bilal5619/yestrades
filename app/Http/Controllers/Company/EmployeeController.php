@@ -755,6 +755,22 @@ public function update(Request $request, Employee $employee)
             'date',
             'after_or_equal:start_date',
         ],
+        'leaver_notice_date' => [
+            'nullable',
+            'date',
+            Rule::requiredIf(
+                fn () => $request->input('employment_status') === 'notice_period'
+            ),
+        ],
+        'leaver_form' => [
+            Rule::requiredIf(
+                fn () => $request->input('employment_status') === 'notice_period'
+                    && ! $employee->leaver_form_path
+            ),
+            'file',
+            'mimes:pdf,jpg,jpeg,png',
+            'max:10240',
+        ],
         'work_location' => [
             'nullable',
             'string',
@@ -835,6 +851,33 @@ public function update(Request $request, Employee $employee)
             );
     }
 
+    if (
+        empty($validated['leaver_notice_date']) &&
+        $employee->leaver_notice_date
+    ) {
+        unset($validated['leaver_notice_date']);
+    }
+
+    unset($validated['leaver_form']);
+
+    $oldLeaverFormPath = null;
+
+    if ($request->hasFile('leaver_form')) {
+        $oldLeaverFormPath = $employee->leaver_form_path;
+
+        $leaverForm = $request->file('leaver_form');
+
+        $validated['leaver_form_path'] = $leaverForm->store(
+            'employee-documents/' . $employee->id . '/leaver-forms',
+            'local'
+        );
+
+        $validated['leaver_form_original_name'] =
+            $leaverForm->getClientOriginalName();
+
+        $validated['leaver_form_uploaded_at'] = now();
+    }
+
     $validated['country'] =
         $validated['country'] ?? 'United Kingdom';
 
@@ -844,6 +887,14 @@ public function update(Request $request, Employee $employee)
     $validated['updated_by'] = auth('company')->id();
 
     $employee->update($validated);
+    if (
+        $oldLeaverFormPath &&
+        $oldLeaverFormPath !== ($validated['leaver_form_path'] ?? null) &&
+        Storage::disk('local')->exists($oldLeaverFormPath)
+    ) {
+        Storage::disk('local')->delete($oldLeaverFormPath);
+    }
+
     if ($employee->is_sponsored_worker) {
     $sponsoredWorkerRecord =
         \App\Models\Company\SponsoredWorkerRecord::firstOrCreate(
@@ -1123,6 +1174,59 @@ public function archived(Request $request)
     return view(
         'company.hr.employees.archived',
         compact('employees', 'departments')
+    );
+}
+
+public function viewLeaverForm(Employee $employee)
+{
+    return $this->leaverFormResponse(
+        $employee,
+        true
+    );
+}
+
+public function downloadLeaverForm(Employee $employee)
+{
+    return $this->leaverFormResponse(
+        $employee,
+        false
+    );
+}
+
+private function leaverFormResponse(
+    Employee $employee,
+    bool $inline
+) {
+    abort_unless(
+        $employee->leaver_form_path,
+        404
+    );
+
+    abort_unless(
+        Storage::disk('local')->exists(
+            $employee->leaver_form_path
+        ),
+        404
+    );
+
+    $fileName = $employee->leaver_form_original_name
+        ?: basename($employee->leaver_form_path);
+
+    if (! $inline) {
+        return Storage::disk('local')->download(
+            $employee->leaver_form_path,
+            $fileName
+        );
+    }
+
+    return response()->file(
+        Storage::disk('local')->path(
+            $employee->leaver_form_path
+        ),
+        [
+            'Content-Disposition' =>
+                'inline; filename="' . basename($fileName) . '"',
+        ]
     );
 }
 

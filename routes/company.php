@@ -185,6 +185,25 @@ Route::get(
     )
     ->name('company.hr.employees.documents.download');
 
+Route::get(
+    '/hr/employees/{employee}/leaver-form/view',
+    'Company\EmployeeController@viewLeaverForm'
+)
+    ->middleware(
+        'company.permission:employee-documents.view'
+    )
+    ->name('company.hr.employees.leaver-form.view');
+
+Route::get(
+    '/hr/employees/{employee}/leaver-form/download',
+    'Company\EmployeeController@downloadLeaverForm'
+)
+    ->middleware(
+        'company.permission:employee-documents.download'
+    )
+    ->name('company.hr.employees.leaver-form.download');
+
+
 
 Route::post(
     '/hr/employees/{employee}/documents/{document}/approve',

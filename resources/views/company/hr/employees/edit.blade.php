@@ -863,6 +863,101 @@
 
         </div>
     </div>
+    <div
+        id="leaver-details-section"
+        class="employee-form-section"
+        data-has-leaver-form="{{ $employee->leaver_form_path ? '1' : '0' }}"
+        style="{{ in_array(old('employment_status', $employee->employment_status), ['notice_period', 'left_company', 'archived'], true) ? '' : 'display:none;' }}"
+    >
+        <h2>Leaver Details</h2>
+
+        <div class="employee-form-grid">
+            <div class="employee-form-group">
+                <label for="leaver_notice_date">
+                    Notice Date
+                    <span class="employee-required leaver-required-marker">*</span>
+                </label>
+
+                <input
+                    id="leaver_notice_date"
+                    type="date"
+                    name="leaver_notice_date"
+                    value="{{ old('leaver_notice_date', optional($employee->leaver_notice_date)->format('Y-m-d')) }}"
+                    class="employee-form-control"
+                >
+
+                @error('leaver_notice_date')
+                    <span class="employee-form-error">
+                        {{ $message }}
+                    </span>
+                @enderror
+            </div>
+
+            <div class="employee-form-group">
+                <label for="leaver_form">
+                    Leaver Form Upload
+                    @if (! $employee->leaver_form_path)
+                        <span class="employee-required leaver-required-marker">*</span>
+                    @endif
+                </label>
+
+                @if ($employee->leaver_form_path)
+                    <div class="employee-form-note" style="margin-bottom:10px;">
+                        Current file:
+                        <strong>{{ $employee->leaver_form_original_name ?: 'Leaver form' }}</strong>
+                        @if ($employee->leaver_form_uploaded_at)
+                            uploaded {{ $employee->leaver_form_uploaded_at->format('d M Y H:i') }}
+                        @endif
+                    </div>
+
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+                        @if (auth('company')->user()->hasPermission('employee-documents.view'))
+                            <a
+                                href="{{ route('company.hr.employees.leaver-form.view', $employee) }}"
+                                target="_blank"
+                                rel="noopener"
+                                class="employee-cancel-button"
+                            >
+                                View
+                            </a>
+                        @endif
+
+                        @if (auth('company')->user()->hasPermission('employee-documents.download'))
+                            <a
+                                href="{{ route('company.hr.employees.leaver-form.download', $employee) }}"
+                                class="employee-cancel-button"
+                            >
+                                Download
+                            </a>
+                        @endif
+                    </div>
+                @endif
+
+                <input
+                    id="leaver_form"
+                    type="file"
+                    name="leaver_form"
+                    class="employee-form-control"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    @if (! $employee->leaver_form_path && old('employment_status', $employee->employment_status) === 'notice_period') required @endif
+                >
+
+                <div class="employee-form-note">
+                    PDF, JPG, JPEG or PNG. Maximum size 10 MB.
+                    @if ($employee->leaver_form_path)
+                        Upload a new file only when intentionally replacing the existing leaver form.
+                    @endif
+                </div>
+
+                @error('leaver_form')
+                    <span class="employee-form-error">
+                        {{ $message }}
+                    </span>
+                @enderror
+            </div>
+        </div>
+    </div>
+
 <div class="form-group">
     <label for="is_sponsored_worker">
         Sponsored worker
@@ -1151,5 +1246,33 @@
     </div>
 
 </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const status = document.getElementById('employment_status');
+    const section = document.getElementById('leaver-details-section');
+    const leaverForm = document.getElementById('leaver_form');
+
+    if (!status || !section) {
+        return;
+    }
+
+    const visibleStatuses = ['notice_period', 'left_company', 'archived'];
+
+    function refreshLeaverDetails() {
+        const show = visibleStatuses.includes(status.value);
+        const hasExistingForm = section.dataset.hasLeaverForm === '1';
+
+        section.style.display = show ? '' : 'none';
+
+        if (leaverForm) {
+            leaverForm.required = status.value === 'notice_period' && !hasExistingForm;
+        }
+    }
+
+    status.addEventListener('change', refreshLeaverDetails);
+    refreshLeaverDetails();
+});
+</script>
 
 @endsection
