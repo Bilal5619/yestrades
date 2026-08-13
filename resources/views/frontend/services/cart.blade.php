@@ -469,6 +469,33 @@
       white-space: nowrap;
     }
 
+    .summary-item-price-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .summary-item-remove {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      color: #ab2a3c;
+      background: rgba(220, 53, 69, .08);
+      border: 0;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background .2s ease;
+    }
+
+    .summary-item-remove:hover {
+      background: rgba(220, 53, 69, .16);
+    }
+
     .summary-coupon {
       margin: 18px 0;
       padding: 14px;
@@ -1070,6 +1097,64 @@
 
     .cart-payment-area .payment-method-card.selected .payment-check {
       opacity: 1;
+    }
+
+    /* A global stylesheet (booking-modal-responsive.css, built for the old
+       single-service booking modal) ships an unscoped "Red Theme" for
+       .payment-card-featured / .payment-method-card with !important flags
+       that otherwise bleed into this page. Override it back to the site's
+       real brand color here, matching !important so it actually wins. */
+    .cart-payment-area .payment-card-featured {
+      background: rgba(var(--color-primary-rgb), 0.06) !important;
+      border: 1px solid var(--color-primary) !important;
+      color: #111827 !important;
+      box-shadow: none !important;
+    }
+
+    .cart-payment-area .payment-card-featured .payment-icon {
+      color: var(--color-primary) !important;
+    }
+
+    .cart-payment-area .payment-card-featured .payment-name-featured,
+    .cart-payment-area .payment-card-featured .payment-name-featured small {
+      color: #111827 !important;
+    }
+
+    .cart-payment-area .payment-card-featured .payment-brands {
+      color: #4b5563 !important;
+    }
+
+    .cart-payment-area .payment-card-featured:hover,
+    .cart-payment-area .payment-card-featured.selected {
+      box-shadow: 0 10px 22px rgba(var(--color-primary-rgb), 0.12) !important;
+    }
+
+    .cart-payment-area .payment-card-featured .payment-check {
+      color: var(--color-primary) !important;
+    }
+
+    .cart-payment-request-button {
+      margin-bottom: 16px;
+    }
+
+    .cart-payment-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 4px 0 16px;
+      color: #8a90a0;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .cart-payment-divider::before,
+    .cart-payment-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e3e7ed;
     }
 
     .cart-payment-area .gateway-details,
@@ -1703,10 +1788,6 @@
                   </div>
 
                   <div data-cart-scheduling-now>
-                  <div class="section-title title-center">
-                    <h3 class="title">{{ __('Select Available Date & Time') }}</h3>
-                    <p class="text-muted">{{ __('Choose from available time slots for this service') }}</p>
-                  </div>
                   <div class="urgency-surcharge-info" role="note" aria-label="{{ __('Urgency surcharge information') }}">
                     <div class="urgency-surcharge-info-title">
                       <i class="fal fa-info-circle"></i>
@@ -1937,7 +2018,6 @@
               <span class="checkout-step-icon"><i class="fal fa-user"></i></span>
               <div>
                 <h3>{{ $authUser ? __('3. Customer information') : __('4. Customer information') }}</h3>
-                <p>{{ __('Site contact, billing contact and alternate contact information are collected before checkout so the engineer has the right details.') }}</p>
                 @php
                   $firstCartItem = $serviceCart->first();
                   $firstCustomer = $firstCartItem['site'] ?? ($firstCartItem['customer'] ?? []);
@@ -1998,7 +2078,7 @@
                   {{ __('Please complete the required customer information before continuing.') }}
                 </div>
                 <div class="cart-step-actions">
-                  <button type="button" class="cart-secondary-btn" data-cart-prev="date">
+                  <button type="button" class="cart-secondary-btn" data-cart-prev="{{ $authUser ? 'date' : 'auth' }}">
                     <i class="fal fa-long-arrow-left"></i> {{ __('Prev Step') }}
                   </button>
                   <button type="button" class="cart-primary-btn" data-cart-next="review">
@@ -2152,6 +2232,9 @@
                       {{ __('Weekend appointments are request-only. Submit this request and our team will confirm availability before payment.') }}
                     </div>
 
+                    <div id="cart-payment-request-button" class="cart-payment-request-button" data-card-payment-ui style="display:none;"></div>
+                    <div class="cart-payment-divider" data-card-payment-ui id="cart-payment-divider" style="display:none;">{{ __('Or pay by card') }}</div>
+
                     <div class="featured-payment-option mb-3" data-card-payment-ui>
                       <div class="payment-method-card payment-card-featured selected">
                         <div class="payment-icon">
@@ -2208,7 +2291,21 @@
                       </small>
                     @endif
                   </span>
-                  <strong data-summary-item-price="{{ $item['key'] }}">{!! $displayCartItemPrice($item) !!}</strong>
+                  <span class="summary-item-price-group">
+                    <form action="{{ route('frontend.services.cart.remove', $item['key']) }}" method="POST"
+                      data-custom-confirm="{{ __('Remove this service?') }}"
+                      data-confirm-title="{{ __('Remove service') }}"
+                      data-confirm-button="{{ __('Remove service') }}"
+                      data-cancel-button="{{ __('Keep service') }}"
+                      data-confirm-icon="trash-alt">
+                      @csrf
+                      @method('DELETE')
+                      <button type="submit" class="summary-item-remove" aria-label="{{ __('Remove service') }}">
+                        <i class="fal fa-trash-alt"></i>
+                      </button>
+                    </form>
+                    <strong data-summary-item-price="{{ $item['key'] }}">{!! $displayCartItemPrice($item) !!}</strong>
+                  </span>
                 </li>
               @endforeach
               <li data-summary-postcode-row style="display: none;">
@@ -2274,6 +2371,7 @@
       const currencySymbol = @json(html_entity_decode($symbol, ENT_QUOTES, 'UTF-8'));
       const currencyPosition = @json($position);
       const stripeKey = @json($stripe_key ?? '');
+      const stripeCurrencyCode = @json(strtolower($currencyInfo->base_currency_text ?? 'gbp'));
       const cartLoginUrl = @json(route('frontend.user.login'));
       const cartSignupUrl = @json(route('frontend.user.signup'));
       const couponApplyUrl = @json(route('frontend.services.cart.apply_coupon'));
@@ -2345,6 +2443,93 @@
 
         stripeCard.mount('#stripe-element');
         stripeMounted = true;
+      }
+
+      let cartPaymentRequest = null;
+      let cartPrButton = null;
+
+      // Apple Pay / Google Pay via Stripe's Payment Request Button. Silently
+      // does nothing if the browser/device has no wallet configured — the
+      // card form below always stays available as the fallback.
+      function mountCartPaymentRequestButton() {
+        if (!initializeCartStripe()) {
+          return;
+        }
+
+        const container = document.getElementById('cart-payment-request-button');
+        const divider = document.getElementById('cart-payment-divider');
+
+        if (!container) {
+          return;
+        }
+
+        const amount = Math.round(parseFloat(calculateCartTotal()) * 100);
+
+        if (!amount || amount <= 0) {
+          container.style.display = 'none';
+          if (divider) divider.style.display = 'none';
+          return;
+        }
+
+        cartPaymentRequest = stripe.paymentRequest({
+          country: 'GB',
+          currency: stripeCurrencyCode,
+          total: {
+            label: 'Yes Trades',
+            amount: amount
+          },
+          requestPayerName: true,
+          requestPayerEmail: true
+        });
+
+        cartPrButton = stripe.elements().create('paymentRequestButton', {
+          paymentRequest: cartPaymentRequest,
+          style: {
+            paymentRequestButton: {
+              type: 'default',
+              theme: 'dark',
+              height: '48px'
+            }
+          }
+        });
+
+        cartPaymentRequest.canMakePayment().then(function (result) {
+          if (result) {
+            container.innerHTML = '';
+            cartPrButton.mount('#cart-payment-request-button');
+            container.style.display = 'block';
+            if (divider) divider.style.display = 'flex';
+          } else {
+            container.style.display = 'none';
+            if (divider) divider.style.display = 'none';
+          }
+        });
+
+        cartPaymentRequest.on('token', function (ev) {
+          const form = document.getElementById('payment-form');
+          const stripeTokenInput = document.getElementById('stripeToken');
+          const gatewayError = document.getElementById('err_gateway');
+
+          if (!validateCartInfo()) {
+            ev.complete('fail');
+            showCartStep('info');
+            return;
+          }
+
+          if (stripeTokenInput) {
+            stripeTokenInput.value = ev.token.id;
+          }
+
+          prepareCartPaymentForm();
+          ev.complete('success');
+
+          const requestLoader = document.querySelector('.request-loader-time');
+          if (requestLoader) {
+            requestLoader.classList.add('show');
+          }
+
+          submitCartPaymentForm(form);
+        });
       }
 
       function formatCartPrice(amount) {
@@ -3288,6 +3473,7 @@
         if (step === 'payment') {
           if (!updateWeekendRequestMode()) {
             mountCartStripeCard();
+            mountCartPaymentRequestButton();
           }
         }
       }
@@ -4176,7 +4362,6 @@
             subtotal += Math.max(itemTotal - postcodeSurcharge, 0);
 
             let addonHtml = '';
-            addonHtml += '<div class="cart-summary-addon"><span>' + @json(__('Base price')) + '</span><span>' + formatCartPrice(basePrice) + '</span></div>';
 
             if (postcodeSurcharge > 0) {
               addonHtml += '<div class="cart-summary-addon"><span>' + @json(__('Postcode extra charge')) + '</span><span>+' + formatCartPrice(postcodeSurcharge) + '</span></div>';

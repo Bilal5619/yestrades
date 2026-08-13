@@ -47,6 +47,12 @@ class StripeController extends Controller
       ]);
       return $this->paymentErrorResponse($request, 'Your booking session expired. Please reopen the booking form and try again.', true);
     }
+
+    // Tenant-deferred bookings intentionally have no staff/date/time chosen
+    // yet — that gets picked later via the secure tenant link. Skip the
+    // staff/slot resolution below for them; storeCartItems() overwrites
+    // these fields per item regardless of what's built here.
+    $isTenantDeferred = ($serviceData['scheduling_mode'] ?? 'customer') === 'tenant';
     
     $service = \App\Models\Services\Services::find($serviceData['service_id'] ?? null);
     $vendorId = $service ? (int) ($service->vendor_id ?? 0) : 0;
@@ -194,7 +200,7 @@ class StripeController extends Controller
         'resolved_staff_is_day' => $staff ? $staff->is_day : null,
       ]);
       
-      if (!$staff) {
+      if (!$staff && !$isTenantDeferred) {
         Log::warning('Stripe payment blocked because staff could not be resolved', [
           'session_id' => $request->session()->getId(),
           'requested_staff_id' => $request['staffId'],
@@ -204,7 +210,15 @@ class StripeController extends Controller
         return $this->paymentErrorResponse($request, 'Staff information is not available. Please choose another slot.');
       }
 
-      if (strpos($request['serviceHourId'], 'default_') === 0) {
+      if ($isTenantDeferred) {
+        $staffHour = new \stdClass();
+        $staffHour->start_time = '00:00:00';
+        $staffHour->end_time = '00:00:00';
+
+        Log::info('Stripe skipped slot resolution for a tenant-deferred booking', [
+          'session_id' => $request->session()->getId(),
+        ]);
+      } elseif (strpos($request['serviceHourId'], 'default_') === 0) {
         $timeId = str_replace('default_', '', $request['serviceHourId']);
         $startTime = substr($timeId, 0, 2) . ':' . substr($timeId, 2, 2) . ':' . substr($timeId, 4, 2);
         
