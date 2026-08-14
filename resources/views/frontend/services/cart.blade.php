@@ -1133,11 +1133,11 @@
       color: var(--color-primary) !important;
     }
 
-    .cart-payment-request-button {
+    .stripe-wallet-section {
       margin-bottom: 16px;
     }
 
-    .cart-payment-divider {
+    .stripe-card-divider {
       display: flex;
       align-items: center;
       gap: 12px;
@@ -1149,8 +1149,8 @@
       letter-spacing: .04em;
     }
 
-    .cart-payment-divider::before,
-    .cart-payment-divider::after {
+    .stripe-card-divider::before,
+    .stripe-card-divider::after {
       content: '';
       flex: 1;
       height: 1px;
@@ -1901,8 +1901,25 @@
 
                   <div class="cart-auth-panel is-active" data-cart-auth-panel="guest" role="tabpanel">
                     <p class="cart-guest-note">
-                      {{ __('No account needed — you\'ll enter your contact and site details on the next step. You can create an account later to view your booking history.') }}
+                      {{ __('No account needed — enter your contact details below to continue. You can create an account later to view your booking history.') }}
                     </p>
+                    <form id="cart-guest-form" class="cart-auth-form">
+                      <div class="form-group">
+                        <label class="cart-field-label" for="cart_guest_name">{{ __('Name') }} *</label>
+                        <input type="text" name="name" id="cart_guest_name" class="form-control" placeholder="{{ __('Full name') }}">
+                        <span id="err_cart_guest_name" class="mt-2 mb-0 text-danger em"></span>
+                      </div>
+                      <div class="form-group">
+                        <label class="cart-field-label" for="cart_guest_email">{{ __('Email') }} *</label>
+                        <input type="email" name="email" id="cart_guest_email" class="form-control" placeholder="{{ __('Email address') }}">
+                        <span id="err_cart_guest_email" class="mt-2 mb-0 text-danger em"></span>
+                      </div>
+                      <div class="form-group">
+                        <label class="cart-field-label" for="cart_guest_phone">{{ __('Phone') }} *</label>
+                        <input type="text" name="phone" id="cart_guest_phone" class="form-control" placeholder="{{ __('Phone number') }}">
+                        <span id="err_cart_guest_phone" class="mt-2 mb-0 text-danger em"></span>
+                      </div>
+                    </form>
                     <div class="cart-step-actions">
                       <button type="button" class="cart-secondary-btn" data-cart-prev="date">
                         <i class="fal fa-long-arrow-left"></i> {{ __('Prev Step') }}
@@ -2232,8 +2249,11 @@
                       {{ __('Weekend appointments are request-only. Submit this request and our team will confirm availability before payment.') }}
                     </div>
 
-                    <div id="cart-payment-request-button" class="cart-payment-request-button" data-card-payment-ui style="display:none;"></div>
-                    <div class="cart-payment-divider" data-card-payment-ui id="cart-payment-divider" style="display:none;">{{ __('Or pay by card') }}</div>
+                    <div id="stripe-wallet-section" class="stripe-wallet-section" style="display:none;">
+                      <div id="express-checkout-element"></div>
+                    </div>
+                    <div id="stripe-card-divider" class="stripe-card-divider" data-card-payment-ui style="display:none;">{{ __('Or pay by card') }}</div>
+                    <input hidden type="text" name="payment_intent_id" id="payment_intent_id" value="">
 
                     <div class="featured-payment-option mb-3" data-card-payment-ui>
                       <div class="payment-method-card payment-card-featured selected">
@@ -2396,15 +2416,60 @@
         amount: Number(@json($serviceCouponDiscount))
       };
       let stripe = null;
+      let stripeExpressElements = null;
       let stripeCard = null;
-      let stripeMounted = false;
+      let expressCheckoutElement = null;
+      let stripeCardMounted = false;
+      let stripeExpressMounted = false;
+      let stripePaymentInFlight = false;
+      let stripeWalletAvailable = false;
+      let activeStripeIntent = null;
+
+      function getStripeAmountMinor() {
+        return Math.max(1, Math.round(Number(calculateCartTotal() || 0) * 100));
+      }
+
+      function updateStripeElementsAmount() {
+        if (!stripeExpressElements || typeof stripeExpressElements.update !== 'function') {
+          return;
+        }
+
+        stripeExpressElements.update({
+          amount: getStripeAmountMinor(),
+          currency: stripeCurrencyCode
+        });
+      }
+
+      function setStripeWalletVisible(visible) {
+        const walletSection = document.getElementById('stripe-wallet-section');
+        const cardDivider = document.getElementById('stripe-card-divider');
+
+        if (walletSection) {
+          walletSection.style.display = visible ? '' : 'none';
+        }
+
+        if (cardDivider) {
+          cardDivider.style.display = visible ? 'flex' : 'none';
+        }
+      }
 
       function initializeCartStripe() {
         if (stripe || !stripeKey || typeof Stripe === 'undefined') {
           return !!stripe;
         }
 
-        stripe = Stripe(stripeKey);
+        try {
+          stripe = Stripe(stripeKey);
+          stripeExpressElements = stripe.elements({
+            mode: 'payment',
+            amount: getStripeAmountMinor(),
+            currency: stripeCurrencyCode
+          });
+        } catch (error) {
+          console.warn('Yes Trades: Stripe failed to initialize (card + wallet payments both unavailable).', error);
+          return false;
+        }
+
         stripeCard = stripe.elements().create('card', {
           style: {
             base: {
@@ -2420,9 +2485,62 @@
           }
         });
 
+        try {
+          expressCheckoutElement = stripeExpressElements.create('expressCheckout', {
+            layout: {
+              maxColumns: 2,
+              maxRows: 1,
+              overflow: 'auto'
+            },
+            paymentMethods: {
+              applePay: 'always',
+              googlePay: 'always',
+              amazonPay: 'never',
+              klarna: 'never',
+              paypal: 'never',
+              link: 'never'
+            }
+          });
+        } catch (error) {
+          console.warn('Yes Trades: Express Checkout Element (Apple Pay / Google Pay) could not be created. Card payment is unaffected.', error);
+          const paymentPanel = document.querySelector('[data-cart-step-panel="payment"].is-active');
+          if (paymentPanel) {
+            mountCartStripePaymentElements();
+          }
+          return true;
+        }
+
+        function updateWalletAvailability(methods) {
+          const available = Boolean(methods && (methods.applePay || methods.googlePay));
+          stripeWalletAvailable = available;
+          console.info('Yes Trades: Apple Pay / Google Pay availability check ->', methods, '(visible:', available, ')');
+          setStripeWalletVisible(available);
+        }
+
+        expressCheckoutElement.on('ready', function (event) {
+          updateWalletAvailability(event && event.availablePaymentMethods ? event.availablePaymentMethods : {});
+        });
+
+        expressCheckoutElement.on('loaderror', function (event) {
+          console.warn('Yes Trades: Express Checkout Element failed to load.', event);
+        });
+
+        expressCheckoutElement.on('availablepaymentmethodschange', function (event) {
+          updateWalletAvailability(event && event.availablePaymentMethods ? event.availablePaymentMethods : {});
+        });
+
+        expressCheckoutElement.on('click', function (event) {
+          activeStripeIntent = null;
+          prepareCartPaymentForm();
+          updateStripeElementsAmount();
+          event.resolve({});
+        });
+
+        expressCheckoutElement.on('confirm', handleStripeExpressCheckoutConfirm);
+
         const paymentPanel = document.querySelector('[data-cart-step-panel="payment"].is-active');
         if (paymentPanel) {
-          mountCartStripeCard();
+          mountCartStripePaymentElements();
         }
 
         return true;
@@ -2434,102 +2552,176 @@
       }
       initializeCartStripe();
 
-      function mountCartStripeCard() {
+      function mountCartStripePaymentElements() {
         initializeCartStripe();
+        updateStripeElementsAmount();
 
-        if (!stripeCard || stripeMounted || !document.getElementById('stripe-element')) {
-          return;
+        if (expressCheckoutElement && !stripeExpressMounted && document.getElementById('express-checkout-element')) {
+          try {
+            expressCheckoutElement.mount('#express-checkout-element');
+            stripeExpressMounted = true;
+          } catch (error) {
+            stripeWalletAvailable = false;
+            setStripeWalletVisible(false);
+          }
         }
 
-        stripeCard.mount('#stripe-element');
-        stripeMounted = true;
+        if (stripeCard && !stripeCardMounted && document.getElementById('stripe-element')) {
+          stripeCard.mount('#stripe-element');
+          stripeCardMounted = true;
+        }
       }
 
-      let cartPaymentRequest = null;
-      let cartPrButton = null;
+      function mountCartStripeCard() {
+        mountCartStripePaymentElements();
+      }
 
-      // Apple Pay / Google Pay via Stripe's Payment Request Button. Silently
-      // does nothing if the browser/device has no wallet configured — the
-      // card form below always stays available as the fallback.
-      function mountCartPaymentRequestButton() {
-        if (!initializeCartStripe()) {
-          return;
+      function setStripePaymentError(message) {
+        const gatewayError = document.getElementById('err_gateway');
+        const stripeErrors = document.getElementById('stripe-errors');
+
+        if (gatewayError) {
+          gatewayError.textContent = '';
         }
 
-        const container = document.getElementById('cart-payment-request-button');
-        const divider = document.getElementById('cart-payment-divider');
+        if (stripeErrors) {
+          stripeErrors.textContent = message || '';
+        }
+      }
 
-        if (!container) {
-          return;
+      function setStripePaymentIntentId(paymentIntentId) {
+        const intentInput = document.getElementById('payment_intent_id');
+        const tokenInput = document.getElementById('stripeToken');
+        const gatewayInput = document.getElementById('gateway');
+
+        if (intentInput) {
+          intentInput.value = paymentIntentId || '';
         }
 
-        const amount = Math.round(parseFloat(calculateCartTotal()) * 100);
-
-        if (!amount || amount <= 0) {
-          container.style.display = 'none';
-          if (divider) divider.style.display = 'none';
-          return;
+        if (tokenInput) {
+          tokenInput.value = '';
         }
 
-        cartPaymentRequest = stripe.paymentRequest({
-          country: 'GB',
-          currency: stripeCurrencyCode,
-          total: {
-            label: 'Yes Trades',
-            amount: amount
-          },
-          requestPayerName: true,
-          requestPayerEmail: true
-        });
+        if (gatewayInput) {
+          gatewayInput.value = 'stripe';
+        }
+      }
 
-        cartPrButton = stripe.elements().create('paymentRequestButton', {
-          paymentRequest: cartPaymentRequest,
-          style: {
-            paymentRequestButton: {
-              type: 'default',
-              theme: 'dark',
-              height: '48px'
-            }
+      async function createOrReuseCartStripePaymentIntent(form) {
+        const amount = getStripeAmountMinor();
+
+        if (activeStripeIntent && Number(activeStripeIntent.amount) === amount && activeStripeIntent.currency === stripeCurrencyCode) {
+          return activeStripeIntent;
+        }
+
+        prepareCartPaymentForm();
+        const formData = new FormData(form);
+        formData.set('gateway', 'stripe_intent');
+        formData.set('total_price', String(calculateCartTotal()));
+        formData.set('question_answers', JSON.stringify(collectCartQuestionAnswers()));
+        formData.set('urgency_surcharge_amount', String(selectedUrgencyFee || 0));
+        formData.set('urgency_surcharge_period', selectedUrgencyLabel);
+        formData.delete('stripeToken');
+        formData.delete('payment_intent_id');
+
+        const response = await fetch(form.getAttribute('action'), {
+          method: form.getAttribute('method') || 'POST',
+          body: formData,
+          headers: {
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
           }
         });
+        const data = await response.json().catch(function () { return {}; });
 
-        cartPaymentRequest.canMakePayment().then(function (result) {
-          if (result) {
-            container.innerHTML = '';
-            cartPrButton.mount('#cart-payment-request-button');
-            container.style.display = 'block';
-            if (divider) divider.style.display = 'flex';
-          } else {
-            container.style.display = 'none';
-            if (divider) divider.style.display = 'none';
-          }
-        });
+        if (!response.ok) {
+          throw new Error(data.error || data.message || @json(__('Could not start the payment. Please try again.')));
+        }
 
-        cartPaymentRequest.on('token', function (ev) {
-          const form = document.getElementById('payment-form');
-          const stripeTokenInput = document.getElementById('stripeToken');
-          const gatewayError = document.getElementById('err_gateway');
+        activeStripeIntent = {
+          client_secret: data.client_secret,
+          payment_intent_id: data.payment_intent_id,
+          amount: Number(data.amount),
+          currency: data.currency
+        };
 
-          if (!validateCartInfo()) {
-            ev.complete('fail');
-            showCartStep('info');
+        return activeStripeIntent;
+      }
+
+      async function confirmCartStripeCardPayment(form) {
+        if (stripePaymentInFlight) {
+          return;
+        }
+
+        stripePaymentInFlight = true;
+        setStripePaymentError('');
+        $('.request-loader-time').addClass('show');
+
+        stripe.createToken(stripeCard).then(function (result) {
+          if (result.error) {
+            setStripePaymentError(result.error.message || @json(__('Card payment failed. Please check your card details or try another payment method.')));
+            $('.request-loader-time').removeClass('show');
+            stripePaymentInFlight = false;
             return;
           }
 
-          if (stripeTokenInput) {
-            stripeTokenInput.value = ev.token.id;
-          }
+          const tokenInput = document.getElementById('stripeToken');
+          const intentInput = document.getElementById('payment_intent_id');
+          const gatewayInput = document.getElementById('gateway');
 
-          prepareCartPaymentForm();
-          ev.complete('success');
-
-          const requestLoader = document.querySelector('.request-loader-time');
-          if (requestLoader) {
-            requestLoader.classList.add('show');
-          }
+          if (tokenInput) tokenInput.value = result.token.id;
+          if (intentInput) intentInput.value = '';
+          if (gatewayInput) gatewayInput.value = 'stripe';
 
           submitCartPaymentForm(form);
+        }).catch(function (error) {
+          setStripePaymentError(error.message || @json(__('Card payment failed. Please check your card details or try another payment method.')));
+          $('.request-loader-time').removeClass('show');
+          stripePaymentInFlight = false;
         });
+      }
+
+      async function handleStripeExpressCheckoutConfirm(event) {
+        const form = document.getElementById('payment-form');
+
+        if (!form || stripePaymentInFlight) {
+          return;
+        }
+
+        stripePaymentInFlight = true;
+        setStripePaymentError('');
+        $('.request-loader-time').addClass('show');
+
+        try {
+          updateStripeElementsAmount();
+          const intent = await createOrReuseCartStripePaymentIntent(form);
+          const result = await stripe.confirmPayment({
+            elements: stripeExpressElements,
+            clientSecret: intent.client_secret,
+            confirmParams: {
+              return_url: window.location.href
+            },
+            redirect: 'if_required'
+          });
+
+          if (result.error) {
+            throw new Error(result.error.message || @json(__('Wallet payment was not completed.')));
+          }
+
+          if (!result.paymentIntent || result.paymentIntent.status !== 'succeeded') {
+            throw new Error(@json(__('Wallet payment was not completed. Please try again or pay by card.')));
+          }
+
+          setStripePaymentIntentId(result.paymentIntent.id);
+          submitCartPaymentForm(form);
+        } catch (error) {
+          if (event && typeof event.paymentFailed === 'function') {
+            event.paymentFailed({ reason: 'fail' });
+          }
+          setStripePaymentError(error.message || @json(__('Wallet payment failed. Please try again or pay by card.')));
+          $('.request-loader-time').removeClass('show');
+          stripePaymentInFlight = false;
+        }
       }
 
       function formatCartPrice(amount) {
@@ -3472,8 +3664,7 @@
 
         if (step === 'payment') {
           if (!updateWeekendRequestMode()) {
-            mountCartStripeCard();
-            mountCartPaymentRequestButton();
+            mountCartStripePaymentElements();
           }
         }
       }
@@ -3709,6 +3900,57 @@
         });
 
         clearCartAuthErrors();
+      }
+
+      function validateCartGuestForm() {
+        const name = document.getElementById('cart_guest_name');
+        const email = document.getElementById('cart_guest_email');
+        const phone = document.getElementById('cart_guest_phone');
+        let valid = true;
+
+        ['name', 'email', 'phone'].forEach(function (field) {
+          const errorEl = document.getElementById('err_cart_guest_' + field);
+          if (errorEl) errorEl.textContent = '';
+        });
+
+        if (!name || !name.value.trim()) {
+          valid = false;
+          const err = document.getElementById('err_cart_guest_name');
+          if (err) err.textContent = @json(__('Please enter your name.'));
+        }
+
+        if (!email || !email.value.trim()) {
+          valid = false;
+          const err = document.getElementById('err_cart_guest_email');
+          if (err) err.textContent = @json(__('Please enter your email.'));
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
+          valid = false;
+          const err = document.getElementById('err_cart_guest_email');
+          if (err) err.textContent = @json(__('Please enter a valid email address.'));
+        }
+
+        if (!phone || !phone.value.trim()) {
+          valid = false;
+          const err = document.getElementById('err_cart_guest_phone');
+          if (err) err.textContent = @json(__('Please enter your phone number.'));
+        }
+
+        return valid;
+      }
+
+      // Guests fill name/email/phone once, here — carry it forward so they
+      // don't have to retype it on the Customer information step.
+      function applyCartGuestDetails() {
+        const nameInput = document.querySelector('[data-cart-info="name"]');
+        const emailInput = document.querySelector('[data-cart-info="email"]');
+        const phoneInput = document.querySelector('[data-cart-info="phone"]');
+        const guestName = document.getElementById('cart_guest_name');
+        const guestEmail = document.getElementById('cart_guest_email');
+        const guestPhone = document.getElementById('cart_guest_phone');
+
+        if (nameInput && guestName && !nameInput.value.trim()) nameInput.value = guestName.value.trim();
+        if (emailInput && guestEmail && !emailInput.value.trim()) emailInput.value = guestEmail.value.trim();
+        if (phoneInput && guestPhone && !phoneInput.value.trim()) phoneInput.value = guestPhone.value.trim();
       }
 
       function submitCartLogin() {
@@ -4094,7 +4336,12 @@
         }
 
         if (guestContinue) {
+          if (!validateCartGuestForm()) {
+            return;
+          }
+
           cartGuestCheckout = true;
+          applyCartGuestDetails();
           hideCartAlert('auth');
           showCartStep('info');
           return;
@@ -4251,24 +4498,7 @@
             return;
           }
 
-          const requestLoader = document.querySelector('.request-loader-time');
-          if (requestLoader) {
-            requestLoader.classList.add('show');
-          }
-          stripe.createToken(stripeCard).then(function (result) {
-            if (result.error) {
-              if (requestLoader) {
-                requestLoader.classList.remove('show');
-              }
-              if (gatewayError) {
-                gatewayError.textContent = result.error.message;
-              }
-              return;
-            }
-
-            document.getElementById('stripeToken').value = result.token.id;
-            submitCartPaymentForm(form);
-          });
+          confirmCartStripeCardPayment(form);
         }
       });
 
