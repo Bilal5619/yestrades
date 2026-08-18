@@ -73,7 +73,34 @@ class AppServiceProvider extends ServiceProvider
         ]);
       });
 
+View::composer(
+    'company.*',
+    function ($view) {
 
+        if (
+            Auth::guard('company')->check()
+        ) {
+            $companyHrReminders =
+                \App\Http\Helpers\CompanyHrReminders::items();
+
+            $companyHrReminderCount =
+                collect(
+                    $companyHrReminders
+                )->sum('count');
+        } else {
+            $companyHrReminders = [];
+            $companyHrReminderCount = 0;
+        }
+
+        $view->with([
+            'companyHrReminders' =>
+                $companyHrReminders,
+
+            'companyHrReminderCount' =>
+                $companyHrReminderCount,
+        ]);
+    }
+);
       // send this information to only back-end view files
       View::composer('admin.*', function ($view) {
         if (Auth::guard('admin')->check() == true) {
