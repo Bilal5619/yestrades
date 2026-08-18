@@ -12,9 +12,10 @@
   <meta name="csrf-token" content="{{ csrf_token() }}" />
   <!-- Title -->
   <title>@yield('pageHeading') {{ '| ' . $websiteInfo->website_title }}</title>
-  <!-- Favicon -->
-  <link rel="shortcut icon" href="{{ asset('assets/img/' . $websiteInfo->favicon) }}" type="image/x-icon">
-  <link rel="apple-touch-icon" href="{{ asset('assets/img/' . $websiteInfo->favicon) }}">
+  <!-- Favicon: always the same image as the site Logo in the admin panel,
+       served dynamically so it stays in sync without a code change. -->
+  <link rel="shortcut icon" href="{{ route('favicon') }}" type="image/x-icon">
+  <link rel="apple-touch-icon" href="{{ route('favicon') }}">
   <!-- Latest Font Awesome -->
   <!-- Font Awesome is loaded in partials/styles.blade.php -->
 

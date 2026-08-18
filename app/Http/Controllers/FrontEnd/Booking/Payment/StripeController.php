@@ -9,9 +9,12 @@ use App\Models\PaymentGateway\OnlineGateway;
 use App\Models\Staff\Staff;
 use App\Models\Staff\StaffGlobalHour;
 use App\Models\Staff\StaffServiceHour;
+use Cartalyst\Stripe\Stripe as CartalystStripe;
 use Cartalyst\Stripe\Laravel\Facades\Stripe;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
@@ -120,7 +123,8 @@ class StripeController extends Controller
     if ($countAppointment > 0) {
       // card validation start
       $rules = [
-        'stripeToken' => 'required',
+        'stripeToken' => 'required_without:payment_intent_id',
+        'payment_intent_id' => 'required_without:stripeToken|nullable|string',
       ];
 
       $validator = Validator::make($request->all(), $rules);
@@ -341,6 +345,30 @@ class StripeController extends Controller
         ]);
 
         $chargeSucceeded = false;
+        $paymentIntentId = $request->input('payment_intent_id');
+
+        // Apple Pay / Google Pay already charged the card client-side via
+        // stripe.confirmPayment() before this request arrived — verify that
+        // PaymentIntent server-side (status/amount/currency/ownership) and
+        // finalize the booking, instead of trying to charge again.
+        if ($paymentIntentId) {
+          $intent = $this->verifiedPaymentIntent($stripe, $paymentIntentId, $customerpaid, $currencyInfo->base_currency_text, $request->session()->getId());
+
+          return $this->withPaymentIntentLock($paymentIntentId, function () use ($request, $arrData, $intent) {
+            $paymentIntentId = $intent['id'];
+
+            if (\App\Models\Services\ServiceBooking::where('payment_intent_id', $paymentIntentId)->exists()) {
+              Log::warning('Stripe PaymentIntent finalize blocked because booking already exists', [
+                'session_id' => $request->session()->getId(),
+                'payment_intent_id' => $paymentIntentId,
+              ]);
+
+              return Response::json(['error' => 'This booking has already been placed.'], 409);
+            }
+
+            return $this->finalizeSuccessfulPayment($request, $arrData, $paymentIntentId);
+          });
+        }
 
         try {
 
@@ -381,9 +409,19 @@ class StripeController extends Controller
               'booking_ids' => $bookings->pluck('id')->all(),
             ]);
 
+            // The booking is already safely created and paid at this point —
+            // a confirmation email failing (missing mail template, SMTP
+            // misconfigured, etc.) must never make a successful booking
+            // report back to the customer as "could not be completed".
             $bookings->each(function ($booking) {
-              $type = 'service_payment_approved';
-              payemntStatusMail($type, $booking->id);
+              try {
+                payemntStatusMail('service_payment_approved', $booking->id);
+              } catch (Exception $e) {
+                Log::error('Stripe payment confirmation email failed, but the booking was created successfully', [
+                  'booking_id' => $booking->id,
+                  'message' => $e->getMessage(),
+                ]);
+              }
             });
 
             Session::put('complete', 'payment_complete');
@@ -445,6 +483,223 @@ class StripeController extends Controller
     return in_array(strtoupper($currency), $zeroDecimalCurrencies, true)
       ? (int) round($amount)
       : round($amount, 2);
+  }
+
+  // Apple Pay / Google Pay via Stripe's Express Checkout Element. Card
+  // payment above is unaffected — this is an additional gateway value
+  // ('stripe_intent') dispatched from ServicePaymentController that only
+  // creates/reuses a PaymentIntent; the booking itself is only created once
+  // the wallet payment is confirmed and this same endpoint is hit again
+  // with gateway=stripe and a payment_intent_id instead of a stripeToken.
+  public function createPaymentIntent(Request $request)
+  {
+    if (!Session::has('serviceData')) {
+      return Response::json(['error' => 'Your booking session expired. Please reopen the booking form and try again.'], 422);
+    }
+
+    $serviceData = Session::get('serviceData');
+    $customerpaid = round((float) ($serviceData['service_ammount'] ?? 0), 2);
+    $currencyInfo = $this->getCurrencyInfo();
+
+    if ($customerpaid <= 0) {
+      return Response::json(['error' => 'The booking total must be greater than zero before card payment.'], 422);
+    }
+
+    if ($request->filled('total_price')) {
+      $checkoutTotal = round((float) $request->input('total_price'), 2);
+
+      if (abs($checkoutTotal - $customerpaid) > 0.01) {
+        return Response::json(['error' => 'Payment total changed before charging your card. Please refresh the checkout and try again.'], 422);
+      }
+    }
+
+    $stripeGateway = OnlineGateway::where('keyword', 'stripe')->first();
+    $stripeInfo = $stripeGateway ? json_decode($stripeGateway->information, true) : [];
+    $stripeSecret = $stripeInfo['secret'] ?? null;
+    $stripeKey = $stripeInfo['key'] ?? null;
+
+    if (!$stripeGateway || !$stripeGateway->status || empty($stripeSecret) || empty($stripeKey)) {
+      return Response::json(['error' => 'Card payment is temporarily unavailable. Please try again later.'], 503);
+    }
+
+    $amountMinor = $this->chargedMinorUnits($customerpaid, $currencyInfo->base_currency_text);
+    $currency = strtolower($currencyInfo->base_currency_text);
+    $stripe = Stripe::make($stripeSecret);
+    $sessionIntent = Session::get('stripe_service_payment_intent');
+
+    if (
+      is_array($sessionIntent)
+      && ($sessionIntent['amount'] ?? null) === $amountMinor
+      && ($sessionIntent['currency'] ?? null) === $currency
+      && !empty($sessionIntent['payment_intent_id'])
+      && !empty($sessionIntent['client_secret'])
+    ) {
+      try {
+        $existingIntent = $stripe->paymentIntents()->find($sessionIntent['payment_intent_id']);
+        if (!in_array((string) ($existingIntent['status'] ?? ''), ['succeeded', 'canceled'], true)) {
+          return Response::json([
+            'client_secret' => $sessionIntent['client_secret'],
+            'payment_intent_id' => $sessionIntent['payment_intent_id'],
+            'publishable_key' => $stripeKey,
+            'amount' => $amountMinor,
+            'currency' => $currency,
+          ]);
+        }
+      } catch (Exception $e) {
+        Session::forget('stripe_service_payment_intent');
+      }
+    }
+
+    try {
+      $intent = $this->createStripePaymentIntent($stripe, $customerpaid, $currencyInfo->base_currency_text, $request->session()->getId());
+    } catch (Exception $e) {
+      Log::error('Stripe PaymentIntent creation failed', [
+        'session_id' => $request->session()->getId(),
+        'message' => $e->getMessage(),
+      ]);
+
+      return Response::json(['error' => 'Could not start the payment. Please try again.'], 502);
+    }
+
+    Session::put('stripe_service_payment_intent', [
+      'client_secret' => $intent['client_secret'],
+      'payment_intent_id' => $intent['id'],
+      'amount' => $amountMinor,
+      'currency' => $currency,
+    ]);
+
+    return Response::json([
+      'client_secret' => $intent['client_secret'],
+      'payment_intent_id' => $intent['id'],
+      'publishable_key' => $stripeKey,
+      'amount' => $amountMinor,
+      'currency' => $currency,
+    ]);
+  }
+
+  private function chargedMinorUnits(float $amount, string $currency): int
+  {
+    $zeroDecimalCurrencies = [
+      'BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW', 'MGA', 'PYG',
+      'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF',
+    ];
+
+    return in_array(strtoupper($currency), $zeroDecimalCurrencies, true)
+      ? (int) round($amount)
+      : (int) round($amount * 100);
+  }
+
+  private function paymentIntentCreatePayload(float $amount, string $currency, string $sessionId): array
+  {
+    return [
+      'amount' => $this->chargedMinorUnits($amount, $currency),
+      'currency' => strtolower($currency),
+      'automatic_payment_methods[enabled]' => 'true',
+      'metadata' => [
+        'source' => 'web_service_checkout',
+        'session_id' => $sessionId,
+      ],
+    ];
+  }
+
+  private function createStripePaymentIntent($stripe, float $amount, string $currency, string $sessionId): array
+  {
+    $previousAmountConverter = CartalystStripe::getAmountConverter();
+    CartalystStripe::disableAmountConverter();
+
+    try {
+      return $stripe->paymentIntents()->create(
+        $this->paymentIntentCreatePayload($amount, $currency, $sessionId)
+      );
+    } finally {
+      CartalystStripe::setAmountConverter($previousAmountConverter);
+    }
+  }
+
+  private function verifiedPaymentIntent($stripe, string $paymentIntentId, float $amount, string $currency, string $sessionId): array
+  {
+    try {
+      $intent = $stripe->paymentIntents()->find($paymentIntentId);
+    } catch (Exception $e) {
+      throw new Exception('Could not verify the payment.');
+    }
+
+    if (
+      ($intent['status'] ?? null) !== 'succeeded'
+      || (int) ($intent['amount'] ?? 0) !== $this->chargedMinorUnits($amount, $currency)
+      || strtoupper((string) ($intent['currency'] ?? '')) !== strtoupper($currency)
+      || (string) data_get($intent, 'metadata.source') !== 'web_service_checkout'
+      || (string) data_get($intent, 'metadata.session_id') !== $sessionId
+    ) {
+      throw new Exception('Payment could not be verified. You have not been charged for a booking.');
+    }
+
+    return $intent;
+  }
+
+  private function withPaymentIntentLock(string $paymentIntentId, callable $callback)
+  {
+    $lock = Cache::lock('stripe-service-payment-intent:' . $paymentIntentId, 30);
+
+    try {
+      return $lock->block(5, $callback);
+    } catch (Exception $e) {
+      return Response::json(['error' => 'This payment is already being finalized. Please wait a moment.'], 409);
+    }
+  }
+
+  private function finalizeSuccessfulPayment(Request $request, array $arrData, ?string $paymentIntentId = null)
+  {
+    Log::info('Stripe payment succeeded, finalizing booking order', [
+      'session_id' => $request->session()->getId(),
+      'payment_intent_id' => $paymentIntentId,
+    ]);
+
+    $bookings = DB::transaction(function () use ($arrData, $paymentIntentId) {
+      $bookings = $this->makeServicePaymentController()->finalizeOrder($arrData);
+
+      if ($paymentIntentId) {
+        $bookings->each(function ($booking) use ($paymentIntentId) {
+          \App\Models\Services\ServiceBooking::whereKey($booking->id)->update(['payment_intent_id' => $paymentIntentId]);
+          $booking->payment_intent_id = $paymentIntentId;
+        });
+      }
+
+      return $bookings;
+    });
+
+    Log::info('Stripe booking order finalized, sending payment emails', [
+      'session_id' => $request->session()->getId(),
+      'booking_ids' => $bookings->pluck('id')->all(),
+      'payment_intent_id' => $paymentIntentId,
+    ]);
+
+    $bookings->each(function ($booking) {
+      try {
+        payemntStatusMail('service_payment_approved', $booking->id);
+      } catch (Exception $e) {
+        Log::error('Stripe payment confirmation email failed, but the booking was created successfully', [
+          'booking_id' => $booking->id,
+          'message' => $e->getMessage(),
+        ]);
+      }
+    });
+
+    Session::put('complete', 'payment_complete');
+    Session::put('paymentInfo', $bookings->first());
+    $request->session()->forget('serviceData');
+    $request->session()->forget('stripe_service_payment_intent');
+
+    if ($request->expectsJson() || $request->ajax()) {
+      return Response::json(['redirectURL' => route('frontend.services')]);
+    }
+
+    return redirect()->route('frontend.services');
+  }
+
+  protected function makeServicePaymentController(): ServicePaymentController
+  {
+    return new ServicePaymentController();
   }
 
   private function paymentErrorResponse(Request $request, string $message, bool $clearSession = false)

@@ -396,6 +396,10 @@ class ServicePaymentController extends Controller
       $mollie = new MollieController();
 
       return $mollie->index($request, 'service booking');
+    } else if ($request['gateway'] == 'stripe_intent') {
+      $stripe = new StripeController();
+
+      return $stripe->createPaymentIntent($request);
     } else if ($request['gateway'] == 'stripe') {
       $stripe = new StripeController();
 

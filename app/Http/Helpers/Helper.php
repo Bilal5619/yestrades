@@ -419,13 +419,18 @@ if (!function_exists('payemntStatusMail')) {
     $info = Basic::select('website_title')->first();
 
     $price = $booking->currency_symbol . $booking->customer_paid;
-    $appointmentTime = $booking->start_date . ' to ' . $booking->end_date;
+    $appointmentTime = $booking->start_date && $booking->end_date
+      ? $booking->start_date . ' to ' . $booking->end_date
+      : 'To be confirmed';
+    $appointmentDate = $booking->booking_date
+      ? Carbon::parse($booking->booking_date)->format('M d, Y')
+      : 'To be confirmed (tenant/occupier will choose the date)';
 
     // replacing with actual data
     $mailBody = str_replace('{service_title}', "<a href=" . $url . ">$serviceName</a>", $mailBody);
     $mailBody = str_replace('{customer_name}', $booking->customer_name, $mailBody);
     $mailBody = str_replace('{booking_date}', date_format($booking->created_at, 'M d, Y'), $mailBody);
-    $mailBody = str_replace('{appointment_date}', Carbon::parse($booking->booking_date)->format('M d, Y'), $mailBody);
+    $mailBody = str_replace('{appointment_date}', $appointmentDate, $mailBody);
     $mailBody = str_replace('{appointment_time}', $appointmentTime, $mailBody);
     $mailBody = str_replace('{website_title}', $info->website_title, $mailBody);
     $mailBody = str_replace('{price}', $price, $mailBody);
