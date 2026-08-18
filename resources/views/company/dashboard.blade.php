@@ -218,6 +218,32 @@
             grid-template-columns: 1fr;
         }
     }
+    .company-dashboard-card {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.company-dashboard-card:visited,
+.company-dashboard-card:hover,
+.company-dashboard-card:focus {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.dashboard-alert-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+
+.dashboard-alert-link:hover {
+    color: inherit;
+    text-decoration: none;
+}
+
+.dashboard-alert-link:hover .dashboard-alert-item {
+    background: rgba(255, 255, 255, 0.04);
+}
 </style>
 
 <div class="dashboard-welcome">
@@ -231,7 +257,8 @@
 {{-- Notebook dashboard cards --}}
 <div class="company-dashboard-grid">
 
-    <div class="company-dashboard-card card-right-work">
+  <a href="{{ route('company.hr.employees.missing-documents') }}"
+   class="company-dashboard-card card-right-work">
         <div class="company-dashboard-card-content">
             <h3>Right to Work Documents</h3>
            <strong>{{ $stats['right_to_work'] }}</strong>
@@ -241,9 +268,10 @@
         <div class="company-dashboard-card-icon">
             <i class="fas fa-id-card"></i>
         </div>
-    </div>
+    </a>
 
-    <div class="company-dashboard-card card-job-documents">
+   <a href="{{ route('company.hr.employees.missing-documents') }}"
+   class="company-dashboard-card card-job-documents">
         <div class="company-dashboard-card-content">
             <h3>Employee Job Documents</h3>
            <strong>{{ $stats['employee_documents'] }}</strong>
@@ -253,9 +281,10 @@
         <div class="company-dashboard-card-icon">
             <i class="fas fa-folder-open"></i>
         </div>
-    </div>
+    </a>
 
-    <div class="company-dashboard-card card-certificates">
+   <a href="{{ route('company.hr.training.expiring') }}"
+   class="company-dashboard-card card-certificates">
         <div class="company-dashboard-card-content">
             <h3>Missing Certificates</h3>
             <strong>{{ $stats['missing_certificates'] }}</strong>
@@ -265,9 +294,10 @@
         <div class="company-dashboard-card-icon">
             <i class="fas fa-certificate"></i>
         </div>
-    </div>
+    </a>
 
-    <div class="company-dashboard-card card-pending-jobs">
+    <a href="{{ route('company.hr.jobs.index') }}"
+   class="company-dashboard-card card-pending-jobs">
         <div class="company-dashboard-card-content">
             <h3>Pending Jobs</h3>
            <strong>{{ $stats['pending_jobs'] }}</strong>
@@ -277,9 +307,10 @@
         <div class="company-dashboard-card-icon">
             <i class="fas fa-briefcase"></i>
         </div>
-    </div>
+    </a>
 
-    <div class="company-dashboard-card card-holiday">
+   <a href="{{ route('company.hr.holidays.index') }}"
+   class="company-dashboard-card card-holiday">
         <div class="company-dashboard-card-content">
             <h3>Employees on Holiday</h3>
             <strong>{{ $stats['employees_on_holiday'] }}</strong>
@@ -289,9 +320,10 @@
         <div class="company-dashboard-card-icon">
             <i class="fas fa-plane-departure"></i>
         </div>
-    </div>
+    </a>
 
-    <div class="company-dashboard-card card-starters">
+   <a href="{{ route('company.hr.onboarding.index') }}"
+   class="company-dashboard-card card-starters">
         <div class="company-dashboard-card-content">
             <h3>New Starters</h3>
             <strong>{{ $stats['new_starters'] }}</strong>
@@ -301,7 +333,7 @@
         <div class="company-dashboard-card-icon">
             <i class="fas fa-user-plus"></i>
         </div>
-    </div>
+    </a>
 
 </div>
 
@@ -312,9 +344,9 @@
         <div class="dashboard-panel-header">
             <h2>Employee Overview</h2>
 
-            <a href="#">
-                View HR overview
-            </a>
+            <a href="{{ route('company.hr.overview') }}">
+    View HR overview
+</a>
         </div>
 
         <div style="
@@ -384,72 +416,92 @@
         <div class="dashboard-panel-header">
             <h2>Action Required</h2>
 
-            <a href="#">
-                View all
-            </a>
+            <a href="{{ route('company.hr.overview') }}">
+    View all
+</a>
         </div>
 
         <div class="dashboard-panel-body">
 
-            <div class="dashboard-alert-item">
-                <div class="dashboard-alert-icon">
-                    <i class="fas fa-id-card"></i>
-                </div>
+            <a href="{{ route('company.hr.employees.missing-documents') }}"
+   class="dashboard-alert-link">
 
-                <div class="dashboard-alert-details">
-                    <strong>Right to Work</strong>
-                    <span>Documents needing review</span>
-                </div>
+    <div class="dashboard-alert-item">
+        <div class="dashboard-alert-icon">
+            <i class="fas fa-id-card"></i>
+        </div>
 
-              <div class="dashboard-alert-count">
-    {{ $stats['right_to_work'] }}
-</div>
-            </div>
+        <div class="dashboard-alert-details">
+            <strong>Right to Work</strong>
+            <span>Documents needing review</span>
+        </div>
 
-            <div class="dashboard-alert-item">
-                <div class="dashboard-alert-icon">
-                    <i class="fas fa-file-circle-exclamation"></i>
-                </div>
+        <div class="dashboard-alert-count">
+            {{ $stats['right_to_work'] }}
+        </div>
+    </div>
 
-                <div class="dashboard-alert-details">
-                    <strong>Missing Documents</strong>
-                    <span>Employee records incomplete</span>
-                </div>
+</a>
 
-               <div class="dashboard-alert-count">
-    {{ $stats['employee_documents'] }}
-</div>
-            </div>
+            <a href="{{ route('company.hr.employees.missing-documents') }}"
+   class="dashboard-alert-link">
 
-            <div class="dashboard-alert-item">
-                <div class="dashboard-alert-icon">
-                    <i class="fas fa-graduation-cap"></i>
-                </div>
+    <div class="dashboard-alert-item">
+        <div class="dashboard-alert-icon">
+            <i class="fas fa-file-circle-exclamation"></i>
+        </div>
 
-                <div class="dashboard-alert-details">
-                    <strong>Training Due</strong>
-                    <span>Training or certificates due</span>
-                </div>
+        <div class="dashboard-alert-details">
+            <strong>Missing Documents</strong>
+            <span>Employee records incomplete</span>
+        </div>
 
-               <div class="dashboard-alert-count">
-    {{ $stats['training_due'] }}
-</div>
-            </div>
+        <div class="dashboard-alert-count">
+            {{ $stats['employee_documents'] }}
+        </div>
+    </div>
 
-            <div class="dashboard-alert-item">
-                <div class="dashboard-alert-icon">
-                    <i class="fas fa-user-clock"></i>
-                </div>
+</a>
 
-                <div class="dashboard-alert-details">
-                    <strong>New Starter Checklists</strong>
-                    <span>Onboarding actions incomplete</span>
-                </div>
+            <a href="{{ route('company.hr.training.expiring') }}"
+   class="dashboard-alert-link">
 
-               <div class="dashboard-alert-count">
-    {{ $stats['pending_onboarding'] }}
-</div>
-            </div>
+    <div class="dashboard-alert-item">
+        <div class="dashboard-alert-icon">
+            <i class="fas fa-graduation-cap"></i>
+        </div>
+
+        <div class="dashboard-alert-details">
+            <strong>Training Due</strong>
+            <span>Training or certificates due</span>
+        </div>
+
+        <div class="dashboard-alert-count">
+            {{ $stats['training_due'] }}
+        </div>
+    </div>
+
+</a>
+
+           <a href="{{ route('company.hr.onboarding.index') }}"
+   class="dashboard-alert-link">
+
+    <div class="dashboard-alert-item">
+        <div class="dashboard-alert-icon">
+            <i class="fas fa-user-clock"></i>
+        </div>
+
+        <div class="dashboard-alert-details">
+            <strong>New Starter Checklists</strong>
+            <span>Onboarding actions incomplete</span>
+        </div>
+
+        <div class="dashboard-alert-count">
+            {{ $stats['pending_onboarding'] }}
+        </div>
+    </div>
+
+</a>
 
         </div>
     </section>

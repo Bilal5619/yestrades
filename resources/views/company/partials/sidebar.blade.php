@@ -305,12 +305,7 @@
                     </a>
                 @endif
 
-                @if ($companyUser->hasPermission('recruitment.manage'))
-                    <a href="#"
-                       class="company-submenu-link">
-                        Recruitment
-                    </a>
-                @endif
+                
 
                @if ($companyUser->hasPermission('onboarding.view'))
     <a href="{{ route('company.hr.onboarding.index') }}"
@@ -560,18 +555,17 @@
 
 
     {{-- Audit Logs --}}
-    @if ($companyUser->hasPermission('audit-logs.view'))
-        <div class="company-menu-item">
+   @if ($companyUser->hasPermission('audit-logs.view'))
+    <a
+        href="{{ route('company.audit-logs.index') }}"
+        class="company-menu-link
+            {{ request()->routeIs('company.audit-logs.*') ? 'active' : '' }}"
+    >
+        <i class="fas fa-history"></i>
 
-            <a href="#"
-               class="company-menu-link">
-
-                <i class="fas fa-history"></i>
-                <span>Audit Logs</span>
-            </a>
-
-        </div>
-    @endif
+        <span>Audit Logs</span>
+    </a>
+@endif
 
 
     {{-- Users and Permissions --}}

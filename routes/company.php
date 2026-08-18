@@ -25,17 +25,40 @@ Route::prefix('company-own')->group(function () {
         Route::get('/login', 'Company\AuthController@showLogin')
             ->name('company.login');
 
-        Route::post('/login', 'Company\AuthController@login')
-            ->name('company.login.submit');
+ Route::post('/login', 'Company\\AuthController@login')
+    ->middleware('throttle:5,1')
+    ->name('company.login.submit');
     });
+/*
+|--------------------------------------------------------------------------
+| Audit Logs
+|--------------------------------------------------------------------------
+*/
 
+Route::get(
+    '/audit-logs',
+    'Company\\AuditLogController@index'
+)
+    ->middleware(
+        'company.permission:audit-logs.view'
+    )
+    ->name('company.audit-logs.index');
+
+
+
+
+
+    
     /*
     |--------------------------------------------------------------------------
     | Authenticated company routes
     |--------------------------------------------------------------------------
     */
-
-   Route::middleware('auth:company')->group(function () {
+Route::middleware([
+    'auth:company',
+    'company.audit',
+])->group(function () {
+   
 
     Route::get(
         '/dashboard',
@@ -502,10 +525,10 @@ Route::put(
     );
 Route::get(
     '/hr/onboarding/{onboarding}/personal-details',
-    'Company\OnboardingController@personalDetails'
+    'Company\\OnboardingController@personalDetails'
 )
     ->middleware(
-        'company.permission:onboarding.view'
+        'company.permission:onboarding.manage'
     )
     ->name(
         'company.hr.onboarding.personal-details'
@@ -543,12 +566,12 @@ Route::put(
     ->name(
         'company.hr.onboarding.induction.update'
     );
-    Route::get(
+   Route::get(
     '/hr/onboarding/{onboarding}/payroll',
-    'Company\OnboardingController@payroll'
+    'Company\\OnboardingController@payroll'
 )
     ->middleware(
-        'company.permission:onboarding.view'
+        'company.permission:onboarding.manage'
     )
     ->name(
         'company.hr.onboarding.payroll'
@@ -714,16 +737,7 @@ Route::get(
     ->name(
         'company.hr.payslips.index'
     );
-Route::get(
-    '/hr/payslips',
-    'Company\PayslipController@index'
-)
-    ->middleware(
-        'company.permission:payslips.view'
-    )
-    ->name(
-        'company.hr.payslips.index'
-    );
+
 
 Route::get(
     '/hr/payslips/upload',
@@ -907,29 +921,6 @@ Route::post(
     |--------------------------------------------------------------------------
     */
 
-Route::prefix('hr/sponsor-compliance')
-    ->name('company.hr.sponsor-compliance.')
-    ->group(function () {
-        Route::get(
-            '/sponsored-workers',
-            [SponsoredWorkerController::class, 'index']
-        )->name('sponsored-workers.index');
-
-        Route::get(
-            '/sponsored-workers/{sponsoredWorker}',
-            [SponsoredWorkerController::class, 'show']
-        )->name('sponsored-workers.show');
-
-        Route::get(
-            '/sponsored-workers/{sponsoredWorker}/edit',
-            [SponsoredWorkerController::class, 'edit']
-        )->name('sponsored-workers.edit');
-
-        Route::put(
-            '/sponsored-workers/{sponsoredWorker}',
-            [SponsoredWorkerController::class, 'update']
-        )->name('sponsored-workers.update');
-    });
 
 
     Route::prefix('hr/sponsor-compliance')

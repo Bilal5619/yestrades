@@ -71,5 +71,6 @@ class Kernel extends HttpKernel
     'checkPackage' => \App\Http\Middleware\CheckPackage::class,
     'staffCheck' => \App\Http\Middleware\StaffPermission::class,
     'company.permission' => \App\Http\Middleware\CompanyPermissionMiddleware::class,
+    'company.audit' => \App\Http\Middleware\CompanyAuditMiddleware::class,
   ];
 }

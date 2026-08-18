@@ -21,9 +21,17 @@ class CompanyUserController extends Controller
 
     public function create()
     {
-        $roles = CompanyRole::where('status', true)
-            ->orderBy('name')
-            ->get();
+       $loggedInUser = auth('company')->user();
+
+$roles = CompanyRole::where('status', true)
+    ->when(
+     !$loggedInUser->hasRole('company-owner'),
+        function ($query) {
+            $query->where('slug', '!=', 'company-owner');
+        }
+    )
+    ->orderBy('name')
+    ->get();
 
         return view('company.users.create', compact('roles'));
     }
@@ -62,7 +70,19 @@ class CompanyUserController extends Controller
                 'boolean',
             ],
         ]);
+$selectedRole = CompanyRole::findOrFail(
+    $validated['role_id']
+);
 
+if (
+    $selectedRole->slug === 'company-owner' &&
+    !auth('company')->user()->hasPermission('company-owner')
+) {
+    abort(
+        403,
+        'You do not have permission to assign the Company Owner role.'
+    );
+}
         CompanyUser::create([
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'] ?? null,
@@ -97,9 +117,17 @@ class CompanyUserController extends Controller
             'User status updated successfully.'
         );
     }
-    public function edit(CompanyUser $user)
+   public function edit(CompanyUser $user)
 {
+    $loggedInUser = auth('company')->user();
+
     $roles = CompanyRole::where('status', true)
+        ->when(
+            !$loggedInUser->hasRole('company-owner'),
+            function ($query) {
+                $query->where('slug', '!=', 'company-owner');
+            }
+        )
         ->orderBy('name')
         ->get();
 
@@ -145,7 +173,19 @@ public function update(Request $request, CompanyUser $user)
             'confirmed',
         ],
     ]);
+$selectedRole = CompanyRole::findOrFail(
+    $validated['role_id']
+);
 
+if (
+    $selectedRole->slug === 'company-owner' &&
+    !$loggedInUser->hasPermission('company-owner')
+) {
+    abort(
+        403,
+        'You do not have permission to assign the Company Owner role.'
+    );
+}
     if (
         $loggedInUser->id === $user->id &&
         (int) $validated['status'] === 0
