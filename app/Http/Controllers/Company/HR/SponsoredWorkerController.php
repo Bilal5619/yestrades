@@ -12,10 +12,19 @@ class SponsoredWorkerController extends Controller
 {
     public function index(Request $request)
     {
-        $query = SponsoredWorkerRecord::query()
-            ->with([
-                'employee.manager',
-            ])
+       $query = SponsoredWorkerRecord::query()
+    ->with([
+        'employee.manager',
+
+        'employee.documents' => function ($query) {
+            $query->with('documentType')
+                ->where('is_required', true);
+        },
+
+        'changes' => function ($query) {
+            $query->where('review_status', 'pending');
+        },
+    ])
             ->whereHas('employee', function ($employeeQuery) {
                 $employeeQuery->where(
                     'is_sponsored_worker',
@@ -57,6 +66,7 @@ class SponsoredWorkerController extends Controller
                     );
             });
         }
+        
 
         if ($request->filled('status')) {
             $query->where(
@@ -64,6 +74,52 @@ class SponsoredWorkerController extends Controller
                 $request->status
             );
         }
+        if ($request->filled('visa_status')) {
+    $visaStatus = $request->visa_status;
+
+    if ($visaStatus === 'expired') {
+        $query->whereNotNull('visa_expiry_date')
+            ->whereDate(
+                'visa_expiry_date',
+                '<',
+                today()
+            );
+    }
+
+    if ($visaStatus === '30_days') {
+        $query
+            ->whereNotNull('visa_expiry_date')
+            ->whereDate(
+                'visa_expiry_date',
+                '>=',
+                today()
+            )
+            ->whereDate(
+                'visa_expiry_date',
+                '<=',
+                today()->copy()->addDays(30)
+            );
+    }
+
+    if ($visaStatus === '90_days') {
+        $query
+            ->whereNotNull('visa_expiry_date')
+            ->whereDate(
+                'visa_expiry_date',
+                '>=',
+                today()
+            )
+            ->whereDate(
+                'visa_expiry_date',
+                '<=',
+                today()->copy()->addDays(90)
+            );
+    }
+
+    if ($visaStatus === 'missing') {
+        $query->whereNull('visa_expiry_date');
+    }
+}
 
         $sponsoredWorkers = $query
             ->orderByRaw(
@@ -72,6 +128,48 @@ class SponsoredWorkerController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+$sponsoredWorkers->getCollection()->transform(
+    function ($record) {
+
+        $requiredDocuments =
+            $record->employee->documents
+                ->where('is_required', true);
+
+        $record->missing_document_count =
+            $requiredDocuments->filter(
+                function ($document) {
+                    return
+                        !$document->file_path ||
+                        in_array(
+                            $document->review_status,
+                            [
+                                'missing',
+                                'rejected',
+                            ],
+                            true
+                        );
+                }
+            )->count();
+
+        $record->pending_document_count =
+            $requiredDocuments->where(
+                'review_status',
+                'pending_review'
+            )->count();
+
+        $record->pending_change_count =
+            $record->changes->count();
+
+        $record->needs_compliance_action =
+            $record->visa_status !== 'valid' ||
+            $record->hasComplianceDifference() ||
+            $record->missing_document_count > 0 ||
+            $record->pending_document_count > 0 ||
+            $record->pending_change_count > 0;
+
+        return $record;
+    }
+);
         $statistics = [
             'total' => SponsoredWorkerRecord::query()
                 ->whereHas('employee', function ($query) {
@@ -101,6 +199,35 @@ class SponsoredWorkerController extends Controller
             'missing_expiry' => SponsoredWorkerRecord::query()
                 ->whereNull('visa_expiry_date')
                 ->count(),
+                'pending_changes' =>
+    SponsoredWorkerChange::query()
+        ->where('review_status', 'pending')
+        ->count(),
+
+'missing_documents' =>
+    \App\Models\Company\EmployeeDocument::query()
+        ->where('is_required', true)
+        ->whereHas(
+            'employee',
+            function ($query) {
+                $query->where(
+                    'is_sponsored_worker',
+                    true
+                );
+            }
+        )
+        ->where(function ($query) {
+            $query
+                ->whereNull('file_path')
+                ->orWhereIn(
+                    'review_status',
+                    [
+                        'missing',
+                        'rejected',
+                    ]
+                );
+        })
+        ->count(),
         ];
 
         return view(

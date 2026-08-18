@@ -26,7 +26,7 @@
 
     .sponsor-stat-grid {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+       grid-template-columns: repeat(3, minmax(0, 1fr)); 
         gap: 16px;
         margin-bottom: 24px;
     }
@@ -66,7 +66,12 @@
 
     .sponsor-filter-form {
         display: grid;
-        grid-template-columns: minmax(260px, 1fr) 220px auto auto;
+       grid-template-columns:
+    minmax(260px, 1fr)
+    190px
+    190px
+    auto
+    auto;
         gap: 12px;
         align-items: end;
     }
@@ -302,8 +307,28 @@
         <div class="sponsor-stat-value sponsor-stat-warning">
             {{ $statistics['expiring_90_days'] }}
         </div>
+
     </div>
 
+<div class="sponsor-stat-card">
+    <div class="sponsor-stat-label">
+        Pending Changes
+    </div>
+
+    <div class="sponsor-stat-value sponsor-stat-warning">
+        {{ $statistics['pending_changes'] }}
+    </div>
+</div>
+
+<div class="sponsor-stat-card">
+    <div class="sponsor-stat-label">
+        Missing Sponsor Documents
+    </div>
+
+    <div class="sponsor-stat-value sponsor-stat-danger">
+        {{ $statistics['missing_documents'] }}
+    </div>
+</div>
     <div class="sponsor-stat-card">
         <div class="sponsor-stat-label">
             Expired Visas
@@ -390,7 +415,57 @@
                 </option>
             </select>
         </div>
+<div class="sponsor-form-group">
+    <label for="visa_status">
+        Visa status
+    </label>
 
+    <select
+        name="visa_status"
+        id="visa_status"
+        class="sponsor-select"
+    >
+        <option value="">
+            All visa statuses
+        </option>
+
+        <option
+            value="expired"
+            {{ request('visa_status') === 'expired'
+                ? 'selected'
+                : '' }}
+        >
+            Expired
+        </option>
+
+        <option
+            value="30_days"
+            {{ request('visa_status') === '30_days'
+                ? 'selected'
+                : '' }}
+        >
+            Expiring within 30 days
+        </option>
+
+        <option
+            value="90_days"
+            {{ request('visa_status') === '90_days'
+                ? 'selected'
+                : '' }}
+        >
+            Expiring within 90 days
+        </option>
+
+        <option
+            value="missing"
+            {{ request('visa_status') === 'missing'
+                ? 'selected'
+                : '' }}
+        >
+            Missing expiry date
+        </option>
+    </select>
+</div>
         <button
             type="submit"
             class="sponsor-button"
@@ -524,22 +599,55 @@
                         </td>
 
                         <td>
-                            @if ($record->hasComplianceDifference())
-                                <span class="
-                                    sponsor-status
-                                    sponsor-status-warning
-                                ">
-                                    Review Required
-                                </span>
-                            @else
-                                <span class="
-                                    sponsor-status
-                                    sponsor-status-valid
-                                ">
-                                    Compliant
-                                </span>
-                            @endif
-                        </td>
+
+    @if ($record->needs_compliance_action)
+
+        <span class="
+            sponsor-status
+            sponsor-status-warning
+        ">
+            Action Required
+        </span>
+
+        @if ($record->missing_document_count > 0)
+            <div class="sponsor-muted" style="margin-top:5px;">
+                {{ $record->missing_document_count }}
+                missing document(s)
+            </div>
+        @endif
+
+        @if ($record->pending_document_count > 0)
+            <div class="sponsor-muted" style="margin-top:3px;">
+                {{ $record->pending_document_count }}
+                document(s) awaiting review
+            </div>
+        @endif
+
+        @if ($record->pending_change_count > 0)
+            <div class="sponsor-muted" style="margin-top:3px;">
+                {{ $record->pending_change_count }}
+                change(s) awaiting review
+            </div>
+        @endif
+
+        @if ($record->hasComplianceDifference())
+            <div class="sponsor-muted" style="margin-top:3px;">
+                CoS/employment details differ
+            </div>
+        @endif
+
+    @else
+
+        <span class="
+            sponsor-status
+            sponsor-status-valid
+        ">
+            Compliant
+        </span>
+
+    @endif
+
+</td>
 
                         <td>
                             <a
