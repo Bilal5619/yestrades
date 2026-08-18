@@ -47,8 +47,21 @@ Route::get(
 
 
 
+/*
+|--------------------------------------------------------------------------
+| Right to Work
+|--------------------------------------------------------------------------
+*/
 
-    
+Route::get(
+    '/hr/right-to-work',
+    'Company\\HRController@rightToWork'
+)
+    ->middleware(
+        'company.permission:employee-documents.view'
+    )
+    ->name('company.hr.right-to-work');
+
     /*
     |--------------------------------------------------------------------------
     | Authenticated company routes

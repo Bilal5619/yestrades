@@ -9,6 +9,7 @@ use App\Models\Company\EmployeeDocument;
 use App\Models\Company\EmployeeHoliday;
 use App\Models\Company\EmployeeTrainingRecord;
 
+
 class HRController extends Controller
 {
     public function overview()
@@ -183,4 +184,311 @@ class HRController extends Controller
             )
         );
     }
+    public function rightToWork(\Illuminate\Http\Request $request)
+{
+    $today = today();
+    $thirtyDaysFromNow = today()->copy()->addDays(30);
+
+    $activeStatuses = [
+        'onboarding',
+        'active',
+        'on_leave',
+        'suspended',
+        'notice_period',
+    ];
+
+    $query = Employee::query()
+        ->whereIn(
+            'employment_status',
+            $activeStatuses
+        )
+        ->with([
+            'documents' => function ($query) {
+                $query->with([
+                    'documentType',
+                    'reviewedBy',
+                ])
+                ->whereHas(
+                    'documentType',
+                    function ($documentTypeQuery) {
+                        $documentTypeQuery->whereIn(
+                            'slug',
+                            [
+                                'passport',
+                                'right-to-work-evidence',
+                                'immigration-status-evidence',
+                            ]
+                        );
+                    }
+                );
+            },
+        ]);
+
+    if ($request->filled('search')) {
+        $search = trim($request->search);
+
+        $query->where(function ($query) use ($search) {
+            $query
+                ->where(
+                    'employee_number',
+                    'like',
+                    "%{$search}%"
+                )
+                ->orWhere(
+                    'first_name',
+                    'like',
+                    "%{$search}%"
+                )
+                ->orWhere(
+                    'last_name',
+                    'like',
+                    "%{$search}%"
+                )
+                ->orWhere(
+                    'work_email',
+                    'like',
+                    "%{$search}%"
+                );
+        });
+    }
+
+    if ($request->filled('sponsored')) {
+        $query->where(
+            'is_sponsored_worker',
+            $request->sponsored === 'yes'
+        );
+    }
+
+    $employees = $query
+        ->orderBy('first_name')
+        ->orderBy('last_name')
+        ->paginate(20)
+        ->withQueryString();
+
+    $employees->getCollection()->transform(
+        function ($employee) use (
+            $today,
+            $thirtyDaysFromNow
+        ) {
+            $rtwDocument = $employee->documents
+                ->first(function ($document) {
+                    return optional(
+                        $document->documentType
+                    )->slug ===
+                        'right-to-work-evidence';
+                });
+
+            $immigrationDocument = $employee->documents
+                ->first(function ($document) {
+                    return optional(
+                        $document->documentType
+                    )->slug ===
+                        'immigration-status-evidence';
+                });
+
+            $passport = $employee->documents
+                ->first(function ($document) {
+                    return optional(
+                        $document->documentType
+                    )->slug === 'passport';
+                });
+
+            $primaryDocument =
+                $rtwDocument
+                ?: $immigrationDocument;
+
+            if (
+                !$primaryDocument ||
+                !$primaryDocument->file_path
+            ) {
+                $status = 'missing';
+            } elseif (
+                $primaryDocument->review_status ===
+                'rejected'
+            ) {
+                $status = 'rejected';
+            } elseif (
+                $primaryDocument->expiry_date &&
+                $primaryDocument->expiry_date->lt(
+                    $today
+                )
+            ) {
+                $status = 'expired';
+            } elseif (
+                $primaryDocument->expiry_date &&
+                $primaryDocument->expiry_date->lte(
+                    $thirtyDaysFromNow
+                )
+            ) {
+                $status = 'expiring';
+            } elseif (
+                $primaryDocument->review_status ===
+                'pending_review'
+            ) {
+                $status = 'pending_review';
+            } elseif (
+                $primaryDocument->review_status ===
+                'approved'
+            ) {
+                $status = 'verified';
+            } else {
+                $status = 'action_required';
+            }
+
+            $employee->rtw_document =
+                $rtwDocument;
+
+            $employee->immigration_document =
+                $immigrationDocument;
+
+            $employee->passport_document =
+                $passport;
+
+            $employee->rtw_status =
+                $status;
+
+            return $employee;
+        }
+    );
+
+    if ($request->filled('status')) {
+        $filtered = $employees
+            ->getCollection()
+            ->filter(function ($employee) use ($request) {
+                return $employee->rtw_status ===
+                    $request->status;
+            })
+            ->values();
+
+        $employees->setCollection($filtered);
+    }
+
+    $stats = [
+        'missing' => EmployeeDocument::query()
+            ->whereHas(
+                'employee',
+                function ($query) use ($activeStatuses) {
+                    $query->whereIn(
+                        'employment_status',
+                        $activeStatuses
+                    );
+                }
+            )
+            ->whereHas(
+                'documentType',
+                function ($query) {
+                    $query->where(
+                        'slug',
+                        'right-to-work-evidence'
+                    );
+                }
+            )
+            ->whereNull('file_path')
+            ->count(),
+
+        'pending_review' =>
+            EmployeeDocument::query()
+                ->whereHas(
+                    'employee',
+                    function ($query) use ($activeStatuses) {
+                        $query->whereIn(
+                            'employment_status',
+                            $activeStatuses
+                        );
+                    }
+                )
+                ->whereHas(
+                    'documentType',
+                    function ($query) {
+                        $query->whereIn(
+                            'slug',
+                            [
+                                'right-to-work-evidence',
+                                'immigration-status-evidence',
+                            ]
+                        );
+                    }
+                )
+                ->where(
+                    'review_status',
+                    'pending_review'
+                )
+                ->count(),
+
+        'expiring' =>
+            EmployeeDocument::query()
+                ->whereHas(
+                    'employee',
+                    function ($query) use ($activeStatuses) {
+                        $query->whereIn(
+                            'employment_status',
+                            $activeStatuses
+                        );
+                    }
+                )
+                ->whereHas(
+                    'documentType',
+                    function ($query) {
+                        $query->whereIn(
+                            'slug',
+                            [
+                                'right-to-work-evidence',
+                                'immigration-status-evidence',
+                            ]
+                        );
+                    }
+                )
+                ->whereNotNull('expiry_date')
+                ->whereDate(
+                    'expiry_date',
+                    '>=',
+                    $today
+                )
+                ->whereDate(
+                    'expiry_date',
+                    '<=',
+                    $thirtyDaysFromNow
+                )
+                ->count(),
+
+        'expired' =>
+            EmployeeDocument::query()
+                ->whereHas(
+                    'employee',
+                    function ($query) use ($activeStatuses) {
+                        $query->whereIn(
+                            'employment_status',
+                            $activeStatuses
+                        );
+                    }
+                )
+                ->whereHas(
+                    'documentType',
+                    function ($query) {
+                        $query->whereIn(
+                            'slug',
+                            [
+                                'right-to-work-evidence',
+                                'immigration-status-evidence',
+                            ]
+                        );
+                    }
+                )
+                ->whereNotNull('expiry_date')
+                ->whereDate(
+                    'expiry_date',
+                    '<',
+                    $today
+                )
+                ->count(),
+    ];
+
+    return view(
+        'company.hr.right-to-work',
+        compact(
+            'employees',
+            'stats'
+        )
+    );
+}
 }

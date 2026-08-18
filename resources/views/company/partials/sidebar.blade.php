@@ -304,7 +304,21 @@
                         Training
                     </a>
                 @endif
-
+@if (
+    $companyUser->hasPermission(
+        'employee-documents.view'
+    )
+)
+    <a
+        href="{{ route('company.hr.right-to-work') }}"
+        class="company-submenu-link
+            {{ request()->routeIs(
+                'company.hr.right-to-work'
+            ) ? 'active' : '' }}"
+    >
+        Right to Work
+    </a>
+@endif
                 
 
                @if ($companyUser->hasPermission('onboarding.view'))

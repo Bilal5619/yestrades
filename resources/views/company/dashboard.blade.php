@@ -257,7 +257,7 @@
 {{-- Notebook dashboard cards --}}
 <div class="company-dashboard-grid">
 
-  <a href="{{ route('company.hr.employees.missing-documents') }}"
+ <a href="{{ route('company.hr.right-to-work') }}"
    class="company-dashboard-card card-right-work">
         <div class="company-dashboard-card-content">
             <h3>Right to Work Documents</h3>
@@ -423,7 +423,7 @@
 
         <div class="dashboard-panel-body">
 
-            <a href="{{ route('company.hr.employees.missing-documents') }}"
+            <a href="{{ route('company.hr.right-to-work') }}"
    class="dashboard-alert-link">
 
     <div class="dashboard-alert-item">
@@ -443,7 +443,7 @@
 
 </a>
 
-            <a href="{{ route('company.hr.employees.missing-documents') }}"
+           <a href="{{ route('company.hr.employees.missing-documents') }}"
    class="dashboard-alert-link">
 
     <div class="dashboard-alert-item">
