@@ -234,8 +234,8 @@
     <div class="company-dashboard-card card-right-work">
         <div class="company-dashboard-card-content">
             <h3>Right to Work Documents</h3>
-            <strong>0</strong>
-            <small>Pending or expiring checks</small>
+           <strong>{{ $stats['right_to_work'] }}</strong>
+<small>Pending or expiring checks</small>
         </div>
 
         <div class="company-dashboard-card-icon">
@@ -246,7 +246,7 @@
     <div class="company-dashboard-card card-job-documents">
         <div class="company-dashboard-card-content">
             <h3>Employee Job Documents</h3>
-            <strong>0</strong>
+           <strong>{{ $stats['employee_documents'] }}</strong>
             <small>Missing or awaiting review</small>
         </div>
 
@@ -258,7 +258,7 @@
     <div class="company-dashboard-card card-certificates">
         <div class="company-dashboard-card-content">
             <h3>Missing Certificates</h3>
-            <strong>0</strong>
+            <strong>{{ $stats['missing_certificates'] }}</strong>
             <small>Required certificates missing</small>
         </div>
 
@@ -270,7 +270,7 @@
     <div class="company-dashboard-card card-pending-jobs">
         <div class="company-dashboard-card-content">
             <h3>Pending Jobs</h3>
-            <strong>0</strong>
+           <strong>{{ $stats['pending_jobs'] }}</strong>
             <small>Jobs needing action</small>
         </div>
 
@@ -282,7 +282,7 @@
     <div class="company-dashboard-card card-holiday">
         <div class="company-dashboard-card-content">
             <h3>Employees on Holiday</h3>
-            <strong>0</strong>
+            <strong>{{ $stats['employees_on_holiday'] }}</strong>
             <small>Currently away</small>
         </div>
 
@@ -294,7 +294,7 @@
     <div class="company-dashboard-card card-starters">
         <div class="company-dashboard-card-content">
             <h3>New Starters</h3>
-            <strong>0</strong>
+            <strong>{{ $stats['new_starters'] }}</strong>
             <small>Employees being onboarded</small>
         </div>
 
@@ -317,18 +317,65 @@
             </a>
         </div>
 
-        <div class="dashboard-panel-body">
-            <div class="dashboard-placeholder-chart">
-                <div>
-                    <i class="fas fa-chart-line"
-                       style="font-size: 35px; margin-bottom: 12px;"></i>
+        <div style="
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 15px;
+">
+    <div class="dashboard-placeholder-chart" style="min-height: 105px;">
+        <div>
+            <strong style="font-size: 26px;">
+                {{ $employeeOverview['total'] }}
+            </strong>
+            <div>Total Employees</div>
+        </div>
+    </div>
 
-                    <div>
-                        Employee line graph will appear here when employee
-                        records are connected.
-                    </div>
-                </div>
-            </div>
+    <div class="dashboard-placeholder-chart" style="min-height: 105px;">
+        <div>
+            <strong style="font-size: 26px;">
+                {{ $employeeOverview['active'] }}
+            </strong>
+            <div>Active</div>
+        </div>
+    </div>
+
+    <div class="dashboard-placeholder-chart" style="min-height: 105px;">
+        <div>
+            <strong style="font-size: 26px;">
+                {{ $employeeOverview['onboarding'] }}
+            </strong>
+            <div>Onboarding</div>
+        </div>
+    </div>
+
+    <div class="dashboard-placeholder-chart" style="min-height: 105px;">
+        <div>
+            <strong style="font-size: 26px;">
+                {{ $employeeOverview['on_leave'] }}
+            </strong>
+            <div>On Leave</div>
+        </div>
+    </div>
+
+    <div class="dashboard-placeholder-chart" style="min-height: 105px;">
+        <div>
+            <strong style="font-size: 26px;">
+                {{ $employeeOverview['notice_period'] }}
+            </strong>
+            <div>Notice Period</div>
+        </div>
+    </div>
+
+    <div class="dashboard-placeholder-chart" style="min-height: 105px;">
+        <div>
+            <strong style="font-size: 26px;">
+                {{ $employeeOverview['suspended'] }}
+            </strong>
+            <div>Suspended</div>
+        </div>
+    </div>
+</div>
         </div>
     </section>
 
@@ -354,7 +401,9 @@
                     <span>Documents needing review</span>
                 </div>
 
-                <div class="dashboard-alert-count">0</div>
+              <div class="dashboard-alert-count">
+    {{ $stats['right_to_work'] }}
+</div>
             </div>
 
             <div class="dashboard-alert-item">
@@ -367,7 +416,9 @@
                     <span>Employee records incomplete</span>
                 </div>
 
-                <div class="dashboard-alert-count">0</div>
+               <div class="dashboard-alert-count">
+    {{ $stats['employee_documents'] }}
+</div>
             </div>
 
             <div class="dashboard-alert-item">
@@ -380,7 +431,9 @@
                     <span>Training or certificates due</span>
                 </div>
 
-                <div class="dashboard-alert-count">0</div>
+               <div class="dashboard-alert-count">
+    {{ $stats['training_due'] }}
+</div>
             </div>
 
             <div class="dashboard-alert-item">
@@ -393,7 +446,9 @@
                     <span>Onboarding actions incomplete</span>
                 </div>
 
-                <div class="dashboard-alert-count">0</div>
+               <div class="dashboard-alert-count">
+    {{ $stats['pending_onboarding'] }}
+</div>
             </div>
 
         </div>

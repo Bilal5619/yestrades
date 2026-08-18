@@ -295,9 +295,17 @@
                 old(
                     'scheduled_start_time',
                     optional($job)->scheduled_start_time
+                        ? substr(optional($job)->scheduled_start_time, 0, 5)
+                        : null
                 )
             }}"
         >
+
+        @error('scheduled_start_time')
+            <div class="jobsheet-error">
+                {{ $message }}
+            </div>
+        @enderror
     </div>
 
 

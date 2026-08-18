@@ -5,6 +5,14 @@
 @section('content')
 
 @include('company.hr.jobs.partials.styles')
+@if ($errors->any())
+    <div class="jobsheet-form-card" style="margin-bottom:18px;border:1px solid rgba(255,124,134,0.35);">
+        <strong style="color:#ff7c86;">Please correct the form errors.</strong>
+        <div style="margin-top:6px;color:#ffb4ba;">
+            {{ $errors->first() }}
+        </div>
+    </div>
+@endif
 
 <div class="jobsheet-header">
     <div>

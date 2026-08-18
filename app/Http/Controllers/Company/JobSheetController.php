@@ -593,6 +593,8 @@ private function validateVisit(
     private function validateJob(
         Request $request
     ): array {
+        $this->normalizeJobTimeInput($request);
+
         return $request->validate([
 
             'client_id' => [
@@ -777,5 +779,19 @@ private function validateVisit(
                 'string',
             ],
         ]);
+    }
+
+    private function normalizeJobTimeInput(Request $request): void
+    {
+        $time = $request->input('scheduled_start_time');
+
+        if (
+            is_string($time) &&
+            preg_match('/^\d{2}:\d{2}:\d{2}$/', $time)
+        ) {
+            $request->merge([
+                'scheduled_start_time' => substr($time, 0, 5),
+            ]);
+        }
     }
 }
