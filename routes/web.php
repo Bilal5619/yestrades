@@ -11,11 +11,6 @@ use Illuminate\Support\Facades\Route;
 // cron job for sending expiry mail
 Route::get('/subcheck', 'CronJobController@expired')->name('cron.expired');
 
-// Browsers request this path directly by default (ignoring any <link> tag),
-// so it needs to be a real route rather than a static file if it's going to
-// stay in sync with whatever logo the admin panel has uploaded.
-Route::get('/favicon.ico', 'FrontEnd\MiscellaneousController@favicon')->name('favicon');
-
 Route::get('/change-language', 'FrontEnd\MiscellaneousController@changeLanguage')->name('change_language');
 
 Route::post('/store-subscriber', 'FrontEnd\MiscellaneousController@storeSubscriber')->name('store_subscriber');

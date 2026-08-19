@@ -12,10 +12,11 @@
   <meta name="csrf-token" content="{{ csrf_token() }}" />
   <!-- Title -->
   <title>@yield('pageHeading') {{ '| ' . $websiteInfo->website_title }}</title>
-  <!-- Favicon: always the same image as the site Logo in the admin panel,
-       served dynamically so it stays in sync without a code change. -->
-  <link rel="shortcut icon" href="{{ route('favicon') }}" type="image/x-icon">
-  <link rel="apple-touch-icon" href="{{ route('favicon') }}">
+  <!-- Favicon: fixed icon-only image (not derived from the admin logo,
+       which isn't square/padded enough to survive the tiny tab-icon size
+       without looking cropped). -->
+  <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
+  <link rel="apple-touch-icon" href="{{ asset('favicon.ico') }}">
   <!-- Latest Font Awesome -->
   <!-- Font Awesome is loaded in partials/styles.blade.php -->
 
