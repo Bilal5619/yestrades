@@ -17,27 +17,6 @@ use Illuminate\Validation\Rule;
 
 class MiscellaneousController extends Controller
 {
-  // Serves the browser's default /favicon.ico request using whatever image
-  // is currently set as the site Logo in the admin panel — so the tab/
-  // search-result icon always matches the logo without needing a separate
-  // upload or a code change whenever the admin updates their branding.
-  // No static image lives in the codebase for this — if no logo has been
-  // uploaded yet, there is simply no favicon to serve.
-  public function favicon()
-  {
-    $basic = Basic::first();
-    $logoPath = $basic ? public_path('assets/img/' . $basic->logo) : null;
-
-    abort_unless($logoPath && file_exists($logoPath), 404);
-
-    $mimeType = mime_content_type($logoPath) ?: 'image/png';
-
-    return response()->file($logoPath, [
-      'Content-Type' => $mimeType,
-      'Cache-Control' => 'public, max-age=86400',
-    ]);
-  }
-
   public function getLanguage()
   {
     // get the current locale of this system
