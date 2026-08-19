@@ -1,4 +1,4 @@
-@extends('company.layouts.app')
+@extends('company.layouts.auth')
 
 @section('title', 'Two-Factor Authentication')
 
