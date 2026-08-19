@@ -59,10 +59,13 @@ return new class extends Migration
 
                 $table->timestamps();
 
-                $table->unique([
-                    'company_policy_id',
-                    'employee_id',
-                ]);
+                $table->unique(
+    [
+        'company_policy_id',
+        'employee_id',
+    ],
+    'policy_employee_unique'
+);
             }
         );
     }
