@@ -29,6 +29,18 @@ Route::prefix('company-own')->group(function () {
     ->middleware('throttle:5,1')
     ->name('company.login.submit');
     });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Authenticated company routes
+    |--------------------------------------------------------------------------
+    */
+Route::middleware([
+    'auth:company',
+    'company.audit',
+])->group(function () {
+   
 /*
 |--------------------------------------------------------------------------
 | Audit Logs
@@ -114,17 +126,7 @@ Route::get(
     )
     ->name('company.hr.right-to-work');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Authenticated company routes
-    |--------------------------------------------------------------------------
-    */
-Route::middleware([
-    'auth:company',
-    'company.audit',
-])->group(function () {
-   
-
+    
     Route::get(
         '/dashboard',
         'Company\DashboardController@index'
