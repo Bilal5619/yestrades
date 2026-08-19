@@ -153,7 +153,6 @@
         $companyUser->hasPermission('employees.delete') ||
         $companyUser->hasPermission('holidays.view')    || 
         $companyUser->hasPermission('training.view')|| 
-        $companyUser->hasPermission('recruitment.manage') ||
         $companyUser->hasPermission('onboarding.manage');
 
     $canSeeStaffMenu =
@@ -501,71 +500,30 @@
 
 
     {{-- Reports --}}
-    @if ($canSeeReports)
-        <div class="company-menu-item">
+   {{-- Reports --}}
+@if ($canSeeReports)
 
-            <button type="button"
-                    class="company-menu-link company-dropdown-toggle"
-                    data-target="reports-submenu">
+    <div class="company-menu-item">
 
-                <i class="fas fa-chart-bar"></i>
-                <span>Reports</span>
-                <i class="fas fa-chevron-right company-menu-arrow"></i>
-            </button>
+        <a
+            href="{{ route(
+                'company.reports.index'
+            ) }}"
+            class="company-menu-link
+                {{ request()->routeIs(
+                    'company.reports.*'
+                ) ? 'active' : '' }}"
+        >
 
-            <div class="company-submenu" id="reports-submenu">
+            <i class="fas fa-chart-bar"></i>
 
-                @if ($companyUser->hasPermission('reports.missing-documents'))
-                    <a href="{{ route('company.hr.employees.missing-documents') }}"
-                       class="company-submenu-link
-                       {{ request()->routeIs('company.hr.employees.missing-documents') ? 'active' : '' }}">
-                        Missing Documents
-                    </a>
-                @endif
+            <span>Reports</span>
 
-                @if ($companyUser->hasPermission('reports.holiday'))
-                    <a href="{{ route('company.hr.holidays.requests') }}"
-                       class="company-submenu-link
-                       {{ request()->routeIs('company.hr.holidays.requests') ? 'active' : '' }}">
-                        Holiday Report
-                    </a>
-                @endif
+        </a>
 
-                @if ($companyUser->hasPermission('reports.attendance'))
-                    <a href="{{ route('company.hr.timesheet.index') }}"
-                       class="company-submenu-link
-                       {{ request()->routeIs('company.hr.timesheet.*') ? 'active' : '' }}">
-                        Attendance Report
-                    </a>
-                @endif
+    </div>
 
-                @if ($companyUser->hasPermission('reports.overtime'))
-                    <a href="{{ route('company.hr.reports.overtime') }}"
-                       class="company-submenu-link
-                       {{ request()->routeIs('company.hr.reports.overtime') ? 'active' : '' }}">
-                        Overtime Report
-                    </a>
-                @endif
-
-                @if ($companyUser->hasPermission('reports.expense'))
-                    <a href="{{ route('company.hr.expenses.index') }}"
-                       class="company-submenu-link
-                       {{ request()->routeIs('company.hr.expenses.*') ? 'active' : '' }}">
-                        Expense Report
-                    </a>
-                @endif
-
-                @if ($companyUser->hasPermission('reports.training-due'))
-                    <a href="{{ route('company.hr.training.expiring') }}"
-                       class="company-submenu-link
-                       {{ request()->routeIs('company.hr.training.expiring') ? 'active' : '' }}">
-                        Training Due
-                    </a>
-                @endif
-
-            </div>
-        </div>
-    @endif
+@endif
 
 
     {{-- Audit Logs --}}
