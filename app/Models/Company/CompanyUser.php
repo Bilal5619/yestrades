@@ -109,14 +109,12 @@ class CompanyUser extends Model implements
         );
     }
 
-    public function sendPasswordResetNotification(
-        $token
-    ) {
-        $this->notify(
-            new \App\Notifications\
-                CompanyResetPasswordNotification(
-                    $token
-                )
-        );
-    }
+   public function sendPasswordResetNotification($token)
+{
+    $this->notify(
+        new \App\Notifications\CompanyResetPasswordNotification(
+            $token
+        )
+    );
+}
 }
