@@ -346,6 +346,15 @@ class CompanyPermissionSeeder extends Seeder
     'name' => 'Manage Employee Absences',
     'slug' => 'absences.manage',
     'module' => 'HR',
+],[
+    'name' => 'View Company Policies',
+    'slug' => 'policies.view',
+    'module' => 'HR',
+],
+[
+    'name' => 'Manage Company Policies',
+    'slug' => 'policies.manage',
+    'module' => 'HR',
 ],
         ];
 

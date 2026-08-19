@@ -515,4 +515,11 @@ public function absences()
         'employee_id'
     );
 }
+public function policyAcknowledgements()
+{
+    return $this->hasMany(
+        CompanyPolicyAcknowledgement::class,
+        'employee_id'
+    );
+}
 }

@@ -310,7 +310,88 @@ Route::post(
         'company.permission:employee-documents.approve'
     )
     ->name('company.hr.employees.documents.reject');
+/*
+|--------------------------------------------------------------------------
+| Company Policies
+|--------------------------------------------------------------------------
+*/
 
+Route::get(
+    '/hr/policies',
+    'Company\\CompanyPolicyController@index'
+)
+    ->middleware(
+        'company.permission:policies.view'
+    )
+    ->name(
+        'company.hr.policies.index'
+    );
+
+Route::get(
+    '/hr/policies/create',
+    'Company\\CompanyPolicyController@create'
+)
+    ->middleware(
+        'company.permission:policies.manage'
+    )
+    ->name(
+        'company.hr.policies.create'
+    );
+
+Route::post(
+    '/hr/policies',
+    'Company\\CompanyPolicyController@store'
+)
+    ->middleware(
+        'company.permission:policies.manage'
+    )
+    ->name(
+        'company.hr.policies.store'
+    );
+
+Route::get(
+    '/hr/policies/{policy}',
+    'Company\\CompanyPolicyController@show'
+)
+    ->middleware(
+        'company.permission:policies.view'
+    )
+    ->name(
+        'company.hr.policies.show'
+    );
+
+Route::get(
+    '/hr/policies/{policy}/download',
+    'Company\\CompanyPolicyController@download'
+)
+    ->middleware(
+        'company.permission:policies.view'
+    )
+    ->name(
+        'company.hr.policies.download'
+    );
+
+Route::post(
+    '/hr/policies/{policy}/assign',
+    'Company\\CompanyPolicyController@assign'
+)
+    ->middleware(
+        'company.permission:policies.manage'
+    )
+    ->name(
+        'company.hr.policies.assign'
+    );
+
+Route::post(
+    '/hr/policies/{policy}/acknowledgements/{acknowledgement}',
+    'Company\\CompanyPolicyController@acknowledge'
+)
+    ->middleware(
+        'company.permission:policies.manage'
+    )
+    ->name(
+        'company.hr.policies.acknowledge'
+    );
     
     /*
     |--------------------------------------------------------------------------

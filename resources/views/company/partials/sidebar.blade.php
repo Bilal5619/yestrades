@@ -155,6 +155,8 @@
     $companyUser->hasPermission('training.view') ||
     $companyUser->hasPermission('absences.view') ||
     $companyUser->hasPermission('absences.manage') ||
+    $companyUser->hasPermission('policies.view') ||
+    $companyUser->hasPermission('policies.manage') ||
     $companyUser->hasPermission('onboarding.manage');
 
     $canSeeStaffMenu =
@@ -384,6 +386,25 @@
            }}">
 
         Payslips
+    </a>
+@endif
+@if (
+    $companyUser->hasPermission(
+        'policies.view'
+    )
+)
+    <a
+        href="{{ route(
+            'company.hr.policies.index'
+        ) }}"
+        class="
+            company-submenu-link
+            {{ request()->routeIs(
+                'company.hr.policies.*'
+            ) ? 'active' : '' }}
+        "
+    >
+        Company Policies
     </a>
 @endif
 @if ($companyUser->hasPermission('sponsor-compliance.view'))
