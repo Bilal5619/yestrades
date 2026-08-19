@@ -44,7 +44,49 @@ Route::get(
     )
     ->name('company.audit-logs.index');
 
+/*
+|--------------------------------------------------------------------------
+| Employee Absences
+|--------------------------------------------------------------------------
+*/
 
+Route::get(
+    '/hr/absences',
+    'Company\\EmployeeAbsenceController@index'
+)
+    ->middleware(
+        'company.permission:absences.view'
+    )
+    ->name('company.hr.absences.index');
+
+Route::get(
+    '/hr/absences/create',
+    'Company\\EmployeeAbsenceController@create'
+)
+    ->middleware(
+        'company.permission:absences.manage'
+    )
+    ->name('company.hr.absences.create');
+
+Route::post(
+    '/hr/absences',
+    'Company\\EmployeeAbsenceController@store'
+)
+    ->middleware(
+        'company.permission:absences.manage'
+    )
+    ->name('company.hr.absences.store');
+
+Route::put(
+    '/hr/absences/{absence}/return-to-work',
+    'Company\\EmployeeAbsenceController@completeReturnToWork'
+)
+    ->middleware(
+        'company.permission:absences.manage'
+    )
+    ->name(
+        'company.hr.absences.return-to-work'
+    );
 /*
 |--------------------------------------------------------------------------
 | Reports Centre

@@ -508,4 +508,11 @@ public function sponsoredWorkerRecord()
         'employee_id'
     );
 }
+public function absences()
+{
+    return $this->hasMany(
+        EmployeeAbsence::class,
+        'employee_id'
+    );
+}
 }

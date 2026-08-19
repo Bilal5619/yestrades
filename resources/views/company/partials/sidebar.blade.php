@@ -145,15 +145,17 @@
 @php
     $companyUser = auth('company')->user();
 
-    $canSeeHrMenu =
-        $companyUser->hasPermission('hr.overview.view') ||
-        $companyUser->hasPermission('employees.view') ||
-        $companyUser->hasPermission('employees.create') ||
-        $companyUser->hasPermission('employees.edit') ||
-        $companyUser->hasPermission('employees.delete') ||
-        $companyUser->hasPermission('holidays.view')    || 
-        $companyUser->hasPermission('training.view')|| 
-        $companyUser->hasPermission('onboarding.manage');
+   $canSeeHrMenu =
+    $companyUser->hasPermission('hr.overview.view') ||
+    $companyUser->hasPermission('employees.view') ||
+    $companyUser->hasPermission('employees.create') ||
+    $companyUser->hasPermission('employees.edit') ||
+    $companyUser->hasPermission('employees.delete') ||
+    $companyUser->hasPermission('holidays.view') ||
+    $companyUser->hasPermission('training.view') ||
+    $companyUser->hasPermission('absences.view') ||
+    $companyUser->hasPermission('absences.manage') ||
+    $companyUser->hasPermission('onboarding.manage');
 
     $canSeeStaffMenu =
         $companyUser->hasPermission('attendance.manage') ||
@@ -291,6 +293,23 @@
                     Holidays
                 </a>
             @endif
+            @if (
+    $companyUser->hasPermission(
+        'absences.view'
+    )
+)
+    <a
+        href="{{ route(
+            'company.hr.absences.index'
+        ) }}"
+        class="company-submenu-link
+            {{ request()->routeIs(
+                'company.hr.absences.*'
+            ) ? 'active' : '' }}"
+    >
+        Absence / Sickness
+    </a>
+@endif
           
             @if ($companyUser->hasPermission('training.view'))
                     <a href="{{ route(

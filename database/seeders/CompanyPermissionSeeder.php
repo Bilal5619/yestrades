@@ -337,6 +337,16 @@ class CompanyPermissionSeeder extends Seeder
     'name' => 'Review Sponsor Compliance',
     'slug' => 'sponsor-compliance.review',
 ],
+[
+    'name' => 'View Employee Absences',
+    'slug' => 'absences.view',
+    'module' => 'HR',
+],
+[
+    'name' => 'Manage Employee Absences',
+    'slug' => 'absences.manage',
+    'module' => 'HR',
+],
         ];
 
         foreach ($permissions as $permission) {
