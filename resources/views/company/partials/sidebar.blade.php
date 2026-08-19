@@ -565,7 +565,27 @@
 
 @endif
 
+<div class="company-menu-item">
 
+    <a
+        href="{{ route(
+            'company.security.2fa'
+        ) }}"
+        class="
+            company-menu-link
+            {{ request()->routeIs(
+                'company.security.*'
+            ) ? 'active' : '' }}
+        "
+    >
+        <i class="fas fa-shield-alt"></i>
+
+        <span>
+            Security
+        </span>
+    </a>
+
+</div>
     {{-- Audit Logs --}}
    @if ($companyUser->hasPermission('audit-logs.view'))
     <a

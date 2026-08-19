@@ -313,7 +313,26 @@
 
                     Keep me signed in
                 </label>
-
+<div
+    style="
+        text-align:right;
+        margin-top:8px;
+        margin-bottom:15px;
+    "
+>
+    <a
+        href="{{ route(
+            'company.password.request'
+        ) }}"
+        style="
+            color:#82b7ff;
+            font-size:13px;
+            text-decoration:none;
+        "
+    >
+        Forgot password?
+    </a>
+</div>
                 <button type="submit"
                         class="company-login-button">
 

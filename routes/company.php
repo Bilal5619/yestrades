@@ -29,7 +29,30 @@ Route::prefix('company-own')->group(function () {
     ->middleware('throttle:5,1')
     ->name('company.login.submit');
     });
+/*
+|--------------------------------------------------------------------------
+| Company 2FA Challenge
+|--------------------------------------------------------------------------
+*/
 
+Route::get(
+    '/two-factor-challenge',
+    'Company\\TwoFactorController@showChallenge'
+)
+    ->name(
+        'company.2fa.challenge'
+    );
+
+Route::post(
+    '/two-factor-challenge',
+    'Company\\TwoFactorController@verifyChallenge'
+)
+    ->middleware(
+        'throttle:5,1'
+    )
+    ->name(
+        'company.2fa.verify'
+    );
 
     /*
     |--------------------------------------------------------------------------
@@ -110,7 +133,85 @@ Route::get(
     'Company\\ReportController@index'
 )
     ->name('company.reports.index');
+/*
+|--------------------------------------------------------------------------
+| Company Password Reset
+|--------------------------------------------------------------------------
+*/
 
+Route::get(
+    '/forgot-password',
+    'Company\\PasswordResetController@showForgotForm'
+)
+    ->name(
+        'company.password.request'
+    );
+
+Route::post(
+    '/forgot-password',
+    'Company\\PasswordResetController@sendResetLink'
+)
+    ->middleware(
+        'throttle:5,1'
+    )
+    ->name(
+        'company.password.email'
+    );
+
+Route::get(
+    '/reset-password/{token}',
+    'Company\\PasswordResetController@showResetForm'
+)
+    ->name(
+        'company.password.reset'
+    );
+
+Route::post(
+    '/reset-password',
+    'Company\\PasswordResetController@reset'
+)
+    ->middleware(
+        'throttle:5,1'
+    )
+    ->name(
+        'company.password.update'
+    );
+
+    /*
+|--------------------------------------------------------------------------
+| Company Security / 2FA
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/security/two-factor',
+    'Company\\TwoFactorController@settings'
+)
+    ->name(
+        'company.security.2fa'
+    );
+
+Route::post(
+    '/security/two-factor/enable',
+    'Company\\TwoFactorController@enable'
+)
+    ->middleware(
+        'throttle:5,1'
+    )
+    ->name(
+        'company.security.2fa.enable'
+    );
+
+Route::post(
+    '/security/two-factor/disable',
+    'Company\\TwoFactorController@disable'
+)
+    ->middleware(
+        'throttle:5,1'
+    )
+    ->name(
+        'company.security.2fa.disable'
+    );
 /*
 |--------------------------------------------------------------------------
 | Right to Work
@@ -126,7 +227,7 @@ Route::get(
     )
     ->name('company.hr.right-to-work');
 
-    
+
     Route::get(
         '/dashboard',
         'Company\DashboardController@index'
