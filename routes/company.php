@@ -382,17 +382,7 @@ Route::post(
         'company.hr.policies.assign'
     );
 
-Route::post(
-    '/hr/policies/{policy}/acknowledgements/{acknowledgement}',
-    'Company\\CompanyPolicyController@acknowledge'
-)
-    ->middleware(
-        'company.permission:policies.manage'
-    )
-    ->name(
-        'company.hr.policies.acknowledge'
-    );
-    
+
     /*
     |--------------------------------------------------------------------------
     | holidays users

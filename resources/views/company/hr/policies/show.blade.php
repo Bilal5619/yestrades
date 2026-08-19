@@ -359,46 +359,23 @@
 
                         <td>
 
-                            @if (
-                                $acknowledgement->status
-                                    !== 'acknowledged'
-                                &&
-                                auth('company')
-                                    ->user()
-                                    ->hasPermission(
-                                        'policies.manage'
-                                    )
-                            )
+                         @if (
+                $acknowledgement->status
+                    === 'acknowledged'
+            )
 
-                                <form
-                                    method="POST"
-                                    action="{{ route(
-                                        'company.hr.policies.acknowledge',
-                                        [
-                                            $policy,
-                                            $acknowledgement,
-                                        ]
-                                    ) }}"
-                                >
-                                    @csrf
+                <span class="policy-acknowledged">
+                    <i class="fas fa-check-circle"></i>
+                    Acknowledged
+                </span>
 
-                                    <button
-                                        type="submit"
-                                        class="policy-button"
-                                    >
-                                        Mark Acknowledged
-                                    </button>
+            @else
 
-                                </form>
+                <span class="policy-pending">
+                    Waiting for Employee
+                </span>
 
-                            @else
-
-                                <span class="policy-muted">
-                                    —
-                                </span>
-
-                            @endif
-
+            @endif
                         </td>
 
                     </tr>
