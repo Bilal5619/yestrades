@@ -329,32 +329,49 @@ public function syncRequiredDocumentChecklist(): void
             );
         }
     }
+/*
+|--------------------------------------------------------------------------
+| Handle documents that no longer apply
+|--------------------------------------------------------------------------
+*/
+
+$documentsNoLongerRequired = $this->documents()
+    ->whereHas('documentType', function ($query) use ($controlledSlugs) {
+        $query->whereIn(
+            'slug',
+            $controlledSlugs
+        );
+    })
+    ->whereHas('documentType', function ($query) use ($requiredSlugs) {
+        $query->whereNotIn(
+            'slug',
+            $requiredSlugs
+        );
+    })
+    ->get();
+
+foreach ($documentsNoLongerRequired as $document) {
 
     /*
-    |--------------------------------------------------------------------------
-    | Remove "required" status from checklist items that no longer apply
-    |--------------------------------------------------------------------------
-    */
+     * If nothing was ever uploaded,
+     * remove the empty checklist row completely.
+     */
+    if (empty($document->file_path)) {
+        $document->delete();
+        continue;
+    }
 
-    $this->documents()
-        ->whereHas('documentType', function ($query) use ($controlledSlugs) {
-            $query->whereIn(
-                'slug',
-                $controlledSlugs
-            );
-        })
-        ->whereHas('documentType', function ($query) use ($requiredSlugs) {
-            $query->whereNotIn(
-                'slug',
-                $requiredSlugs
-            );
-        })
-        ->update([
-            'is_required' => false,
-            'updated_by' => auth('company')->check()
-                ? auth('company')->id()
-                : null,
-        ]);
+    /*
+     * If a file exists, preserve it as historical evidence
+     * but it is no longer required.
+     */
+    $document->update([
+        'is_required' => false,
+        'updated_by' => auth('company')->check()
+            ? auth('company')->id()
+            : null,
+    ]);
+}
 
     /*
     |--------------------------------------------------------------------------
