@@ -197,11 +197,15 @@ class HRController extends Controller
         'notice_period',
     ];
 
-    $query = Employee::query()
-        ->whereIn(
-            'employment_status',
-            $activeStatuses
-        )
+   $query = Employee::query()
+    ->whereIn(
+        'employment_status',
+        $activeStatuses
+    )
+    ->where(
+        'work_location_type',
+        'uk'
+    )
         ->with([
             'documents' => function ($query) {
                 $query->with([
@@ -366,14 +370,19 @@ class HRController extends Controller
     $stats = [
         'missing' => EmployeeDocument::query()
             ->whereHas(
-                'employee',
-                function ($query) use ($activeStatuses) {
-                    $query->whereIn(
-                        'employment_status',
-                        $activeStatuses
-                    );
-                }
+    'employee',
+    function ($query) use ($activeStatuses) {
+        $query
+            ->whereIn(
+                'employment_status',
+                $activeStatuses
             )
+            ->where(
+                'work_location_type',
+                'uk'
+            );
+    }
+)
             ->whereHas(
                 'documentType',
                 function ($query) {
@@ -388,15 +397,20 @@ class HRController extends Controller
 
         'pending_review' =>
             EmployeeDocument::query()
-                ->whereHas(
-                    'employee',
-                    function ($query) use ($activeStatuses) {
-                        $query->whereIn(
-                            'employment_status',
-                            $activeStatuses
-                        );
-                    }
-                )
+               ->whereHas(
+    'employee',
+    function ($query) use ($activeStatuses) {
+        $query
+            ->whereIn(
+                'employment_status',
+                $activeStatuses
+            )
+            ->where(
+                'work_location_type',
+                'uk'
+            );
+    }
+)
                 ->whereHas(
                     'documentType',
                     function ($query) {
@@ -418,14 +432,19 @@ class HRController extends Controller
         'expiring' =>
             EmployeeDocument::query()
                 ->whereHas(
-                    'employee',
-                    function ($query) use ($activeStatuses) {
-                        $query->whereIn(
-                            'employment_status',
-                            $activeStatuses
-                        );
-                    }
-                )
+    'employee',
+    function ($query) use ($activeStatuses) {
+        $query
+            ->whereIn(
+                'employment_status',
+                $activeStatuses
+            )
+            ->where(
+                'work_location_type',
+                'uk'
+            );
+    }
+)
                 ->whereHas(
                     'documentType',
                     function ($query) {
@@ -454,14 +473,19 @@ class HRController extends Controller
         'expired' =>
             EmployeeDocument::query()
                 ->whereHas(
-                    'employee',
-                    function ($query) use ($activeStatuses) {
-                        $query->whereIn(
-                            'employment_status',
-                            $activeStatuses
-                        );
-                    }
-                )
+    'employee',
+    function ($query) use ($activeStatuses) {
+        $query
+            ->whereIn(
+                'employment_status',
+                $activeStatuses
+            )
+            ->where(
+                'work_location_type',
+                'uk'
+            );
+    }
+)
                 ->whereHas(
                     'documentType',
                     function ($query) {

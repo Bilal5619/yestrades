@@ -14,8 +14,7 @@ class EmployeeDocumentController extends Controller
     public function index(Employee $employee)
     {
         // Ensure the employee has the standard required checklist.
-        $employee->generateRequiredDocumentChecklist();
-
+        $employee->syncRequiredDocumentChecklist();
         $documents = $employee->documents()
             ->with([
                 'documentType',

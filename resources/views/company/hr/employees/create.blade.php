@@ -652,7 +652,73 @@
                     </span>
                 @enderror
             </div>
+<div class="employee-form-group">
+    <label for="work_location_type">
+        Work location
+        <span class="employee-required">*</span>
+    </label>
 
+    <select
+        id="work_location_type"
+        name="work_location_type"
+        class="employee-form-control"
+        required
+    >
+        <option
+            value="uk"
+            {{ old(
+                'work_location_type',
+                'uk'
+            ) === 'uk'
+                ? 'selected'
+                : '' }}
+        >
+            UK
+        </option>
+
+        <option
+            value="overseas"
+            {{ old(
+                'work_location_type'
+            ) === 'overseas'
+                ? 'selected'
+                : '' }}
+        >
+            Overseas / Remote
+        </option>
+    </select>
+
+    @error('work_location_type')
+        <span class="employee-form-error">
+            {{ $message }}
+        </span>
+    @enderror
+</div>
+
+<div
+    class="employee-form-group"
+    id="work_country_group"
+>
+    <label for="work_country">
+        Country of work
+        <span class="employee-required">*</span>
+    </label>
+
+    <input
+        id="work_country"
+        type="text"
+        name="work_country"
+        value="{{ old('work_country') }}"
+        class="employee-form-control"
+        placeholder="Example: Pakistan"
+    >
+
+    @error('work_country')
+        <span class="employee-form-error">
+            {{ $message }}
+        </span>
+    @enderror
+</div>
             <div class="employee-form-group">
                 <label for="employment_status">
                     Employment status
@@ -1057,5 +1123,79 @@
     </div>
 
 </form>
+<script>
+    function toggleEmployeeWorkLocation() {
+        const locationType =
+            document.getElementById(
+                'work_location_type'
+            );
+
+        const countryGroup =
+            document.getElementById(
+                'work_country_group'
+            );
+
+        const countryInput =
+            document.getElementById(
+                'work_country'
+            );
+
+        if (
+            !locationType ||
+            !countryGroup ||
+            !countryInput
+        ) {
+            return;
+        }
+
+        const overseas =
+            locationType.value === 'overseas';
+
+        countryGroup.style.display =
+            overseas
+                ? 'block'
+                : 'none';
+
+        countryInput.required =
+            overseas;
+
+        if (!overseas) {
+            countryInput.value =
+                'United Kingdom';
+        } else if (
+            countryInput.value ===
+            'United Kingdom'
+        ) {
+            countryInput.value = '';
+        }
+
+        /*
+         * Sponsored worker should not be selected
+         * for an overseas remote employee.
+         */
+        const sponsored =
+            document.querySelector(
+                '[name="is_sponsored_worker"]'
+            );
+
+        if (
+            sponsored &&
+            locationType.value === 'overseas'
+        ) {
+            sponsored.value = '0';
+        }
+    }
+
+    document
+        .getElementById(
+            'work_location_type'
+        )
+        ?.addEventListener(
+            'change',
+            toggleEmployeeWorkLocation
+        );
+
+    toggleEmployeeWorkLocation();
+</script>
 
 @endsection

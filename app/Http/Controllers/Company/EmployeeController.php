@@ -93,6 +93,19 @@ class EmployeeController extends Controller
 public function store(Request $request)
 {
     $validated = $request->validate([
+        'work_location_type' => [
+            'required',
+            Rule::in([
+                'uk',
+                'overseas',
+            ]),
+        ],
+
+        'work_country' => [
+            'nullable',
+            'string',
+            'max:100',
+        ],
         // Personal details
         'employee_number' => [
             'required',
@@ -322,11 +335,27 @@ public function store(Request $request)
     $validated['is_field_engineer'] = $request->boolean('is_field_engineer');
     $validated['allow_manual_attendance'] = $request->boolean('allow_manual_attendance');
 
-    $validated['created_by'] = auth('company')->id();
-    $validated['updated_by'] = auth('company')->id();
+   $validated['created_by'] = auth('company')->id();
+$validated['updated_by'] = auth('company')->id();
 
-    $employee = Employee::create($validated);
-    if ($employee->is_sponsored_worker) {
+if (
+    $validated['work_location_type'] === 'overseas'
+) {
+    $validated['work_country'] =
+        $validated['work_country'] ?? null;
+
+    $validated['is_sponsored_worker'] = false;
+} else {
+    $validated['work_country'] =
+        'United Kingdom';
+}
+
+$employee = Employee::create($validated);
+
+if (
+    $employee->work_location_type === 'uk' &&
+    $employee->is_sponsored_worker
+) {
     \App\Models\Company\SponsoredWorkerRecord::firstOrCreate(
         [
             'employee_id' => $employee->id,
@@ -338,9 +367,8 @@ public function store(Request $request)
         ]
     );
 }
-    $employee->generateRequiredDocumentChecklist();
-    $employee->generateSponsoredWorkerDocumentChecklist();
 
+$employee->syncRequiredDocumentChecklist();
     return redirect()
         ->route('company.hr.employees.index')
         ->with(
@@ -350,51 +378,67 @@ public function store(Request $request)
 }
 public function show(Employee $employee)
 {
-    $employee->load([
-        'manager',
-        'createdBy',
-        'updatedBy',
-        'sponsoredWorkerRecord',
-        'currentHolidayAllowance',
-        
-        'holidays' => function ($query) {
-            $query->orderByDesc('start_date');
-        },
-         'trainingRecords' => function ($query) {
+   $employee->load([
+    'manager',
+    'createdBy',
+    'updatedBy',
+    'sponsoredWorkerRecord',
+    'currentHolidayAllowance',
+
+    'holidays' => function ($query) {
+        $query->orderByDesc('start_date');
+    },
+
+    'trainingRecords' => function ($query) {
         $query
             ->with('trainingCourse')
             ->orderByDesc('created_at');
     },
-        'currentEquipmentAssignments.equipment',
-    ]);
 
-    $rightToWorkDocument = $employee->documents()
-        ->whereHas('documentType', function ($query) {
-            $query->where(
-                'slug',
-                'right-to-work-evidence'
-            );
-        })
-        ->first();
+    'currentEquipmentAssignments.equipment',
+]);
 
-    if (! $rightToWorkDocument ||
-        ! $rightToWorkDocument->file_path) {
-        $rightToWorkStatus = 'Missing';
-    } elseif (
-        $rightToWorkDocument->expiry_date &&
-        $rightToWorkDocument->expiry_date->isPast()
-    ) {
-        $rightToWorkStatus = 'Expired';
-    } elseif (
-        $rightToWorkDocument->review_status === 'approved'
-    ) {
-        $rightToWorkStatus = 'Verified';
-    } elseif (
-        $rightToWorkDocument->review_status === 'rejected'
-    ) {
-        $rightToWorkStatus = 'Rejected';
+    // ADD/REPLACE RTW LOGIC HERE
+    if ($employee->work_location_type === 'overseas') {
+
+        $rightToWorkStatus = 'Not Applicable';
+
     } else {
-        $rightToWorkStatus = 'Pending Review';
+
+        $rightToWorkDocument = $employee->documents()
+            ->whereHas('documentType', function ($query) {
+                $query->where(
+                    'slug',
+                    'right-to-work-evidence'
+                );
+            })
+            ->first();
+
+        if (
+            ! $rightToWorkDocument ||
+            ! $rightToWorkDocument->file_path
+        ) {
+            $rightToWorkStatus = 'Missing';
+
+        } elseif (
+            $rightToWorkDocument->expiry_date &&
+            $rightToWorkDocument->expiry_date->isPast()
+        ) {
+            $rightToWorkStatus = 'Expired';
+
+        } elseif (
+            $rightToWorkDocument->review_status === 'approved'
+        ) {
+            $rightToWorkStatus = 'Verified';
+
+        } elseif (
+            $rightToWorkDocument->review_status === 'rejected'
+        ) {
+            $rightToWorkStatus = 'Rejected';
+
+        } else {
+            $rightToWorkStatus = 'Pending Review';
+        }
     }
 
     $summary = [
@@ -604,6 +648,19 @@ public function edit(Employee $employee)
 public function update(Request $request, Employee $employee)
 {
     $validated = $request->validate([
+        'work_location_type' => [
+    'required',
+    Rule::in([
+        'uk',
+        'overseas',
+    ]),
+],
+
+'work_country' => [
+    'nullable',
+    'string',
+    'max:100',
+],
         'employee_number' => [
             'required',
             'string',
@@ -886,16 +943,37 @@ public function update(Request $request, Employee $employee)
 
     $validated['updated_by'] = auth('company')->id();
 
-    $employee->update($validated);
-    if (
-        $oldLeaverFormPath &&
-        $oldLeaverFormPath !== ($validated['leaver_form_path'] ?? null) &&
-        Storage::disk('local')->exists($oldLeaverFormPath)
-    ) {
-        Storage::disk('local')->delete($oldLeaverFormPath);
-    }
+if (
+    $validated['work_location_type'] === 'overseas'
+) {
+    $validated['is_sponsored_worker'] = false;
+} else {
+    $validated['work_country'] = 'United Kingdom';
+}
 
-    if ($employee->is_sponsored_worker) {
+$employee->update($validated);
+
+if (
+    $oldLeaverFormPath &&
+    $oldLeaverFormPath !==
+        ($validated['leaver_form_path'] ?? null) &&
+    Storage::disk('local')->exists(
+        $oldLeaverFormPath
+    )
+) {
+    Storage::disk('local')->delete(
+        $oldLeaverFormPath
+    );
+}
+
+$employee->refresh();
+
+$employee->syncRequiredDocumentChecklist();
+
+  if (
+    $employee->work_location_type === 'uk' &&
+    $employee->is_sponsored_worker
+) {
     $sponsoredWorkerRecord =
         \App\Models\Company\SponsoredWorkerRecord::firstOrCreate(
             [
@@ -928,9 +1006,7 @@ public function update(Request $request, Employee $employee)
         auth('company')->id()
     );
 }
-if ($employee->is_sponsored_worker) {
-    $employee->generateSponsoredWorkerDocumentChecklist();
-}
+
     return redirect()
         ->route(
             'company.hr.employees.show',

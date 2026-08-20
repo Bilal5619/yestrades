@@ -20,6 +20,8 @@ class Employee extends Model implements AuthenticatableContract
     protected $table = 'employees';
 
     protected $fillable = [
+        'work_location_type',
+        'work_country',
         'employee_number',
         'staff_id',
         'is_field_engineer',
@@ -259,35 +261,16 @@ public function expiredDocuments()
         ->whereNotNull('expiry_date')
         ->whereDate('expiry_date', '<', now()->toDateString());
 }
-public function generateRequiredDocumentChecklist()
-{
-    $requiredTypes = EmployeeDocumentType::query()
-        ->where('status', true)
-        ->where('is_required_by_default', true)
-        ->get();
 
-    foreach ($requiredTypes as $documentType) {
-        $this->documents()->firstOrCreate(
-            [
-                'document_type_id' => $documentType->id,
-            ],
-            [
-                'title' => $documentType->name,
-                'is_required' => true,
-                'review_status' => 'missing',
-                'created_by' => auth('company')->id(),
-                'updated_by' => auth('company')->id(),
-            ]
-        );
-    }
-}
-public function generateSponsoredWorkerDocumentChecklist()
+public function syncRequiredDocumentChecklist(): void
 {
-    if (! $this->is_sponsored_worker) {
-        return;
-    }
+    /*
+    |--------------------------------------------------------------------------
+    | Documents controlled automatically by employee location/type
+    |--------------------------------------------------------------------------
+    */
 
-    $requiredSlugs = [
+    $controlledSlugs = [
         'passport',
         'right-to-work-evidence',
         'employment-contract',
@@ -300,31 +283,124 @@ public function generateSponsoredWorkerDocumentChecklist()
         'salary-payment-evidence',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Overseas / Remote employee
+    |--------------------------------------------------------------------------
+    */
+
+    if ($this->work_location_type === 'overseas') {
+        $requiredSlugs = [
+            'passport',
+            'employment-contract',
+            'proof-of-address',
+        ];
+    } else {
+        /*
+        |--------------------------------------------------------------------------
+        | Standard UK employee
+        |--------------------------------------------------------------------------
+        */
+
+        $requiredSlugs = [
+            'passport',
+            'right-to-work-evidence',
+            'employment-contract',
+            'proof-of-address',
+        ];
+
+        /*
+        |--------------------------------------------------------------------------
+        | UK sponsored worker
+        |--------------------------------------------------------------------------
+        */
+
+        if ($this->is_sponsored_worker) {
+            $requiredSlugs = array_merge(
+                $requiredSlugs,
+                [
+                    'immigration-status-evidence',
+                    'certificate-of-sponsorship-evidence',
+                    'sponsored-job-description',
+                    'recruitment-evidence',
+                    'qualification-evidence',
+                    'salary-payment-evidence',
+                ]
+            );
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Remove "required" status from checklist items that no longer apply
+    |--------------------------------------------------------------------------
+    */
+
+    $this->documents()
+        ->whereHas('documentType', function ($query) use ($controlledSlugs) {
+            $query->whereIn(
+                'slug',
+                $controlledSlugs
+            );
+        })
+        ->whereHas('documentType', function ($query) use ($requiredSlugs) {
+            $query->whereNotIn(
+                'slug',
+                $requiredSlugs
+            );
+        })
+        ->update([
+            'is_required' => false,
+            'updated_by' => auth('company')->check()
+                ? auth('company')->id()
+                : null,
+        ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Create/activate documents that are required
+    |--------------------------------------------------------------------------
+    */
+
     $documentTypes = EmployeeDocumentType::query()
         ->where('status', true)
-        ->whereIn('slug', $requiredSlugs)
+        ->whereIn(
+            'slug',
+            $requiredSlugs
+        )
         ->get();
 
     foreach ($documentTypes as $documentType) {
-        $this->documents()->firstOrCreate(
-            [
-                'document_type_id' => $documentType->id,
-            ],
-            [
-                'title' => $documentType->name,
-                'is_required' => true,
-                'review_status' => 'missing',
-                'created_by' => auth('company')->check()
+        $document = $this->documents()
+            ->firstOrCreate(
+                [
+                    'document_type_id' =>
+                        $documentType->id,
+                ],
+                [
+                    'title' =>
+                        $documentType->name,
+
+                    'review_status' =>
+                        'missing',
+
+                    'created_by' =>
+                        auth('company')->check()
+                            ? auth('company')->id()
+                            : null,
+                ]
+            );
+
+        $document->update([
+            'is_required' => true,
+
+            'updated_by' =>
+                auth('company')->check()
                     ? auth('company')->id()
                     : null,
-                'updated_by' => auth('company')->check()
-                    ? auth('company')->id()
-                    : null,
-            ]
-        );
+        ]);
     }
 }
-
 public function holidays()
 {
     return $this->hasMany(
