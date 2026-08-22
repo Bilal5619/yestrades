@@ -80,6 +80,9 @@
     .expenses-badge-pending { background: rgba(255,179,71,0.16); color: #ffc46f; }
     .expenses-badge-approved { background: rgba(89,220,150,0.16); color: #59dc96; }
     .expenses-badge-rejected { background: rgba(255,99,99,0.16); color: #ff8a92; }
+    .expenses-badge-type-expense { background: rgba(111,168,238,0.16); color: #6fa8ee; }
+    .expenses-badge-type-return { background: rgba(89,220,150,0.16); color: #59dc96; }
+    .expenses-badge-type-personal { background: rgba(178,143,255,0.16); color: #b28fff; }
 
     .expenses-form-grid {
         display: grid;
@@ -166,6 +169,14 @@
                 </select>
             </div>
             <div class="expenses-form-field">
+                <label>Type</label>
+                <select name="expense_type">
+                    @foreach (\App\Models\Company\EmployeeExpense::EXPENSE_TYPES as $type)
+                        <option value="{{ $type }}">{{ $type === 'personal' ? 'Personal Money' : ($type === 'return' ? 'Return (money back)' : 'Expense') }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="expenses-form-field">
                 <label>Category</label>
                 <select name="category" required>
                     @foreach (\App\Models\Company\EmployeeExpense::CATEGORIES as $category)
@@ -227,6 +238,15 @@
         </select>
     </div>
     <div class="expenses-filter-field">
+        <label>Type</label>
+        <select name="expense_type">
+            <option value="">All types</option>
+            @foreach (\App\Models\Company\EmployeeExpense::EXPENSE_TYPES as $type)
+                <option value="{{ $type }}" @selected(request('expense_type') == $type)>{{ $type === 'personal' ? 'Personal Money' : ucfirst($type) }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div class="expenses-filter-field">
         <label>From</label>
         <input type="date" name="date_from" value="{{ request('date_from') }}">
     </div>
@@ -242,7 +262,7 @@
         <table class="expenses-table">
             <thead>
                 <tr>
-                    <th>Employee</th><th>Category</th><th>From</th><th>Amount</th><th>Date</th>
+                    <th>Employee</th><th>Type</th><th>Category</th><th>From</th><th>Amount</th><th>Date</th>
                     <th>Description</th><th>Source</th><th>Status</th><th>Receipt</th><th>Actions</th>
                 </tr>
             </thead>
@@ -250,6 +270,12 @@
                 @forelse ($expenses as $expense)
                     <tr>
                         <td>{{ optional($expense->employee)->full_name ?? 'Unknown' }}</td>
+                        <td>
+                            @php($type = $expense->expense_type ?? 'expense')
+                            <span class="expenses-badge expenses-badge-type-{{ $type }}">
+                                {{ $type === 'personal' ? 'Personal Money' : ucfirst($type) }}
+                            </span>
+                        </td>
                         <td>{{ ucfirst($expense->category) }}</td>
                         <td>{{ $expense->merchant ?? '—' }}</td>
                         <td>&pound;{{ number_format($expense->amount, 2) }}</td>
@@ -295,7 +321,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="10" class="expenses-empty">No expenses recorded for this filter.</td></tr>
+                    <tr><td colspan="11" class="expenses-empty">No expenses recorded for this filter.</td></tr>
                 @endforelse
             </tbody>
         </table>

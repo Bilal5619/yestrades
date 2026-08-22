@@ -24,6 +24,7 @@ class ExpenseReportExport implements FromCollection, WithHeadings, WithMapping
     {
         return [
             'Employee',
+            'Type',
             'Category',
             'From',
             'Amount',
@@ -40,6 +41,7 @@ class ExpenseReportExport implements FromCollection, WithHeadings, WithMapping
     {
         return [
             optional($expense->employee)->full_name ?? 'Unknown',
+            ucfirst($expense->expense_type === 'personal' ? 'Personal Money' : ($expense->expense_type ?? 'Expense')),
             ucfirst($expense->category),
             $expense->merchant ?? '-',
             number_format((float) $expense->amount, 2),

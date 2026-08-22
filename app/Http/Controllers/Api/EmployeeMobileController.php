@@ -333,6 +333,7 @@ class EmployeeMobileController extends Controller
       'success' => true,
       'data' => [
         'categories' => \App\Models\Company\EmployeeExpense::CATEGORIES,
+        'expense_types' => \App\Models\Company\EmployeeExpense::EXPENSE_TYPES,
         'expenses' => $expenses,
       ],
     ]);
@@ -345,6 +346,7 @@ class EmployeeMobileController extends Controller
 
     $data = $request->validate([
       'category' => ['nullable', Rule::in(\App\Models\Company\EmployeeExpense::CATEGORIES)],
+      'expense_type' => ['nullable', Rule::in(\App\Models\Company\EmployeeExpense::EXPENSE_TYPES)],
       'merchant' => ['required', 'string', 'max:255'],
       'amount' => ['required', 'numeric', 'min:0.01'],
       'expense_date' => ['required', 'date', 'before_or_equal:today'],
@@ -356,6 +358,7 @@ class EmployeeMobileController extends Controller
 
     $expense = $employee->expenses()->create([
       'category' => $data['category'] ?? 'other',
+      'expense_type' => $data['expense_type'] ?? 'expense',
       'merchant' => $data['merchant'],
       'amount' => $data['amount'],
       'expense_date' => $data['expense_date'],
@@ -867,6 +870,7 @@ $job->update($jobUpdate);
     return [
       'id' => $expense->id,
       'category' => $expense->category,
+      'expense_type' => $expense->expense_type ?? 'expense',
       'merchant' => $expense->merchant,
       'amount' => (float) $expense->amount,
       'currency' => $expense->currency,

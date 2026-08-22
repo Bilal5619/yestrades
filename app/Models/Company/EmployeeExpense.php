@@ -15,12 +15,14 @@ class EmployeeExpense extends Model
 
     public const CATEGORIES = ['fuel', 'materials', 'tools', 'parking', 'travel', 'other'];
     public const STATUSES = ['pending', 'approved', 'rejected'];
+    public const EXPENSE_TYPES = ['expense', 'return', 'personal'];
 
     public const SOURCES = ['admin', 'employee_app'];
 
     protected $fillable = [
         'employee_id',
         'category',
+        'expense_type',
         'merchant',
         'amount',
         'currency',

@@ -29,6 +29,10 @@ class ExpenseController extends Controller
             $query->where('category', $request->category);
         }
 
+        if ($request->filled('expense_type')) {
+            $query->where('expense_type', $request->expense_type);
+        }
+
         if ($request->filled('date_from')) {
             $query->whereDate('expense_date', '>=', $request->date_from);
         }
@@ -59,6 +63,7 @@ class ExpenseController extends Controller
         $validated = $request->validate([
             'employee_id' => ['required', 'exists:employees,id'],
             'category' => ['required', 'in:' . implode(',', EmployeeExpense::CATEGORIES)],
+            'expense_type' => ['nullable', 'in:' . implode(',', EmployeeExpense::EXPENSE_TYPES)],
             'merchant' => ['nullable', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'expense_date' => ['required', 'date'],
@@ -70,6 +75,7 @@ class ExpenseController extends Controller
             $validated['receipt_path'] = $request->file('receipt')->store('expense-receipts', 'public');
         }
 
+        $validated['expense_type'] = $validated['expense_type'] ?? 'expense';
         $validated['status'] = 'pending';
         $validated['source'] = 'admin';
         $validated['submitted_by'] = Auth::guard('company')->id();
@@ -135,6 +141,10 @@ class ExpenseController extends Controller
 
         if ($request->filled('category')) {
             $query->where('category', $request->category);
+        }
+
+        if ($request->filled('expense_type')) {
+            $query->where('expense_type', $request->expense_type);
         }
 
         if ($request->filled('date_from')) {
