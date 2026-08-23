@@ -459,14 +459,12 @@ class UserController extends Controller
     $user->password = Hash::make($request->password);
     $user->save();
 
+    $this->sendVerificationEmail($user);
+
     $queryResult['authUser'] = $user;
-
-    if ($this->sendVerificationEmail($user)) {
-      return back()->with('success', 'A verification mail has been sent to your email address');
-    }
-
-    return back()->with('warning', 'Your account was created, but the verification email could not be sent. Please contact site admin.');
+    return back()->with('success', 'A verification mail has been sent to your email address');
   }
+
 
   private function sendVerificationEmail(User $user): bool
   {

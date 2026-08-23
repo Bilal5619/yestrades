@@ -6,6 +6,7 @@ use App\Models\BasicSettings\Basic;
 use Config;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
 class BasicMailer
@@ -78,4 +79,3 @@ class BasicMailer
     return false;
   }
 }
-
