@@ -5,8 +5,8 @@ namespace App\Http\Helpers;
 use App\Models\BasicSettings\Basic;
 use Config;
 use Illuminate\Mail\Message;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 
 class BasicMailer
@@ -22,15 +22,18 @@ class BasicMailer
       try {
         $smtp = [
           'transport' => 'smtp',
-          'host' => $info->smtp_host,
-          'port' => $info->smtp_port,
-          'encryption' => $info->encryption,
-          'username' => $info->smtp_username,
-          'password' => $info->smtp_password,
+          'host' => trim((string) $info->smtp_host),
+          'port' => (int) $info->smtp_port,
+          'encryption' => trim((string) $info->encryption),
+          'username' => trim((string) $info->smtp_username),
+          'password' => trim((string) $info->smtp_password),
           'timeout' => null,
           'auth_mode' => null,
         ];
         Config::set('mail.mailers.smtp', $smtp);
+        Config::set('mail.from.address', trim((string) $info->from_mail));
+        Config::set('mail.from.name', trim((string) $info->from_name));
+        Mail::purge('smtp');
       } catch (\Exception $e) {
         Session::flash('error', $e->getMessage());
         return false;
@@ -40,8 +43,8 @@ class BasicMailer
     if ($info->smtp_status == 1) {
       try {
         Mail::send([], [], function (Message $message) use ($data, $info) {
-          $fromMail = $info->from_mail;
-          $fromName = $info->from_name;
+          $fromMail = trim((string) $info->from_mail);
+          $fromName = trim((string) $info->from_name);
           $message->to($data['recipient'])
             ->subject($data['subject'])
             ->from($fromMail, $fromName)
@@ -70,6 +73,16 @@ class BasicMailer
         }
         return true;
       } catch (\Exception $e) {
+        Log::warning('Mail could not be sent.', [
+          'recipient' => $data['recipient'] ?? null,
+          'subject' => $data['subject'] ?? null,
+          'smtp_host' => trim((string) ($info->smtp_host ?? '')),
+          'smtp_port' => $info->smtp_port ?? null,
+          'encryption' => trim((string) ($info->encryption ?? '')),
+          'smtp_username' => trim((string) ($info->smtp_username ?? '')),
+          'from_mail' => trim((string) ($info->from_mail ?? '')),
+          'error' => $e->getMessage(),
+        ]);
         Session::flash('warning', 'Mail could not be sent. Mailer Error: ' . $e->getMessage());
         return false;
       }

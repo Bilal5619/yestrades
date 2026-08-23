@@ -263,13 +263,13 @@ class BasicController extends Controller
       ['uniqid' => 12345],
       [
         'smtp_status' => $request->smtp_status,
-        'smtp_host' => $request->smtp_host,
-        'smtp_port' => $request->smtp_port,
-        'encryption' => $request->encryption,
-        'smtp_username' => $request->smtp_username,
-        'smtp_password' => $request->smtp_password,
-        'from_mail' => $request->from_mail,
-        'from_name' => $request->from_name
+        'smtp_host' => trim((string) $request->smtp_host),
+        'smtp_port' => trim((string) $request->smtp_port),
+        'encryption' => trim((string) $request->encryption),
+        'smtp_username' => trim((string) $request->smtp_username),
+        'smtp_password' => trim((string) $request->smtp_password),
+        'from_mail' => trim((string) $request->from_mail),
+        'from_name' => trim((string) $request->from_name)
       ]
     );
 
