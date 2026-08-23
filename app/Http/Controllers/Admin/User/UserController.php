@@ -43,11 +43,11 @@ class UserController extends Controller
       'name' => 'required',
       'username' => [
         'required',
-        Rule::unique('users', 'username')
+        Rule::unique('users', 'username')->whereNull('deleted_at')
       ],
       'email' => [
         'required',
-        Rule::unique('users', 'email')
+        Rule::unique('users', 'email')->whereNull('deleted_at')
       ],
       'image' => 'required|dimensions:width=80,height=80',
       'password' => 'required|min:6',
@@ -138,11 +138,11 @@ class UserController extends Controller
       'name' => 'required',
       'username' => [
         'required',
-        Rule::unique('users', 'username')->ignore($id)
+        Rule::unique('users', 'username')->whereNull('deleted_at')->ignore($id)
       ],
       'email' => [
         'required',
-        Rule::unique('users', 'email')->ignore($id)
+        Rule::unique('users', 'email')->whereNull('deleted_at')->ignore($id)
       ],
     ];
     if ($request->hasFile('image')) {

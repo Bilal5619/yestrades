@@ -42,6 +42,9 @@
             @if (Session::has('success'))
               <div class="au-alert au-alert-success">{{ __(Session::get('success')) }}</div>
             @endif
+            @if (Session::has('warning'))
+              <div class="au-alert au-alert-warning">{{ __(Session::get('warning')) }}</div>
+            @endif
             @if (Session::has('error'))
               <div class="au-alert au-alert-error">{{ __(Session::get('error')) }}</div>
             @endif
@@ -49,9 +52,9 @@
             <form id="#authForm" action="{{ route('user.login_submit') }}" method="POST">
               @csrf
               <div class="au-field mb-20">
-                <label for="userName">{{ __('Username') }}<span class="au-req">*</span></label>
+                <label for="userName">{{ __('Email or Username') }}<span class="au-req">*</span></label>
                 <input type="text" name="username" value="{{ old('username') }}" id="userName" class="form-control"
-                  placeholder="{{ __('Username') }}" required>
+                  placeholder="{{ __('Email or Username') }}" required>
                 @error('username')
                   <p class="text-danger mt-2">{{ $message }}</p>
                 @enderror
@@ -177,7 +180,7 @@
       overflow: hidden;
     }
 
-    /* ── Brand panel ──────────────────────────────── */
+    /* Brand panel */
     .au-brand {
       position: relative;
       overflow: hidden;
@@ -278,7 +281,7 @@
       color: #22d98b;
     }
 
-    /* ── Form panel ───────────────────────────────── */
+    /* Form panel */
     .au-form-panel {
       padding: 48px 42px;
     }
@@ -315,6 +318,12 @@
       color: #b3261e;
       background: #fdecea;
       border: 1px solid rgba(179, 38, 30, 0.2);
+    }
+
+    .au-alert-warning {
+      color: #8a5a00;
+      background: #fff4d6;
+      border: 1px solid rgba(138, 90, 0, 0.2);
     }
 
     .au-field label {
@@ -488,7 +497,7 @@
       font-weight: 600;
     }
 
-    /* ── Responsive ───────────────────────────────── */
+    /* Responsive */
     @media (max-width: 991.98px) {
       .au-shell {
         grid-template-columns: 1fr;
@@ -524,3 +533,4 @@
     }
   </style>
 @endsection
+

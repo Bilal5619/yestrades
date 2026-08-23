@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Session;
 
 class BasicMailer
 {
-  public static function sendMail($data)
+  public static function sendMail($data): bool
   {
     // get the website title & mail's smtp information from db
     $info = Basic::select('website_title', 'smtp_status', 'smtp_host', 'smtp_port', 'encryption', 'smtp_username', 'smtp_password', 'from_mail', 'from_name')
@@ -32,7 +32,7 @@ class BasicMailer
         Config::set('mail.mailers.smtp', $smtp);
       } catch (\Exception $e) {
         Session::flash('error', $e->getMessage());
-        return back();
+        return false;
       }
     }
 
@@ -67,10 +67,15 @@ class BasicMailer
         if (array_key_exists('sessionMessage', $data)) {
           Session::flash('success', $data['sessionMessage']);
         }
+        return true;
       } catch (\Exception $e) {
-        Session::flash('warning', 'Mail could not be sent. Mailer Error: ' . $e);
+        Session::flash('warning', 'Mail could not be sent. Mailer Error: ' . $e->getMessage());
+        return false;
       }
     }
-    return;
+
+    Session::flash('warning', 'Mail could not be sent because SMTP is disabled.');
+    return false;
   }
 }
+

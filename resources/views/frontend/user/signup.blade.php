@@ -39,7 +39,7 @@
             <h3>{{ !empty($pageHeading) ? $pageHeading->signup_page_title : __('Sign up') }}</h3>
             <p class="au-form-sub">{{ __('Create an account to start booking services.') }}</p>
 
-            {{-- Business signup option hidden for now (client request) — restore the toggle below to bring it back --}}
+            {{-- Business signup option hidden for now (client request) - restore the toggle below to bring it back --}}
             {{-- <div class="au-type-switch" aria-label="{{ __('Choose account type') }}">
               <span class="active">{{ __('Customer') }}</span>
               <a href="{{ route('vendor.signup') }}">{{ __('Business') }}</a>
@@ -50,6 +50,9 @@
 
             @if (Session::has('success'))
               <div class="au-alert au-alert-success">{{ __(Session::get('success')) }}</div>
+            @endif
+            @if (Session::has('warning'))
+              <div class="au-alert au-alert-warning">{{ __(Session::get('warning')) }}</div>
             @endif
 
             <form id="#authForm" action="{{ route('user.signup_submit') }}" method="POST">
@@ -204,7 +207,7 @@
       overflow: hidden;
     }
 
-    /* ── Brand panel ──────────────────────────────── */
+    /* Brand panel */
     .au-brand {
       position: relative;
       overflow: hidden;
@@ -305,7 +308,7 @@
       color: #22d98b;
     }
 
-    /* ── Form panel ───────────────────────────────── */
+    /* Form panel */
     .au-form-panel {
       padding: 42px 42px 40px;
     }
@@ -324,7 +327,7 @@
       font-size: 13.5px;
     }
 
-    /* ── Account type switch ──────────────────────── */
+    /* Account type switch */
     .au-type-switch {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -377,6 +380,12 @@
       color: var(--au-primary-dark);
       background: var(--au-primary-soft);
       border: 1px solid rgba(14, 159, 110, 0.25);
+    }
+
+    .au-alert-warning {
+      color: #8a5a00;
+      background: #fff4d6;
+      border: 1px solid rgba(138, 90, 0, 0.2);
     }
 
     .au-field label {
@@ -554,7 +563,7 @@
       font-weight: 600;
     }
 
-    /* ── Responsive ───────────────────────────────── */
+    /* Responsive */
     @media (max-width: 991.98px) {
       .au-shell {
         grid-template-columns: 1fr;

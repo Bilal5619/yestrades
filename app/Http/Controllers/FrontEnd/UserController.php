@@ -170,8 +170,11 @@ class UserController extends Controller
       $user->save();
 
       if ($driver === 'google') {
-        $this->sendVerificationEmail($user);
-        Session::flash('success', 'A verification mail has been sent to your email address');
+        if ($this->sendVerificationEmail($user)) {
+          Session::flash('success', 'A verification mail has been sent to your email address');
+        } else {
+          Session::flash('warning', 'Your account was created, but the verification email could not be sent. Please contact site admin.');
+        }
 
         return redirect()->route('user.login');
       }
@@ -231,8 +234,12 @@ class UserController extends Controller
       return redirect()->route('user.login')->withErrors($validator->errors())->withInput();
     }
 
-    // get the email and password which has provided by the user
-    $credentials = $request->only('username', 'password');
+    $login = $request->input('username');
+    $loginField = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+    $credentials = [
+      $loginField => $login,
+      'password' => $request->password,
+    ];
 
     // login attempt
     if (Auth::guard('web')->attempt($credentials)) {
@@ -419,8 +426,8 @@ class UserController extends Controller
 
     // validation start
     $rules = [
-      'username' => 'required|unique:users|max:255',
-      'email' => 'required|email:rfc,dns|unique:users|max:255',
+      'username' => ['required', 'max:255', Rule::unique('users', 'username')->whereNull('deleted_at')],
+      'email' => ['required', 'email:rfc,dns', 'max:255', Rule::unique('users', 'email')->whereNull('deleted_at')],
       'password' => 'required|confirmed',
       'password_confirmation' => 'required'
     ];
@@ -452,20 +459,24 @@ class UserController extends Controller
     $user->password = Hash::make($request->password);
     $user->save();
 
-    $this->sendVerificationEmail($user);
-
     $queryResult['authUser'] = $user;
-    return back()->with('success', 'A verification mail has been sent to your email address');
+
+    if ($this->sendVerificationEmail($user)) {
+      return back()->with('success', 'A verification mail has been sent to your email address');
+    }
+
+    return back()->with('warning', 'Your account was created, but the verification email could not be sent. Please contact site admin.');
   }
 
-  private function sendVerificationEmail(User $user): void
+  private function sendVerificationEmail(User $user): bool
   {
     $info = Basic::settings(['website_title']);
 
     $mailTemplate = MailTemplate::query()->where('mail_type', '=', 'verify_email')->first();
 
     if (!$mailTemplate) {
-      return;
+      Session::flash('warning', 'Verification email template is missing.');
+      return false;
     }
 
     $mailData['subject'] = $mailTemplate->mail_subject;
@@ -483,7 +494,7 @@ class UserController extends Controller
 
     $mailData['sessionMessage'] = 'A verification mail has been sent to your email address';
 
-    BasicMailer::sendMail($mailData);
+    return BasicMailer::sendMail($mailData);
   }
 
   public function signupVerify($id)
@@ -541,12 +552,12 @@ class UserController extends Controller
       'username' => [
         'required',
         'alpha_dash',
-        Rule::unique('users', 'username')->ignore(Auth::guard('web')->user()->id),
+        Rule::unique('users', 'username')->ignore(Auth::guard('web')->user()->id)->whereNull('deleted_at'),
       ],
       'email' => [
         'required',
         'email',
-        Rule::unique('users', 'email')->ignore(Auth::guard('web')->user()->id)
+        Rule::unique('users', 'email')->ignore(Auth::guard('web')->user()->id)->whereNull('deleted_at')
       ],
     ]);
 
