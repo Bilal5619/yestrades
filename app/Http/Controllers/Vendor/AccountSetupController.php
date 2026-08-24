@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Vendor;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\BasicMailer;
 use App\Http\Helpers\UploadFile;
+use App\Models\BasicSettings\Basic;
 use App\Models\Vendor;
 use App\Models\VendorDocument;
 use Illuminate\Http\Request;
@@ -155,7 +156,7 @@ class AccountSetupController extends Controller
     $detailsUrl = route('admin.vendor_management.vendor_details', ['id' => $vendor->id]);
 
     $mailData = [
-      'recipient' => 'info@11done.com',
+      'recipient' => Basic::value('to_mail') ?? config('mail.from.address'),
       'subject'   => 'Vendor verification submitted: ' . $vendorName,
       'body'      => '<p>A vendor has completed their account setup and submitted their verification for review.</p>'
         . '<ul>'

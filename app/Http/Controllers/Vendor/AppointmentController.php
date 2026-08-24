@@ -597,6 +597,10 @@ class AppointmentController extends Controller
       $contactRows .= '<p><strong>Phone:</strong> ' . e($vendorPhone) . '</p>';
     }
 
+    $siteInfo = Basic::select('website_title', 'from_mail')->first();
+    $supportSiteName = $siteInfo->website_title ?? config('app.name');
+    $supportEmail = $siteInfo->from_mail ?? config('mail.from.address');
+
     $mailData = [
       'recipient' => $booking->customer_email,
       'subject' => 'Invoice submitted for booking #' . $booking->order_number,
@@ -613,8 +617,8 @@ class AppointmentController extends Controller
         . '<tr><th align="left">Total</th><td><strong>' . e($total) . '</strong></td></tr>'
         . '</table>'
         . ($invoiceFileUrl ? '<p><a href="' . e($invoiceFileUrl) . '" target="_blank">Download Invoice</a></p>' : '')
-        . '<p>For invoice or payment questions, please contact 11Done Support Team using the contact details below.</p>'
-        . '<p><strong>Email:</strong> info@11done.com</p>'
+        . '<p>For invoice or payment questions, please contact the ' . e($supportSiteName) . ' Support Team using the contact details below.</p>'
+        . '<p><strong>Email:</strong> ' . e($supportEmail) . '</p>'
     ];
 
     BasicMailer::sendMail($mailData);

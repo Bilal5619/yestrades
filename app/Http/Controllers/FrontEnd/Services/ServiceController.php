@@ -649,8 +649,8 @@ class ServiceController extends Controller
 
       // Create a default staff entry for general booking
       $defaultStaff = (object) [
-        'id' => '11done',
-        'name' => '11DONE Service',
+        'id' => 'general',
+        'name' => 'General Booking',
         'is_day' => 0,
         'role' => 'vendor',
         'vendor_id' => $service->vendor_id,
@@ -658,7 +658,7 @@ class ServiceController extends Controller
         'image' => 'default.png',
         'email_status' => 0,
         'status' => 1,
-        'username' => '11done'
+        'username' => 'general'
       ];
 
       $information['staffs'] = collect([$defaultStaff]);

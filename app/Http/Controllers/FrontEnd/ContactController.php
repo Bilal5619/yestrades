@@ -70,10 +70,14 @@ class ContactController extends Controller
         Mail::send([], [], function (Message $message) use ($data, $info) {
           $fromMail = $info->from_mail;
           $fromName = $info->from_name;
+          $brandedBody = view('emails.layout', [
+            'content' => $data['message'],
+            'subject' => $data['subject'] ?? null,
+          ])->render();
           $message->to($data['to'])
             ->subject($data['subject'])
             ->from($fromMail, $fromName)
-            ->html($data['message'], 'text/html');
+            ->html($brandedBody, 'text/html');
         });
       }
       Session::flash('success', 'A contact request was sent successfully');

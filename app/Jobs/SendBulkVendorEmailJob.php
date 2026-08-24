@@ -82,11 +82,11 @@ class SendBulkVendorEmailJob implements ShouldQueue
 
     if (!$info) {
       $info = (object) [
-        'website_title' => config('app.name', '11Done'),
+        'website_title' => config('app.name'),
         'logo' => null,
         'smtp_status' => 0,
         'from_mail' => config('mail.from.address'),
-        'from_name' => config('mail.from.name', config('app.name', '11Done')),
+        'from_name' => config('mail.from.name', config('app.name')),
       ];
     }
 
@@ -104,8 +104,8 @@ class SendBulkVendorEmailJob implements ShouldQueue
     }
 
     $info->from_mail = $info->from_mail ?: config('mail.from.address');
-    $info->from_name = $info->from_name ?: config('mail.from.name', $info->website_title ?? config('app.name', '11Done'));
-    $info->website_title = $info->website_title ?: '11Done';
+    $info->from_name = $info->from_name ?: config('mail.from.name', $info->website_title ?? config('app.name'));
+    $info->website_title = $info->website_title ?: config('app.name');
 
     return $info;
   }

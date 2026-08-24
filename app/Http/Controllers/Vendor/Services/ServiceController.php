@@ -9,6 +9,7 @@ use App\Http\Helpers\UploadFile;
 use App\Http\Helpers\VendorPermissionHelper;
 use App\Http\Requests\Service\ServiceStoreRequest;
 use App\Http\Requests\Service\ServiceUpdateRequest;
+use App\Models\BasicSettings\Basic;
 use App\Models\FeaturedService\FeaturedServiceCharge;
 use App\Models\FeaturedService\ServicePromotion;
 use App\Models\Language;
@@ -520,7 +521,7 @@ class ServiceController extends Controller
     $reviewUrl = route('admin.service_managment', ['language' => optional($defaultLang)->code]);
 
     $mailData = [
-      'recipient' => 'info@11done.com',
+      'recipient' => Basic::value('to_mail') ?? config('mail.from.address'),
       'subject'   => 'New service submitted for approval: ' . $serviceTitle,
       'body'      => '<p>A vendor has submitted a new service for approval.</p>'
         . '<ul>'

@@ -103,15 +103,6 @@
                     @endif
                   </a>
                 @endforeach
-                @if (!$hasTikTokLink)
-                  <a href="https://www.tiktok.com/@11done" target="_blank" rel="noopener" title="{{ __('TikTok') }}"
-                    aria-label="{{ __('TikTok') }}" class="footer-tiktok-link">
-                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                      <path
-                        d="M15.4 3c.3 2.1 1.5 3.6 3.6 4.1v3.2c-1.3 0-2.5-.4-3.6-1.1v5.7c0 3.5-2.2 5.9-5.4 5.9-2.9 0-5.1-2-5.1-4.7 0-2.9 2.3-5 5.2-5 .4 0 .8 0 1.1.1v3.3c-.3-.1-.6-.1-.9-.1-1.2 0-2 .7-2 1.7 0 1 .8 1.6 1.8 1.6 1.2 0 1.9-.7 1.9-2.2V3h3.4Z" />
-                    </svg>
-                  </a>
-                @endif
               </div>
             @endif
           </div>

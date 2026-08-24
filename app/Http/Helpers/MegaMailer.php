@@ -98,11 +98,15 @@ class MegaMailer
         Mail::send([], [], function (Message $message) use ($data, $be, $body, $mail_subject) {
           $fromMail = $be->from_mail;
           $fromName = $be->from_name;
+          $brandedBody = view('emails.layout', [
+            'content' => $body,
+            'subject' => $mail_subject,
+          ])->render();
 
           $message->to($data['toMail'])
             ->subject($mail_subject)
             ->from($fromMail, $fromName)
-            ->html($body, 'text/html');
+            ->html($brandedBody, 'text/html');
 
           if (array_key_exists('membership_invoice', $data)) {
             $message->attach(public_path('assets/front/invoices/' . $data['membership_invoice']), [
@@ -147,10 +151,14 @@ class MegaMailer
         Mail::send([], [], function (Message $message) use ($data, $be) {
           $fromMail = $be->from_mail;
           $fromName = $be->from_name;
+          $brandedBody = view('emails.layout', [
+            'content' => $data['body'],
+            'subject' => $data['subject'] ?? null,
+          ])->render();
           $message->to($be->to_mail)
             ->subject($data['subject'])
             ->from($fromMail, $fromName)
-            ->html($data['body'], 'text/html');
+            ->html($brandedBody, 'text/html');
         });
       }
     } catch (\Exception $e) {

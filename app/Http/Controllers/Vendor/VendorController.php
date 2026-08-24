@@ -607,10 +607,14 @@ class VendorController extends Controller
         Mail::send([], [], function (Message $message) use ($data, $info) {
           $fromMail = $info->from_mail;
           $fromName = $info->from_name;
+          $brandedBody = view('emails.layout', [
+            'content' => $data['body'],
+            'subject' => $data['subject'] ?? null,
+          ])->render();
           $message->to($data['to'])
             ->subject($data['subject'])
             ->from($fromMail, $fromName)
-            ->html($data['body'], 'text/html');
+            ->html($brandedBody, 'text/html');
         });
       }
 

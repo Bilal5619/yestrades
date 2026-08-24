@@ -68,10 +68,14 @@ class Controller extends BaseController
         Mail::send([], [], function (Message $message) use ($data, $bs) {
           $fromMail = $bs->from_mail;
           $fromName = $bs->from_name;
+          $brandedBody = view('emails.layout', [
+            'content' => $data['body'],
+            'subject' => $data['subject'] ?? null,
+          ])->render();
           $message->to($data['to'])
             ->subject($data['subject'])
             ->from($fromMail, $fromName)
-            ->html($data['body'], 'text/html');
+            ->html($brandedBody, 'text/html');
 
           $message->attach($data['file_name'], [
             'as' => 'Attachment',

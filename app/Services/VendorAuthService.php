@@ -203,10 +203,14 @@ class VendorAuthService
     ]);
 
     Mail::send([], [], function (Message $message) use ($email, $mailTemplate, $mailBody, $info) {
+      $brandedBody = view('emails.layout', [
+        'content' => $mailBody,
+        'subject' => $mailTemplate->mail_subject,
+      ])->render();
       $message->to($email)
         ->subject($mailTemplate->mail_subject)
         ->from($info->from_mail, $info->from_name)
-        ->html($mailBody, 'text/html');
+        ->html($brandedBody, 'text/html');
     });
 
     return true;

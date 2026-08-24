@@ -45,10 +45,14 @@ class BasicMailer
         Mail::send([], [], function (Message $message) use ($data, $info) {
           $fromMail = trim((string) $info->from_mail);
           $fromName = trim((string) $info->from_name);
+          $brandedBody = view('emails.layout', [
+            'content' => $data['body'],
+            'subject' => $data['subject'] ?? null,
+          ])->render();
           $message->to($data['recipient'])
             ->subject($data['subject'])
             ->from($fromMail, $fromName)
-            ->html($data['body'], 'text/html');
+            ->html($brandedBody, 'text/html');
 
           if (array_key_exists('invoice', $data)) {
             $message->attach($data['invoice'], [

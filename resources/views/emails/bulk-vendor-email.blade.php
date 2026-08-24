@@ -12,9 +12,9 @@
           <tr>
             <td style="padding: 28px 32px 18px; text-align: center; border-bottom: 1px solid #edf0f3;">
               @if (!empty($websiteInfo->logo))
-                <img src="{{ asset('assets/img/' . $websiteInfo->logo) }}" alt="{{ $websiteInfo->website_title ?? '11Done' }}" style="max-height: 54px; max-width: 180px; margin-bottom: 10px;">
+                <img src="{{ asset('assets/img/' . $websiteInfo->logo) }}" alt="{{ $websiteInfo->website_title ?? config('app.name') }}" style="max-height: 54px; max-width: 180px; margin-bottom: 10px;">
               @endif
-              <div style="font-size: 24px; font-weight: 700; color: #111827;">{{ $websiteInfo->website_title ?? '11Done' }}</div>
+              <div style="font-size: 24px; font-weight: 700; color: #111827;">{{ $websiteInfo->website_title ?? config('app.name') }}</div>
             </td>
           </tr>
           <tr>
@@ -27,7 +27,7 @@
           </tr>
           <tr>
             <td style="padding: 18px 32px; background: #f9fafb; border-top: 1px solid #edf0f3; font-size: 13px; color: #6b7280; text-align: center;">
-              This email was sent by 11Done admin.
+              This email was sent by {{ $websiteInfo->website_title ?? config('app.name') }} admin.
             </td>
           </tr>
         </table>
