@@ -1084,6 +1084,13 @@ Route::get(
     ->name('company.hr.expenses.export');
 
 Route::post(
+    '/hr/expenses/{expense}/update',
+    'Company\ExpenseController@update'
+)
+    ->middleware('company.permission:expenses.manage')
+    ->name('company.hr.expenses.update');
+
+Route::post(
     '/hr/expenses/{expense}/approve',
     'Company\ExpenseController@approve'
 )

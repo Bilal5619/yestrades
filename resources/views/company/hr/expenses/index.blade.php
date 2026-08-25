@@ -107,6 +107,37 @@
     }
     .expenses-link-approve { color: #59dc96; }
     .expenses-link-reject { color: #ff8a92; }
+    .expenses-link-edit { color: #6fa8ee; }
+
+    .expenses-modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(10,14,26,0.6);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .expenses-modal-backdrop.is-open { display: flex; }
+    .expenses-modal {
+        background: #1e2a44;
+        border-radius: 12px;
+        padding: 24px;
+        width: 100%;
+        max-width: 560px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    .expenses-modal h2 { margin: 0 0 16px; font-size: 18px; }
+    .expenses-modal-close {
+        float: right;
+        background: none;
+        border: none;
+        color: #c9d2e5;
+        font-size: 18px;
+        cursor: pointer;
+    }
 </style>
 
 <div class="expenses-header">
@@ -305,6 +336,16 @@
                             @endif
                         </td>
                         <td>
+                            <button type="button" class="expenses-link-btn expenses-link-edit"
+                                data-update-url="{{ route('company.hr.expenses.update', $expense) }}"
+                                data-employee-id="{{ $expense->employee_id }}"
+                                data-category="{{ $expense->category }}"
+                                data-expense-type="{{ $expense->expense_type ?? 'expense' }}"
+                                data-merchant="{{ $expense->merchant }}"
+                                data-amount="{{ $expense->amount }}"
+                                data-expense-date="{{ $expense->expense_date->format('Y-m-d') }}"
+                                data-description="{{ $expense->description }}"
+                                onclick="openEditExpenseModal(this)">Edit</button>
                             @if ($expense->status === 'pending')
                                 <form method="POST" action="{{ route('company.hr.expenses.approve', $expense) }}" class="expenses-action-form">
                                     @csrf
@@ -330,12 +371,85 @@
 
 {{ $expenses->links() }}
 
+<div class="expenses-modal-backdrop" id="editExpenseBackdrop">
+    <div class="expenses-modal">
+        <button type="button" class="expenses-modal-close" onclick="closeEditExpenseModal()">&times;</button>
+        <h2>Edit Expense</h2>
+        <form method="POST" action="" id="editExpenseForm" enctype="multipart/form-data">
+            @csrf
+            <div class="expenses-form-grid">
+                <div class="expenses-form-field">
+                    <label>Employee</label>
+                    <select name="employee_id" id="editEmployeeId" required>
+                        @foreach ($employees as $employee)
+                            <option value="{{ $employee->id }}">{{ $employee->full_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="expenses-form-field">
+                    <label>Type</label>
+                    <select name="expense_type" id="editExpenseType">
+                        @foreach (\App\Models\Company\EmployeeExpense::EXPENSE_TYPES as $type)
+                            <option value="{{ $type }}">{{ $type === 'personal' ? 'Personal Money' : ($type === 'return' ? 'Return (money back)' : 'Expense') }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="expenses-form-field">
+                    <label>Category</label>
+                    <select name="category" id="editCategory" required>
+                        @foreach (\App\Models\Company\EmployeeExpense::CATEGORIES as $category)
+                            <option value="{{ $category }}">{{ ucfirst($category) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="expenses-form-field">
+                    <label>From (merchant/vendor)</label>
+                    <input type="text" name="merchant" id="editMerchant" placeholder="e.g. Shell Petrol Station">
+                </div>
+                <div class="expenses-form-field">
+                    <label>Amount (&pound;)</label>
+                    <input type="number" step="0.01" min="0.01" name="amount" id="editAmount" required>
+                </div>
+                <div class="expenses-form-field">
+                    <label>Date</label>
+                    <input type="date" name="expense_date" id="editExpenseDate" required>
+                </div>
+                <div class="expenses-form-field">
+                    <label>Replace receipt (optional)</label>
+                    <input type="file" name="receipt" accept=".jpg,.jpeg,.png,.pdf">
+                </div>
+            </div>
+            <div class="expenses-form-field" style="margin-bottom:14px;">
+                <label>Description</label>
+                <textarea name="description" id="editDescription" rows="2" maxlength="255" placeholder="What was this expense for?"></textarea>
+            </div>
+            <button type="submit" class="btn-primary-sm">Save Changes</button>
+        </form>
+    </div>
+</div>
+
 <script>
     function promptRejectReason(form) {
         const reason = prompt('Reason for rejecting this expense:');
         if (!reason) { return false; }
         form.querySelector('input[name="rejection_reason"]').value = reason;
         return true;
+    }
+
+    function openEditExpenseModal(button) {
+        document.getElementById('editExpenseForm').action = button.dataset.updateUrl;
+        document.getElementById('editEmployeeId').value = button.dataset.employeeId;
+        document.getElementById('editExpenseType').value = button.dataset.expenseType;
+        document.getElementById('editCategory').value = button.dataset.category;
+        document.getElementById('editMerchant').value = button.dataset.merchant || '';
+        document.getElementById('editAmount').value = button.dataset.amount;
+        document.getElementById('editExpenseDate').value = button.dataset.expenseDate;
+        document.getElementById('editDescription').value = button.dataset.description || '';
+        document.getElementById('editExpenseBackdrop').classList.add('is-open');
+    }
+
+    function closeEditExpenseModal() {
+        document.getElementById('editExpenseBackdrop').classList.remove('is-open');
     }
 </script>
 

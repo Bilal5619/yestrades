@@ -85,6 +85,30 @@ class ExpenseController extends Controller
         return back()->with('success', 'Expense recorded successfully.');
     }
 
+    public function update(Request $request, EmployeeExpense $expense)
+    {
+        $validated = $request->validate([
+            'employee_id' => ['required', 'exists:employees,id'],
+            'category' => ['required', 'in:' . implode(',', EmployeeExpense::CATEGORIES)],
+            'expense_type' => ['nullable', 'in:' . implode(',', EmployeeExpense::EXPENSE_TYPES)],
+            'merchant' => ['nullable', 'string', 'max:255'],
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'expense_date' => ['required', 'date'],
+            'description' => ['nullable', 'string', 'max:255'],
+            'receipt' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+        ]);
+
+        $validated['expense_type'] = $validated['expense_type'] ?? 'expense';
+
+        if ($request->hasFile('receipt')) {
+            $validated['receipt_path'] = $request->file('receipt')->store('expense-receipts', 'public');
+        }
+
+        $expense->update($validated);
+
+        return back()->with('success', 'Expense updated successfully.');
+    }
+
     public function approve(EmployeeExpense $expense)
     {
         if ($expense->status !== 'pending') {
