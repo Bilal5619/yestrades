@@ -80,6 +80,8 @@ public const APPOINTMENT_STATUSES = [
     protected $fillable = [
         'job_reference',
 
+        'service_booking_id',
+
         'employee_id',
         'client_id',
         'client_property_id',
@@ -181,6 +183,14 @@ public const APPOINTMENT_STATUSES = [
     public function employee()
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function serviceBooking()
+    {
+        return $this->belongsTo(
+            \App\Models\Services\ServiceBooking::class,
+            'service_booking_id'
+        );
     }
 
     public function client()

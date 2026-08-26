@@ -519,6 +519,59 @@
         </div>
       </div>
     </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div class="card-title d-inline-block">
+            {{ __('Internal Employee') }}
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#employeeAssignModal">
+            {{ $details->employeeJob && $details->employeeJob->employee ? __('Reassign') : __('Assign to Employee') }}
+          </button>
+        </div>
+        <div class="card-body">
+          @if ($details->employeeJob && $details->employeeJob->employee)
+            @php($assignedEmployee = $details->employeeJob->employee)
+            <div class="payment-information">
+              <div class="row mb-2">
+                <div class="col-lg-4"><strong>{{ __('Name') . ' :' }}</strong></div>
+                <div class="col-lg-8">{{ $assignedEmployee->full_name }}</div>
+              </div>
+              @if ($assignedEmployee->job_title)
+                <div class="row mb-2">
+                  <div class="col-lg-4"><strong>{{ __('Job Title') . ' :' }}</strong></div>
+                  <div class="col-lg-8">{{ $assignedEmployee->job_title }}</div>
+                </div>
+              @endif
+              @if ($assignedEmployee->loginEmail())
+                <div class="row mb-2">
+                  <div class="col-lg-4"><strong>{{ __('Email') . ' :' }}</strong></div>
+                  <div class="col-lg-8">{{ $assignedEmployee->loginEmail() }}</div>
+                </div>
+              @endif
+              @if ($assignedEmployee->phone)
+                <div class="row mb-2">
+                  <div class="col-lg-4"><strong>{{ __('Phone') . ' :' }}</strong></div>
+                  <div class="col-lg-8">{{ $assignedEmployee->phone }}</div>
+                </div>
+              @endif
+              <div class="row mb-1">
+                <div class="col-lg-4"><strong>{{ __('HR Job Status') . ' :' }}</strong></div>
+                <div class="col-lg-8">
+                  <a href="{{ route('company.hr.jobs.show', $details->employeeJob) }}" target="_blank">
+                    {{ ucfirst(str_replace('_', ' ', $details->employeeJob->status)) }} — {{ $details->employeeJob->job_reference }}
+                  </a>
+                </div>
+              </div>
+            </div>
+          @else
+            <p class="text-muted mb-0">{{ __('Not assigned to an internal employee. Use the external vendor assignment above, or assign this job directly to one of your own employees.') }}</p>
+          @endif
+        </div>
+      </div>
+    </div>
+
     @if ($details->staff_id != null && $staff != null)
       @if ($staff->role == null)
         <div class="col-md-4">
@@ -734,6 +787,49 @@
     </div>
   </div>
 
+  <!-- internal employee assign modal -->
+  <div class="modal fade" id="employeeAssignModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ __('Assign to Internal Employee') }}</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="employeeAssignForm" action="{{ route('admin.appointment.employee_assign') }}" method="post">
+            @csrf
+            <input type="hidden" name="appointment_id" value="{{ $details->id }}">
+            <div class="form-group">
+              <label>{{ __('Employee') . ' *' }}</label>
+              <select name="employee_id" id="employee_id_select" class="form-control select2">
+                <option value="">{{ __('Select employee') }}</option>
+                @foreach ($fieldEngineers as $engineer)
+                  <option value="{{ $engineer->id }}"
+                    {{ optional(optional($details->employeeJob)->employee)->id == $engineer->id ? 'selected' : '' }}>
+                    {{ $engineer->full_name }}
+                  </option>
+                @endforeach
+                @if ($fieldEngineers->isEmpty())
+                  <option value="" disabled>{{ __('No active field engineers found in HR') }}</option>
+                @endif
+              </select>
+              <p id="err_employee_id" class="mt-1 mb-0 text-danger em"></p>
+            </div>
+            <p class="text-muted small">
+              {{ __('This does not change the existing vendor assignment. The employee will see this job in the Yes Trades staff app and it will appear in HR > Jobs.') }}
+            </p>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">{{ __('Close') }}</button>
+          <button type="button" id="employeeAssignBtn" class="btn btn-primary btn-sm">{{ __('Save') }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   @if ($details->staff_id != null && $staff != null)
   <!-- info modal -->
   <div class="modal fade" id="staffInfoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -837,6 +933,35 @@
       $('#vendorAssignForce').val('0');
       $('#err_vendor_id').text('');
       $('#vendorConflictAlert').addClass('d-none').empty();
+    });
+
+    $('#employee_id_select').select2({
+      dropdownParent: $('#employeeAssignModal')
+    });
+
+    $('#employeeAssignBtn').on('click', function () {
+      var form = $('#employeeAssignForm');
+      $('#err_employee_id').text('');
+      $('#employeeAssignBtn').attr('disabled', true);
+
+      $.ajax({
+        url: form.attr('action'),
+        method: 'POST',
+        data: form.serialize(),
+        success: function (response) {
+          if (response.status === 'success') {
+            location.reload();
+          }
+        },
+        error: function (xhr) {
+          $('#employeeAssignBtn').attr('disabled', false);
+          var res = xhr.responseJSON || {};
+          var errors = res.errors;
+          if (errors && errors.employee_id) {
+            $('#err_employee_id').text(errors.employee_id[0]);
+          }
+        }
+      });
     });
 
     @if ($errors->has('booking_date') || $errors->has('start_time') || $errors->has('end_time'))

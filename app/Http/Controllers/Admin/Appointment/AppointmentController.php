@@ -14,6 +14,8 @@ use App\Http\Helpers\VendorMatching;
 use App\Models\Admin;
 use App\Models\BasicSettings\Basic;
 use App\Models\BasicSettings\MailTemplate;
+use App\Models\Company\Employee;
+use App\Models\Company\EmployeeJob;
 use App\Models\Language;
 use App\Models\Question;
 use App\Models\QuestionOption;
@@ -479,7 +481,7 @@ class AppointmentController extends Controller
     $language = Language::where('is_default', 1)->first();
     $language_id = $language->id;
 
-    $appointment = ServiceBooking::with(['completionImages', 'vendorInvoice', 'answers.question.options', 'answers.option', 'serviceContent' => function ($q) use ($language_id) {
+    $appointment = ServiceBooking::with(['completionImages', 'vendorInvoice', 'answers.question.options', 'answers.option', 'employeeJob.employee', 'serviceContent' => function ($q) use ($language_id) {
       $q->where('language_id', $language_id);
     }])
       ->findOrFail($id);
@@ -506,6 +508,13 @@ class AppointmentController extends Controller
     $information['vendors'] = $this->getActiveVendors($language_id);
     $information['busyVendorIds'] = VendorAvailability::busyVendorIdsFor($appointment, $information['vendors']);
     $information['eligibleVendorIds'] = VendorMatching::eligibleVendorIdsFor($appointment, $information['vendors']);
+
+    $information['fieldEngineers'] = Employee::query()
+      ->where('employment_status', 'active')
+      ->where('is_field_engineer', true)
+      ->orderBy('first_name')
+      ->orderBy('last_name')
+      ->get(['id', 'first_name', 'middle_name', 'last_name']);
 
     return view('admin.appointment.details', $information);
   }
@@ -1035,6 +1044,92 @@ class AppointmentController extends Controller
 
     $request->session()->flash('success', 'Vendor assigned successfully!');
     return Response::json(['status' => 'success'], 200);
+  }
+
+  // Assigns a website booking directly to one of Yes Trades' own employees.
+  // This is additive: the existing vendor_id/staff_id assignment on the
+  // booking is left completely untouched. Once assigned, everything after
+  // this point runs through the existing HR job system exactly as it
+  // already works for manually-created jobs (same model, same statuses,
+  // same "My Jobs" list and clock in/out in the staff app, same push
+  // notification).
+  public function employeeAssign(Request $request)
+  {
+    $validator = Validator::make($request->all(), [
+      'appointment_id' => 'required|integer|exists:service_bookings,id',
+      'employee_id' => [
+        'required',
+        Rule::exists('employees', 'id')->where(
+          fn ($query) => $query
+            ->where('employment_status', 'active')
+            ->where('is_field_engineer', 1)
+        ),
+      ],
+    ], [
+      'employee_id.required' => 'Please select an employee.',
+      'employee_id.exists' => 'Please select an active field engineer.',
+    ]);
+
+    if ($validator->fails()) {
+      return Response::json(['errors' => $validator->getMessageBag()->toArray()], 400);
+    }
+
+    $appointment = ServiceBooking::with('employeeJob')->findOrFail($request->appointment_id);
+    $employee = Employee::findOrFail($request->employee_id);
+
+    $job = $this->syncEmployeeJobFromBooking($appointment, $employee);
+
+    app(\App\Services\EmployeePushNotificationService::class)->sendJobAssigned($employee, $job);
+
+    $request->session()->flash('success', 'Booking assigned to ' . $employee->full_name . ' successfully!');
+    return Response::json(['status' => 'success'], 200);
+  }
+
+  // Creates (or updates, if this booking was already assigned before) the
+  // employee_jobs row linked to this booking via service_booking_id, and
+  // keeps it filled with the booking's current details.
+  private function syncEmployeeJobFromBooking(ServiceBooking $appointment, Employee $employee): EmployeeJob
+  {
+    $language = Language::where('is_default', 1)->first();
+
+    if (($appointment->item_type ?? 'service') === 'package') {
+      $title = $appointment->package_name ?: ('Service Package #' . $appointment->service_package_id);
+    } else {
+      $serviceInfo = ServiceContent::where('service_id', $appointment->service_id)
+        ->when($language, fn ($q) => $q->where('language_id', $language->id))
+        ->first();
+      $title = $serviceInfo->name ?? ('Service #' . $appointment->service_id);
+    }
+
+    $siteAddress = $appointment->site_address ?: $appointment->customer_address;
+    $sitePostcode = $appointment->site_zip_code ?: $appointment->customer_zip_code;
+
+    $data = [
+      'employee_id' => $employee->id,
+      'title' => $title,
+      'description' => 'Created from website booking #' . $appointment->order_number,
+      'customer_name' => $appointment->customer_name,
+      'customer_phone' => $appointment->customer_phone,
+      'customer_email' => $appointment->customer_email,
+      'site_address' => $siteAddress,
+      'site_postcode' => $sitePostcode,
+      'scheduled_date' => $appointment->booking_date,
+      'scheduled_start_time' => $appointment->start_date,
+      'priority' => (float) $appointment->urgency_surcharge_amount > 0 ? 'urgent' : 'medium',
+      'payment_required' => false,
+    ];
+
+    $job = $appointment->employeeJob;
+
+    if ($job) {
+      $job->update($data);
+      return $job->fresh();
+    }
+
+    $data['service_booking_id'] = $appointment->id;
+    $data['status'] = 'assigned';
+
+    return EmployeeJob::create($data);
   }
 
   private function getActiveVendors($languageId)

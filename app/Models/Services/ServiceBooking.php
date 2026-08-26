@@ -76,6 +76,13 @@ class ServiceBooking extends Model
     return $this->belongsTo(Vendor::class, 'vendor_id', 'id');
   }
 
+  // The internal Yes Trades HR job this booking was assigned to, when it was
+  // handed to one of our own employees instead of an external vendor.
+  public function employeeJob()
+  {
+    return $this->hasOne(\App\Models\Company\EmployeeJob::class, 'service_booking_id');
+  }
+
   public function answers()
   {
     return $this->hasMany(BookingAnswer::class, 'booking_id', 'id');

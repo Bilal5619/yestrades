@@ -236,6 +236,8 @@ Route::prefix('/admin')->middleware('auth:admin')->group(function () {
 
     Route::post('/vendor/assign', 'Admin\Appointment\AppointmentController@vendorAssign')->name('admin.appointment.vendor_assign');
 
+    Route::post('/employee/assign', 'Admin\Appointment\AppointmentController@employeeAssign')->name('admin.appointment.employee_assign');
+
     Route::get('/details/{id}', 'Admin\Appointment\AppointmentController@show')->name('admin.appointment.details');
 
     Route::get('/calendar', 'Admin\Appointment\AppointmentController@calendar')->name('admin.appointment.calendar');

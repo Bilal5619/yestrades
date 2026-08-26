@@ -268,7 +268,9 @@
     $serviceCartItems = collect(session()->get('serviceCart', []));
     $serviceCartTotal = $serviceCartItems->sum('price');
   @endphp
-  @if ($serviceCartItems->count() > 0)
+  {{-- Hidden on the cart page itself — it duplicates and visually overlaps
+       the Order Summary sidebar that's already showing the same total there. --}}
+  @if ($serviceCartItems->count() > 0 && !request()->routeIs('frontend.services.cart'))
     <div id="cartIconWrapper" class="cartIconWrapper">
       <a href="{{ route('frontend.services.cart') }}" class="d-block" id="cartIcon">
         <div class="cart-length">

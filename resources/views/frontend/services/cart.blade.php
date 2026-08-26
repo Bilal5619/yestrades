@@ -1525,7 +1525,7 @@
                   <label class="cart-field-label" for="cart_pricing_postcode">{{ __('Your postcode') }}</label>
                   <div class="cart-postcode-input-row">
                     <input type="text" id="cart_pricing_postcode" class="form-control"
-                      placeholder="{{ __('Enter postcode and press Enter') }}"
+                      placeholder="{{ __('e.g. SW1A 1AA') }}"
                       value="{{ $prefillPostcode }}" autocomplete="postal-code" data-cart-postcode-input>
                     <button type="button" class="cart-primary-btn" data-cart-postcode-apply>{{ __('Get price') }}</button>
                   </div>
