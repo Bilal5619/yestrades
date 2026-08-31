@@ -6,7 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Company\EmployeeJob;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Mail\Message;
 class JobRequestController extends Controller
 {
     /**
@@ -324,7 +328,240 @@ class JobRequestController extends Controller
             'created_by' => null,
             'updated_by' => null,
         ]);
+/*
+|--------------------------------------------------------------------------
+| Notify Yes Trades office
+|--------------------------------------------------------------------------
+|
+| A failed notification must NEVER stop the job from being created.
+| The actual job has already been safely stored above.
+|
+*/
 
+try {
+
+    $mailSettings = DB::table('basic_settings')
+        ->select(
+            'smtp_status',
+            'smtp_host',
+            'smtp_port',
+            'encryption',
+            'smtp_username',
+            'smtp_password',
+            'from_mail',
+            'from_name',
+            'to_mail'
+        )
+        ->first();
+
+    if (
+        $mailSettings
+        &&
+        $mailSettings->smtp_status == 1
+        &&
+        !empty($mailSettings->to_mail)
+    ) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Use existing Yes Trades SMTP settings
+        |--------------------------------------------------------------------------
+        */
+
+        Config::set(
+            'mail.mailers.smtp',
+            [
+                'transport' => 'smtp',
+                'host' =>
+                    $mailSettings->smtp_host,
+
+                'port' =>
+                    $mailSettings->smtp_port,
+
+                'encryption' =>
+                    $mailSettings->encryption,
+
+                'username' =>
+                    $mailSettings->smtp_username,
+
+                'password' =>
+                    $mailSettings->smtp_password,
+
+                'timeout' => null,
+                'auth_mode' => null,
+            ]
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Build Company Portal link
+        |--------------------------------------------------------------------------
+        */
+
+        $companyJobUrl = route(
+            'company.hr.jobs.show',
+            $job
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Build notification email
+        |--------------------------------------------------------------------------
+        */
+
+        $emailContent = view(
+            'emails.layout',
+            [
+                'subject' =>
+                    'New Website Job Request - '
+                    . $job->job_reference,
+
+                'content' =>
+                    '
+                    <p>
+                        A new job request has been submitted
+                        through the Yes Trades website.
+                    </p>
+
+                    <p>
+                        <strong>Job Reference:</strong>
+                        '
+                        . e($job->job_reference)
+                        . '
+                        <br>
+
+                        <strong>Customer:</strong>
+                        '
+                        . e($job->customer_name)
+                        . '
+                        <br>
+
+                        <strong>Phone:</strong>
+                        '
+                        . e($job->customer_phone)
+                        . '
+                        <br>
+
+                        <strong>Email:</strong>
+                        '
+                        . e($job->customer_email)
+                        . '
+                        <br>
+
+                        <strong>Job:</strong>
+                        '
+                        . e($job->title)
+                        . '
+                        <br>
+
+                        <strong>Postcode:</strong>
+                        '
+                        . e($job->site_postcode)
+                        . '
+                        <br>
+
+                        <strong>Priority:</strong>
+                        '
+                        . e(ucfirst($job->priority))
+                        . '
+                    </p>
+
+                    <p>
+                        <strong>Description:</strong><br>
+                        '
+                        . nl2br(
+                            e(
+                                $job->description
+                                ?? ''
+                            )
+                        )
+                        . '
+                    </p>
+
+                    <p>
+                        <strong>Status:</strong>
+                        Unassigned / Action Required
+                    </p>
+
+                    <p>
+                        <a
+                            href="'
+                            . e($companyJobUrl)
+                            . '"
+                            style="
+                                display:inline-block;
+                                padding:12px 18px;
+                                background:#0e9f6e;
+                                color:#ffffff;
+                                text-decoration:none;
+                                border-radius:6px;
+                                font-weight:bold;
+                            "
+                        >
+                            Open Job in Company Portal
+                        </a>
+                    </p>
+                    ',
+            ]
+        )->render();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Send notification
+        |--------------------------------------------------------------------------
+        */
+
+        Mail::send(
+            [],
+            [],
+            function (Message $message) use (
+                $mailSettings,
+                $job,
+                $emailContent
+            ) {
+
+                $message
+                    ->to(
+                        $mailSettings->to_mail
+                    )
+                    ->subject(
+                        'New Website Job Request - '
+                        . $job->job_reference
+                    )
+                    ->from(
+                        $mailSettings->from_mail,
+                        $mailSettings->from_name
+                    )
+                    ->html(
+                        $emailContent,
+                        'text/html'
+                    );
+            }
+        );
+    }
+
+} catch (\Throwable $exception) {
+
+    /*
+    |--------------------------------------------------------------------------
+    | Do not fail customer submission because email failed
+    |--------------------------------------------------------------------------
+    */
+
+    Log::error(
+        'Website job request office notification failed',
+        [
+            'job_id' =>
+                $job->id,
+
+            'job_reference' =>
+                $job->job_reference,
+
+            'error' =>
+                $exception->getMessage(),
+        ]
+    );
+}
         /*
         |--------------------------------------------------------------------------
         | Success

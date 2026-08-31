@@ -174,7 +174,27 @@
 
                         {{ $job->title }}
                     </a>
-
+@if(
+    $job->internal_notes
+    &&
+    str_contains(
+        $job->internal_notes,
+        'Website job request'
+    )
+)
+    <span
+        class="jobsheet-badge"
+        style="
+            margin-left:8px;
+            background:#e8f7f1;
+            color:#0e7a55;
+            border:1px solid #bce8d6;
+        "
+    >
+        <i class="fas fa-globe"></i>
+        Website Request
+    </span>
+@endif
 
                     <div
                         class="jobsheet-job-meta"
@@ -358,7 +378,27 @@
                         {{ $job->title }}
                     </a>
 
-
+@if(
+    $job->internal_notes
+    &&
+    str_contains(
+        $job->internal_notes,
+        'Website job request'
+    )
+)
+    <span
+        class="jobsheet-badge"
+        style="
+            margin-left:8px;
+            background:#e8f7f1;
+            color:#0e7a55;
+            border:1px solid #bce8d6;
+        "
+    >
+        <i class="fas fa-globe"></i>
+        Website Request
+    </span>
+@endif
                     <div
                         class="jobsheet-job-meta"
                     >
