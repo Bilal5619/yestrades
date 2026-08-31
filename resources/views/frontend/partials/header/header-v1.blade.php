@@ -73,7 +73,16 @@
           </ul>
         </div>
        <div class="more-option mobile-item">
-        <!--    @php
+       <div class="item">
+  <a
+    href="{{ route('frontend.job_request.create') }}"
+    class="btn btn-primary btn-sm"
+  >
+    <i class="fal fa-clipboard-list"></i>
+    {{ __('Request a Job') }}
+  </a>
+</div> 
+       <!--    @php
             $serviceCart = collect(session()->get('serviceCart', []));
             $serviceCartCount = $serviceCart->count();
             $serviceCartTotal = $serviceCart->sum('price');

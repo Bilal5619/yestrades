@@ -47,6 +47,14 @@
               <a href="{{ route('frontend.services') }}" class="nav-link">{{ __('Services') }}</a>
             </li>
             <li class="nav-item">
+  <a
+    href="{{ route('frontend.job_request.create') }}"
+    class="nav-link"
+  >
+    {{ __('Request a Job') }}
+  </a>
+</li>
+            <li class="nav-item">
               <a href="{{ route('frontend.landlords') }}" class="nav-link">{{ __('Landlords') }}</a>
             </li>
             {{-- Hidden for now (client request) — uncomment to bring Reviews back --}}

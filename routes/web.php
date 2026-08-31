@@ -36,7 +36,28 @@ Route::middleware('change.lang')->group(function () {
     ->where('token', '[A-Za-z0-9]{64}')
     ->middleware('throttle:10,1')
     ->name('frontend.quote.response.decline');
+  /*
+  |--------------------------------------------------------------------------
+  | Public Request a Job
+  |--------------------------------------------------------------------------
+  |
+  | Direct/private Yes Trades customers can raise a job request.
+  | The request is stored directly in the Company Own employee_jobs system.
+  |
+  */
 
+  Route::get(
+    '/request-a-job',
+    'FrontEnd\JobRequestController@create'
+  )->name('frontend.job_request.create');
+
+  Route::post(
+    '/request-a-job',
+    'FrontEnd\JobRequestController@store'
+  )
+    ->middleware('throttle:5,1')
+    ->name('frontend.job_request.store');
+    
   // Tenant/occupier deferred scheduling — secure emailed link lets the
   // tenant pick a normal appointment slot, then the owner confirms it.
   Route::get('/tenant/select-slot/{token}', 'FrontEnd\TenantSlotController@show')
