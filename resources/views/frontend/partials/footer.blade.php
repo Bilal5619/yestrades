@@ -157,7 +157,7 @@
       <div class="container">
         <div class="copy-right-content">
           <span>
-            &copy; {{ date('Y') }} {{ $brandName }} Ltd.
+            &copy; {{ date('Y') }} {{ $brandName }} Ltd  | VAT Number: 526611404
           </span>
           <nav class="footer-legal-links" aria-label="{{ __('Legal links') }}">
             <a href="{{ url('/terms-and-conditions') }}">{{ __('Terms') }}</a>
