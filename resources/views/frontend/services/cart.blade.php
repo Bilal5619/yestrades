@@ -1734,7 +1734,8 @@
                       </div>
                       <div class="text-end">
                         <div class="service-cart-price" data-item-price>{!! $displayCartItemPrice($item) !!}</div>
-                        <form action="{{ route('frontend.services.cart.remove', $item['key']) }}" method="POST"
+<small class="d-block text-muted mt-1">{{ __('Price includes VAT') }}</small>
+<form action="{{ route('frontend.services.cart.remove', $item['key']) }}" method="POST"
                           data-custom-confirm="{{ __('Remove this service?') }}"
                           data-confirm-title="{{ __('Remove service') }}"
                           data-confirm-button="{{ __('Remove service') }}"
@@ -2175,7 +2176,7 @@
                       <span class="cart-summary-value text-success" id="cart-summary-discount">-</span>
                     </div>
                     <div class="cart-summary-row cart-summary-total-row">
-                      <span class="cart-summary-label">{{ __('Total payable') }}</span>
+                  <span class="cart-summary-label">{{ __('Total payable (Incl. VAT)') }}</span>
                       <span class="cart-summary-value" id="cart-summary-total">-</span>
                     </div>
                   </div>
@@ -2357,7 +2358,7 @@
               <div class="summary-coupon-message" data-service-coupon-message></div>
             </div>
             <div class="summary-total">
-              <span>{{ __('Total') }}</span>
+             <span>{{ __('Total (Incl. VAT)') }}</span>
               <strong data-summary-total>{!! $displayPrice($cartPayableTotal) !!}</strong>
             </div>
             <div class="summary-actions">
