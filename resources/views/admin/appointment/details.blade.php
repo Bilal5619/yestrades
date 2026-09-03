@@ -532,8 +532,11 @@
         </div>
         <div class="card-body">
           @if ($details->employeeJob && $details->employeeJob->employee)
-            @php($assignedEmployee = $details->employeeJob->employee)
-            <div class="payment-information">
+
+          @php
+    $assignedEmployee = $details->employeeJob->employee;
+@endphp
+  <div class="payment-information">
               <div class="row mb-2">
                 <div class="col-lg-4"><strong>{{ __('Name') . ' :' }}</strong></div>
                 <div class="col-lg-8">{{ $assignedEmployee->full_name }}</div>
