@@ -502,14 +502,7 @@
                     </a>
                 @endif
 
-                @if ($companyUser->hasPermission('expenses.manage'))
-                    <a href="{{ route('company.hr.expenses.index') }}"
-                       class="company-submenu-link
-                       {{ request()->routeIs('company.hr.expenses.*') ? 'active' : '' }}">
-                        Expenses
-                    </a>
-                @endif
-
+                
                 @if ($companyUser->hasPermission('equipment-vehicles.manage'))
                     <a href="{{ route('company.hr.equipment.index') }}"
                        class="company-submenu-link
@@ -558,7 +551,16 @@
             >
                 Sales
             </a>
-
+<a
+    href="{{ route('company.hr.expenses.index') }}"
+    class="company-submenu-link
+    {{ request()->routeIs('company.hr.expenses.*')
+        ? 'active'
+        : ''
+    }}"
+>
+    Expenses
+</a>
             <a
                 href="{{ route('company.vat.report') }}"
                 class="company-submenu-link
