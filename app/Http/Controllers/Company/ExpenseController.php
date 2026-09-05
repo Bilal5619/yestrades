@@ -65,6 +65,11 @@ $totals = [
     'returns' => (clone $query)
         ->where('expense_type', 'return')
         ->sum('amount'),
+
+    'vat_paid' => (clone $query)
+        ->where('expense_type', 'expense')
+        ->where('status', 'approved')
+        ->sum('vat_amount'),
 ];
         $employees = Employee::query()
             ->where('employment_status', 'active')
@@ -81,8 +86,9 @@ $totals = [
             'category' => ['required', 'in:' . implode(',', EmployeeExpense::CATEGORIES)],
             'expense_type' => ['nullable', 'in:' . implode(',', EmployeeExpense::EXPENSE_TYPES)],
             'merchant' => ['nullable', 'string', 'max:255'],
-            'amount' => ['required', 'numeric', 'min:0.01'],
-            'expense_date' => ['required', 'date'],
+           'amount' => ['required', 'numeric', 'min:0.01'],
+'vat_rate' => ['required', 'numeric', 'in:0,5,20'],
+'expense_date' => ['required', 'date'],
             'description' => ['nullable', 'string', 'max:255'],
             'receipt' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
         ]);
@@ -92,6 +98,19 @@ $totals = [
         }
 
         $validated['expense_type'] = $validated['expense_type'] ?? 'expense';
+        $grossAmount = round((float) $validated['amount'], 2);
+$vatRate = (float) $validated['vat_rate'];
+
+if ($vatRate > 0) {
+    $netAmount = round($grossAmount / (1 + ($vatRate / 100)), 2);
+    $vatAmount = round($grossAmount - $netAmount, 2);
+} else {
+    $netAmount = $grossAmount;
+    $vatAmount = 0;
+}
+
+$validated['net_amount'] = $netAmount;
+$validated['vat_amount'] = $vatAmount;
         $validated['status'] = 'pending';
         $validated['source'] = 'admin';
         $validated['submitted_by'] = Auth::guard('company')->id();
@@ -108,13 +127,27 @@ $totals = [
             'category' => ['required', 'in:' . implode(',', EmployeeExpense::CATEGORIES)],
             'expense_type' => ['nullable', 'in:' . implode(',', EmployeeExpense::EXPENSE_TYPES)],
             'merchant' => ['nullable', 'string', 'max:255'],
-            'amount' => ['required', 'numeric', 'min:0.01'],
-            'expense_date' => ['required', 'date'],
+           'amount' => ['required', 'numeric', 'min:0.01'],
+'vat_rate' => ['required', 'numeric', 'in:0,5,20'],
+'expense_date' => ['required', 'date'],
             'description' => ['nullable', 'string', 'max:255'],
             'receipt' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
         ]);
 
         $validated['expense_type'] = $validated['expense_type'] ?? 'expense';
+        $grossAmount = round((float) $validated['amount'], 2);
+$vatRate = (float) $validated['vat_rate'];
+
+if ($vatRate > 0) {
+    $netAmount = round($grossAmount / (1 + ($vatRate / 100)), 2);
+    $vatAmount = round($grossAmount - $netAmount, 2);
+} else {
+    $netAmount = $grossAmount;
+    $vatAmount = 0;
+}
+
+$validated['net_amount'] = $netAmount;
+$validated['vat_amount'] = $vatAmount;
 
         if ($request->hasFile('receipt')) {
             $validated['receipt_path'] = $request->file('receipt')->store('expense-receipts', 'public');

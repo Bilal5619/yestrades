@@ -60,6 +60,51 @@ class EmployeeController extends Controller
             ->orderBy('last_name')
             ->paginate(15)
             ->withQueryString();
+            $employees->getCollection()->transform(function ($employee) {
+
+    if ($employee->work_location_type === 'overseas') {
+        $employee->right_to_work_status = 'Not Applicable';
+
+        return $employee;
+    }
+
+    $rightToWorkDocument = $employee->documents()
+        ->whereHas('documentType', function ($query) {
+            $query->where(
+                'slug',
+                'right-to-work-evidence'
+            );
+        })
+        ->first();
+
+    if (
+        ! $rightToWorkDocument ||
+        ! $rightToWorkDocument->file_path
+    ) {
+        $employee->right_to_work_status = 'Missing';
+
+    } elseif (
+        $rightToWorkDocument->expiry_date &&
+        $rightToWorkDocument->expiry_date->isPast()
+    ) {
+        $employee->right_to_work_status = 'Expired';
+
+    } elseif (
+        $rightToWorkDocument->review_status === 'approved'
+    ) {
+        $employee->right_to_work_status = 'Verified';
+
+    } elseif (
+        $rightToWorkDocument->review_status === 'rejected'
+    ) {
+        $employee->right_to_work_status = 'Rejected';
+
+    } else {
+        $employee->right_to_work_status = 'Pending Review';
+    }
+
+    return $employee;
+});
 
         $departments = Employee::query()
             ->whereNotNull('department')

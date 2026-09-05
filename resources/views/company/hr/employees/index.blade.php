@@ -559,11 +559,26 @@
                         @endif
                         </td>
 
-                        <td>
-                            <span class="employee-document-status">
-                                Not checked
-                            </span>
-                        </td>
+                       <td>
+    @php
+        $rtwStatus = $employee->right_to_work_status ?? 'Missing';
+
+        $rtwColor = match ($rtwStatus) {
+            'Verified' => '#59dc96',
+            'Pending Review' => '#ffc46d',
+            'Expired', 'Rejected', 'Missing' => '#ff7c86',
+            'Not Applicable' => '#aab4ca',
+            default => '#aab4ca',
+        };
+    @endphp
+
+    <span
+        class="employee-document-status"
+        style="color:{{ $rtwColor }};"
+    >
+        {{ $rtwStatus }}
+    </span>
+</td>
 
                         <td>
                             <a href="{{ route('company.hr.employees.show', $employee) }}"

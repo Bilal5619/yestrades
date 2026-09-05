@@ -141,9 +141,29 @@ public function recalculateProgress(): void
         )
         : 0;
 
+    $isCompleted =
+        $totalRequired > 0 &&
+        $completedRequired === $totalRequired;
+
     $this->update([
         'progress_percentage' => $percentage,
+
+        'status' => $isCompleted
+            ? 'completed'
+            : 'in_progress',
+
+        'completed_at' => $isCompleted
+            ? ($this->completed_at ?? now())
+            : null,
     ]);
+
+    if ($isCompleted && $this->employee) {
+        if ($this->employee->employment_status === 'onboarding') {
+            $this->employee->update([
+                'employment_status' => 'active',
+            ]);
+        }
+    }
 }
 public function personalDetails()
 {

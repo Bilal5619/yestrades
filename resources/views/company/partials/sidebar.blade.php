@@ -522,7 +522,59 @@
         </div>
     @endif
 
+{{-- VAT --}}
+@if ($companyUser->hasPermission('expenses.manage'))
 
+    <div class="company-menu-item">
+
+        <button
+            type="button"
+            class="company-menu-link company-dropdown-toggle
+            {{ request()->routeIs('company.vat.*') ? 'open' : '' }}"
+            data-target="vat-submenu"
+        >
+
+            <i class="fas fa-calculator"></i>
+
+            <span>VAT</span>
+
+            <i class="fas fa-chevron-right company-menu-arrow"></i>
+
+        </button>
+
+        <div
+            class="company-submenu
+            {{ request()->routeIs('company.vat.*') ? 'open' : '' }}"
+            id="vat-submenu"
+        >
+
+            <a
+                href="{{ route('company.vat.sales.index') }}"
+                class="company-submenu-link
+                {{ request()->routeIs('company.vat.sales.*')
+                    ? 'active'
+                    : ''
+                }}"
+            >
+                Sales
+            </a>
+
+            <a
+                href="{{ route('company.vat.report') }}"
+                class="company-submenu-link
+                {{ request()->routeIs('company.vat.report')
+                    ? 'active'
+                    : ''
+                }}"
+            >
+                VAT Report
+            </a>
+
+        </div>
+
+    </div>
+
+@endif
     {{-- Announcements --}}
     @if ($canSeeAnnouncements)
         <div class="company-menu-item">

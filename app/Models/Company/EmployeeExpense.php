@@ -24,8 +24,11 @@ class EmployeeExpense extends Model
         'category',
         'expense_type',
         'merchant',
-        'amount',
-        'currency',
+      'amount',
+'net_amount',
+'vat_rate',
+'vat_amount',
+'currency',
         'expense_date',
         'description',
         'receipt_path',
@@ -37,12 +40,14 @@ class EmployeeExpense extends Model
         'rejection_reason',
     ];
 
-    protected $casts = [
-        'expense_date' => 'date',
-        'amount' => 'decimal:2',
-        'reviewed_at' => 'datetime',
-    ];
-
+   protected $casts = [
+    'expense_date' => 'date',
+    'amount' => 'decimal:2',
+    'net_amount' => 'decimal:2',
+    'vat_rate' => 'decimal:2',
+    'vat_amount' => 'decimal:2',
+    'reviewed_at' => 'datetime',
+];
     public function employee()
     {
         return $this->belongsTo(Employee::class);

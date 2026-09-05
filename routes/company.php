@@ -212,6 +212,53 @@ Route::post(
     ->name(
         'company.security.2fa.disable'
     );
+    /*
+|--------------------------------------------------------------------------
+| VAT / Sales
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/vat/sales',
+    'Company\\VatSaleController@index'
+)
+    ->middleware('company.permission:expenses.manage')
+    ->name('company.vat.sales.index');
+
+Route::post(
+    '/vat/sales',
+    'Company\\VatSaleController@store'
+)
+    ->middleware('company.permission:expenses.manage')
+    ->name('company.vat.sales.store');
+
+Route::post(
+    '/vat/sales/{sale}/update',
+    'Company\\VatSaleController@update'
+)
+    ->middleware('company.permission:expenses.manage')
+    ->name('company.vat.sales.update');
+
+Route::delete(
+    '/vat/sales/{sale}',
+    'Company\\VatSaleController@destroy'
+)
+    ->middleware('company.permission:expenses.manage')
+    ->name('company.vat.sales.destroy');
+
+
+/*
+|--------------------------------------------------------------------------
+| VAT Report
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/vat/report',
+    'Company\\VatReportController@index'
+)
+    ->middleware('company.permission:expenses.manage')
+    ->name('company.vat.report');
 /*
 |--------------------------------------------------------------------------
 | Right to Work

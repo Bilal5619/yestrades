@@ -56,7 +56,7 @@
 
     .expenses-stats {
         display: grid;
-       grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 16px;
         margin-bottom: 24px;
     }
@@ -138,6 +138,105 @@
         font-size: 18px;
         cursor: pointer;
     }
+    @media (max-width: 900px) {
+    .expenses-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .expenses-stats {
+        grid-template-columns: 1fr;
+    }
+}
+/* Professional expense entry form */
+.expense-entry-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.expense-entry-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.expense-entry-field label {
+    color: #c9d2e5;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.expense-entry-field input,
+.expense-entry-field select,
+.expense-entry-field textarea {
+    width: 100%;
+    min-height: 40px;
+    padding: 9px 11px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 7px;
+    background: #151f35;
+    color: #ffffff;
+    box-sizing: border-box;
+}
+
+.expense-entry-field textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.expense-entry-full {
+    grid-column: 1 / -1;
+}
+
+.expense-vat-preview {
+    background: rgba(111,168,238,0.06) !important;
+    color: #dce8f8 !important;
+}
+
+.expense-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 18px;
+}
+
+.expense-submit-btn {
+    min-width: 150px;
+    height: 42px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 7px;
+    background: #2878dc;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.expense-submit-btn:hover {
+    background: #216bc7;
+}
+
+@media (max-width: 1100px) {
+    .expense-entry-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 650px) {
+    .expense-entry-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .expense-form-actions {
+        justify-content: stretch;
+    }
+
+    .expense-submit-btn {
+        width: 100%;
+    }
+}
 </style>
 
 <div class="expenses-header">
@@ -189,62 +288,162 @@
        &pound;{{ number_format($totals['returns'] ?? 0, 2) }}
     </div>
 </div>
+<div class="expenses-stat-card">
+    <div class="expenses-stat-label">VAT Paid (Approved)</div>
+
+    <div class="expenses-stat-value" style="color:#6fa8ee;">
+        &pound;{{ number_format($totals['vat_paid'] ?? 0, 2) }}
+    </div>
+</div>
 </div>
 
 <div class="expenses-card">
-    <h2 style="font-size:16px; margin-bottom:14px;">Record New Expense</h2>
-    <form method="POST" action="{{ route('company.hr.expenses.store') }}" enctype="multipart/form-data">
+    <h2 style="font-size:16px; margin:0 0 18px;">
+        Record New Expense
+    </h2>
+
+    <form method="POST"
+          action="{{ route('company.hr.expenses.store') }}"
+          enctype="multipart/form-data">
+
         @csrf
-        <div class="expenses-form-grid">
-            <div class="expenses-form-field">
+
+        <div class="expense-entry-grid">
+
+            <div class="expense-entry-field">
                 <label>Employee</label>
                 <select name="employee_id" required>
                     <option value="">Select employee</option>
+
                     @foreach ($employees as $employee)
-                        <option value="{{ $employee->id }}">{{ $employee->full_name }}</option>
+                        <option value="{{ $employee->id }}">
+                            {{ $employee->full_name }}
+                        </option>
                     @endforeach
                 </select>
             </div>
-            <div class="expenses-form-field">
+
+            <div class="expense-entry-field">
                 <label>Type</label>
+
                 <select name="expense_type">
                     @foreach (\App\Models\Company\EmployeeExpense::EXPENSE_TYPES as $type)
-                        <option value="{{ $type }}">{{ $type === 'personal' ? 'Personal Money' : ($type === 'return' ? 'Return (money back)' : 'Expense') }}</option>
+                        <option value="{{ $type }}">
+                            {{ $type === 'personal'
+                                ? 'Personal Money'
+                                : ($type === 'return'
+                                    ? 'Return (money back)'
+                                    : 'Expense') }}
+                        </option>
                     @endforeach
                 </select>
             </div>
-            <div class="expenses-form-field">
+
+            <div class="expense-entry-field">
                 <label>Category</label>
+
                 <select name="category" required>
                     @foreach (\App\Models\Company\EmployeeExpense::CATEGORIES as $category)
-                        <option value="{{ $category }}">{{ ucfirst($category) }}</option>
+                        <option value="{{ $category }}">
+                            {{ ucfirst($category) }}
+                        </option>
                     @endforeach
                 </select>
             </div>
-            <div class="expenses-form-field">
+
+            <div class="expense-entry-field">
                 <label>From (merchant/vendor)</label>
-                <input type="text" name="merchant" placeholder="e.g. Shell Petrol Station">
+                <input
+                    type="text"
+                    name="merchant"
+                    placeholder="e.g. Screwfix"
+                >
             </div>
-            <div class="expenses-form-field">
-                <label>Amount (&pound;)</label>
-                <input type="number" step="0.01" min="0.01" name="amount" required>
+
+            <div class="expense-entry-field">
+                <label>Total Amount Paid (£)</label>
+                <input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    name="amount"
+                    id="expenseAmount"
+                    placeholder="0.00"
+                    required
+                >
             </div>
-            <div class="expenses-form-field">
+
+            <div class="expense-entry-field">
+                <label>VAT Rate</label>
+
+                <select name="vat_rate" id="expenseVatRate" required>
+                    <option value="20">20% VAT</option>
+                    <option value="5">5% VAT</option>
+                    <option value="0">No VAT / 0%</option>
+                </select>
+            </div>
+
+            <div class="expense-entry-field">
+                <label>Net Amount</label>
+                <input
+                    type="text"
+                    id="expenseNetPreview"
+                    class="expense-vat-preview"
+                    value="£0.00"
+                    readonly
+                >
+            </div>
+
+            <div class="expense-entry-field">
+                <label>VAT Paid</label>
+                <input
+                    type="text"
+                    id="expenseVatPreview"
+                    class="expense-vat-preview"
+                    value="£0.00"
+                    readonly
+                >
+            </div>
+
+            <div class="expense-entry-field">
                 <label>Date</label>
-                <input type="date" name="expense_date" required>
+                <input
+                    type="date"
+                    name="expense_date"
+                    required
+                >
             </div>
-            <div class="expenses-form-field">
-                <label>Receipt (optional)</label>
-                <input type="file" name="receipt" accept=".jpg,.jpeg,.png,.pdf">
+
+            <div class="expense-entry-field">
+                <label>Receipt / Invoice</label>
+                <input
+                    type="file"
+                    name="receipt"
+                    accept=".jpg,.jpeg,.png,.pdf"
+                >
             </div>
+
+            <div class="expense-entry-field expense-entry-full">
+                <label>Description</label>
+
+                <textarea
+                    name="description"
+                    maxlength="255"
+                    placeholder="What was this expense for?"
+                ></textarea>
+            </div>
+
         </div>
-        <div class="expenses-form-field" style="margin-bottom:14px;">
-            <label>Description</label>
-            <textarea name="description" rows="2" maxlength="255" placeholder="What was this expense for?"></textarea>
+
+        <div class="expense-form-actions">
+            <button type="submit" class="expense-submit-btn">
+                Record Expense
+            </button>
         </div>
-        <button type="submit" class="btn-primary-sm">Record Expense</button>
+
     </form>
 </div>
+
 
 <form method="GET" action="{{ route('company.hr.expenses.index') }}" class="expenses-filter-bar">
     <div class="expenses-filter-field">
@@ -299,8 +498,16 @@
         <table class="expenses-table">
             <thead>
                 <tr>
-                    <th>Employee</th><th>Type</th><th>Category</th><th>From</th><th>Amount</th><th>Date</th>
-                    <th>Description</th><th>Source</th><th>Status</th><th>Receipt</th><th>Actions</th>
+                   <th>Employee</th>
+<th>Type</th>
+<th>Category</th>
+<th>From</th>
+<th>Total</th>
+<th>Net</th>
+<th>VAT Rate</th>
+<th>VAT Paid</th>
+<th>Date</th>
+  <th>Description</th><th>Source</th><th>Status</th><th>Receipt</th><th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -315,9 +522,36 @@
                         </td>
                         <td>{{ ucfirst($expense->category) }}</td>
                         <td>{{ $expense->merchant ?? '—' }}</td>
-                        <td>&pound;{{ number_format($expense->amount, 2) }}</td>
-                        <td>{{ $expense->expense_date->format('d-m-Y') }}</td>
-                        <td>{{ $expense->description ?? '—' }}</td>
+                       <td>
+    &pound;{{ number_format($expense->amount, 2) }}
+</td>
+
+<td>
+    @if ($expense->net_amount !== null)
+        &pound;{{ number_format($expense->net_amount, 2) }}
+    @else
+        —
+    @endif
+</td>
+
+<td>
+    @if ($expense->vat_rate !== null)
+        {{ number_format($expense->vat_rate, 0) }}%
+    @else
+        —
+    @endif
+</td>
+
+<td>
+    @if ($expense->vat_amount !== null)
+        &pound;{{ number_format($expense->vat_amount, 2) }}
+    @else
+        —
+    @endif
+</td>
+
+<td>{{ $expense->expense_date->format('d-m-Y') }}</td>
+ <td>{{ $expense->description ?? '—' }}</td>
                         <td>
                             @if ($expense->source === 'employee_app')
                                 <span class="expenses-badge" style="background: rgba(111,168,238,0.16); color:#6fa8ee;">App</span>
@@ -348,9 +582,10 @@
                                 data-category="{{ $expense->category }}"
                                 data-expense-type="{{ $expense->expense_type ?? 'expense' }}"
                                 data-merchant="{{ $expense->merchant }}"
-                                data-amount="{{ $expense->amount }}"
-                                data-expense-date="{{ $expense->expense_date->format('Y-m-d') }}"
-                                data-description="{{ $expense->description }}"
+                              data-amount="{{ $expense->amount }}"
+data-vat-rate="{{ $expense->vat_rate ?? 0 }}"
+data-expense-date="{{ $expense->expense_date->format('Y-m-d') }}"
+  data-description="{{ $expense->description }}"
                                 onclick="openEditExpenseModal(this)">Edit</button>
                             @if ($expense->status === 'pending')
                                 <form method="POST" action="{{ route('company.hr.expenses.approve', $expense) }}" class="expenses-action-form">
@@ -368,7 +603,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="11" class="expenses-empty">No expenses recorded for this filter.</td></tr>
+                    <tr><td colspan="14" class="expenses-empty">No expenses recorded for this filter.</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -412,10 +647,47 @@
                     <label>From (merchant/vendor)</label>
                     <input type="text" name="merchant" id="editMerchant" placeholder="e.g. Shell Petrol Station">
                 </div>
-                <div class="expenses-form-field">
-                    <label>Amount (&pound;)</label>
-                    <input type="number" step="0.01" min="0.01" name="amount" id="editAmount" required>
-                </div>
+               <div class="expenses-form-field">
+    <label>Total Amount Paid (&pound;)</label>
+    <input
+        type="number"
+        step="0.01"
+        min="0.01"
+        name="amount"
+        id="editAmount"
+        required
+    >
+</div>
+
+<div class="expenses-form-field">
+    <label>VAT Rate</label>
+
+    <select name="vat_rate" id="editVatRate" required>
+        <option value="20">20% VAT</option>
+        <option value="5">5% VAT</option>
+        <option value="0">No VAT / 0%</option>
+    </select>
+</div>
+
+<div class="expenses-form-field">
+    <label>Net Amount</label>
+    <input
+        type="text"
+        id="editNetPreview"
+        value="£0.00"
+        readonly
+    >
+</div>
+
+<div class="expenses-form-field">
+    <label>VAT Paid</label>
+    <input
+        type="text"
+        id="editVatPreview"
+        value="£0.00"
+        readonly
+    >
+</div>
                 <div class="expenses-form-field">
                     <label>Date</label>
                     <input type="date" name="expense_date" id="editExpenseDate" required>
@@ -448,15 +720,81 @@
         document.getElementById('editExpenseType').value = button.dataset.expenseType;
         document.getElementById('editCategory').value = button.dataset.category;
         document.getElementById('editMerchant').value = button.dataset.merchant || '';
-        document.getElementById('editAmount').value = button.dataset.amount;
-        document.getElementById('editExpenseDate').value = button.dataset.expenseDate;
-        document.getElementById('editDescription').value = button.dataset.description || '';
+      document.getElementById('editAmount').value = button.dataset.amount;
+document.getElementById('editVatRate').value = button.dataset.vatRate || '0';
+
+calculateEditVat();
+
+document.getElementById('editExpenseDate').value = button.dataset.expenseDate;
+ document.getElementById('editDescription').value = button.dataset.description || '';
         document.getElementById('editExpenseBackdrop').classList.add('is-open');
     }
+function calculateVat(gross, rate) {
+    gross = parseFloat(gross) || 0;
+    rate = parseFloat(rate) || 0;
 
+    if (gross <= 0) {
+        return {
+            net: 0,
+            vat: 0
+        };
+    }
+
+    if (rate <= 0) {
+        return {
+            net: gross,
+            vat: 0
+        };
+    }
+
+    const net = gross / (1 + (rate / 100));
+    const vat = gross - net;
+
+    return {
+        net: net,
+        vat: vat
+    };
+}
+
+function calculateNewExpenseVat() {
+    const gross = document.getElementById('expenseAmount').value;
+    const rate = document.getElementById('expenseVatRate').value;
+
+    const result = calculateVat(gross, rate);
+
+    document.getElementById('expenseNetPreview').value =
+        '£' + result.net.toFixed(2);
+
+    document.getElementById('expenseVatPreview').value =
+        '£' + result.vat.toFixed(2);
+}
+
+function calculateEditVat() {
+    const gross = document.getElementById('editAmount').value;
+    const rate = document.getElementById('editVatRate').value;
+
+    const result = calculateVat(gross, rate);
+
+    document.getElementById('editNetPreview').value =
+        '£' + result.net.toFixed(2);
+
+    document.getElementById('editVatPreview').value =
+        '£' + result.vat.toFixed(2);
+}
     function closeEditExpenseModal() {
         document.getElementById('editExpenseBackdrop').classList.remove('is-open');
     }
+    document.getElementById('expenseAmount')
+    ?.addEventListener('input', calculateNewExpenseVat);
+
+document.getElementById('expenseVatRate')
+    ?.addEventListener('change', calculateNewExpenseVat);
+
+document.getElementById('editAmount')
+    ?.addEventListener('input', calculateEditVat);
+
+document.getElementById('editVatRate')
+    ?.addEventListener('change', calculateEditVat);
 </script>
 
 @endsection
