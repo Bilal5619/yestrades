@@ -102,8 +102,15 @@ $totals = [
 $vatRate = (float) $validated['vat_rate'];
 
 if ($vatRate > 0) {
-    $netAmount = round($grossAmount / (1 + ($vatRate / 100)), 2);
-    $vatAmount = round($grossAmount - $netAmount, 2);
+    $vatAmount = round(
+        $grossAmount * $vatRate / (100 + $vatRate),
+        2
+    );
+
+    $netAmount = round(
+        $grossAmount - $vatAmount,
+        2
+    );
 } else {
     $netAmount = $grossAmount;
     $vatAmount = 0;
@@ -139,8 +146,15 @@ $validated['vat_amount'] = $vatAmount;
 $vatRate = (float) $validated['vat_rate'];
 
 if ($vatRate > 0) {
-    $netAmount = round($grossAmount / (1 + ($vatRate / 100)), 2);
-    $vatAmount = round($grossAmount - $netAmount, 2);
+    $vatAmount = round(
+        $grossAmount * $vatRate / (100 + $vatRate),
+        2
+    );
+
+    $netAmount = round(
+        $grossAmount - $vatAmount,
+        2
+    );
 } else {
     $netAmount = $grossAmount;
     $vatAmount = 0;

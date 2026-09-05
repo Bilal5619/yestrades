@@ -747,13 +747,18 @@ function calculateVat(gross, rate) {
         };
     }
 
-    const net = gross / (1 + (rate / 100));
-    const vat = gross - net;
+   const vat = Math.round(
+    (gross * rate / (100 + rate)) * 100
+) / 100;
 
-    return {
-        net: net,
-        vat: vat
-    };
+const net = Math.round(
+    (gross - vat) * 100
+) / 100;
+
+return {
+    net: net,
+    vat: vat
+};
 }
 
 function calculateNewExpenseVat() {
