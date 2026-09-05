@@ -42,14 +42,30 @@ class ExpenseController extends Controller
         }
 
         $expenses = $query->orderByDesc('expense_date')->paginate(20)->withQueryString();
+$totals = [
+    'total' => (clone $query)
+        ->where('expense_type', '!=', 'return')
+        ->sum('amount'),
 
-        $totals = [
-            'total' => (clone $query)->sum('amount'),
-            'pending' => (clone $query)->where('status', 'pending')->sum('amount'),
-            'approved' => (clone $query)->where('status', 'approved')->sum('amount'),
-            'rejected' => (clone $query)->where('status', 'rejected')->sum('amount'),
-        ];
+    'pending' => (clone $query)
+        ->where('expense_type', '!=', 'return')
+        ->where('status', 'pending')
+        ->sum('amount'),
 
+    'approved' => (clone $query)
+        ->where('expense_type', '!=', 'return')
+        ->where('status', 'approved')
+        ->sum('amount'),
+
+    'rejected' => (clone $query)
+        ->where('expense_type', '!=', 'return')
+        ->where('status', 'rejected')
+        ->sum('amount'),
+
+    'returns' => (clone $query)
+        ->where('expense_type', 'return')
+        ->sum('amount'),
+];
         $employees = Employee::query()
             ->where('employment_status', 'active')
             ->orderBy('first_name')

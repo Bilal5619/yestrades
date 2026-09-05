@@ -56,7 +56,7 @@
 
     .expenses-stats {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+       grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 16px;
         margin-bottom: 24px;
     }
@@ -183,6 +183,12 @@
         <div class="expenses-stat-label">Rejected</div>
         <div class="expenses-stat-value" style="color:#ff8a92;">&pound;{{ number_format($totals['rejected'], 2) }}</div>
     </div>
+    <div class="expenses-stat-card">
+    <div class="expenses-stat-label">Returns</div>
+    <div class="expenses-stat-value" style="color:#59dc96;">
+       &pound;{{ number_format($totals['returns'] ?? 0, 2) }}
+    </div>
+</div>
 </div>
 
 <div class="expenses-card">
