@@ -348,19 +348,67 @@ class EmployeeMobileController extends Controller
       'category' => ['nullable', Rule::in(\App\Models\Company\EmployeeExpense::CATEGORIES)],
       'expense_type' => ['nullable', Rule::in(\App\Models\Company\EmployeeExpense::EXPENSE_TYPES)],
       'merchant' => ['required', 'string', 'max:255'],
-      'amount' => ['required', 'numeric', 'min:0.01'],
-      'expense_date' => ['required', 'date', 'before_or_equal:today'],
-      'description' => ['nullable', 'string', 'max:500'],
+      'amount' => [
+    'required',
+    'numeric',
+    'min:0.01',
+],
+
+'vat_rate' => [
+    'nullable',
+    'numeric',
+    Rule::in([0, 5, 20]),
+],
+
+'expense_date' => [
+    'required',
+    'date',
+    'before_or_equal:today',
+],
+'description' => ['nullable', 'string', 'max:500'],
       'receipt' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
     ]);
 
     $receiptPath = $request->file('receipt')->store('expense-receipts', 'public');
+$grossAmount = round(
+    (float) $data['amount'],
+    2
+);
 
+$expenseType =
+    $data['expense_type'] ?? 'expense';
+
+$vatRate =
+    $expenseType === 'expense'
+        ? (float) ($data['vat_rate'] ?? 0)
+        : 0;
+
+if ($vatRate > 0) {
+
+    $vatAmount = round(
+        $grossAmount * $vatRate /
+        (100 + $vatRate),
+        2
+    );
+
+    $netAmount = round(
+        $grossAmount - $vatAmount,
+        2
+    );
+
+} else {
+
+    $netAmount = $grossAmount;
+    $vatAmount = 0;
+}
     $expense = $employee->expenses()->create([
       'category' => $data['category'] ?? 'other',
       'expense_type' => $data['expense_type'] ?? 'expense',
       'merchant' => $data['merchant'],
       'amount' => $data['amount'],
+      'net_amount' => $netAmount,
+'vat_rate' => $vatRate,
+'vat_amount' => $vatAmount,
       'expense_date' => $data['expense_date'],
       'description' => $data['description'] ?? null,
       'receipt_path' => $receiptPath,
@@ -873,6 +921,17 @@ $job->update($jobUpdate);
       'expense_type' => $expense->expense_type ?? 'expense',
       'merchant' => $expense->merchant,
       'amount' => (float) $expense->amount,
+      'net_amount' => $expense->net_amount !== null
+    ? round((float) $expense->net_amount, 2)
+    : null,
+
+'vat_rate' => $expense->vat_rate !== null
+    ? round((float) $expense->vat_rate, 2)
+    : null,
+
+'vat_amount' => $expense->vat_amount !== null
+    ? round((float) $expense->vat_amount, 2)
+    : null,
       'currency' => $expense->currency,
       'expense_date' => optional($expense->expense_date)->toDateString(),
       'description' => $expense->description,
