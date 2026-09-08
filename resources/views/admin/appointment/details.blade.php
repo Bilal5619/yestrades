@@ -568,7 +568,7 @@
                 </div>
               </div>
             </div>
-            @if ($details->order_status == 'accepted' && !in_array($details->employeeJob->status, ['completed', 'awaiting_review', 'cancelled'], true) && !$details->employeeJob->finished_at)
+            @if ($details->order_status == 'accepted')
               <div class="mt-3">
                 <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#adminCompleteEmployeeJobModal">
                   <i class="fas fa-check-circle"></i> {{ __('Complete Job') }}
@@ -840,7 +840,7 @@
     </div>
   </div>
 
-  @if ($details->employeeJob && $details->employeeJob->employee && $details->order_status == 'accepted' && !in_array($details->employeeJob->status, ['completed', 'awaiting_review', 'cancelled'], true) && !$details->employeeJob->finished_at)
+  @if ($details->employeeJob && $details->employeeJob->employee && $details->order_status == 'accepted')
     <div class="modal fade" id="adminCompleteEmployeeJobModal" tabindex="-1" role="dialog" aria-labelledby="adminCompleteEmployeeJobModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">

@@ -1112,15 +1112,15 @@ class AppointmentController extends Controller
           ->lockForUpdate()
           ->first();
 
-        if (!$employeeJob || in_array($employeeJob->status, ['completed', 'awaiting_review', 'cancelled'], true) || $employeeJob->finished_at) {
+        if (!$employeeJob || $employeeJob->status === 'cancelled') {
           throw new \LogicException('This employee job cannot be completed.');
         }
 
         $employeeJob->update([
           'started_at' => $employeeJob->started_at ?: now(),
-          'finished_at' => now(),
+          'finished_at' => $employeeJob->finished_at ?: now(),
           'status' => 'completed',
-          'completion_notes' => $request->input('completion_notes'),
+          'completion_notes' => $request->input('completion_notes') ?: $employeeJob->completion_notes,
         ]);
       });
     } catch (\Throwable $exception) {
