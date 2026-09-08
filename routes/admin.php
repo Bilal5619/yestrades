@@ -238,6 +238,8 @@ Route::prefix('/admin')->middleware('auth:admin')->group(function () {
 
     Route::post('/employee/assign', 'Admin\Appointment\AppointmentController@employeeAssign')->name('admin.appointment.employee_assign');
 
+    Route::post('/employee/complete/{id}', 'Admin\Appointment\AppointmentController@completeInternalEmployeeAppointment')->name('admin.appointment.employee_complete');
+
     Route::get('/details/{id}', 'Admin\Appointment\AppointmentController@show')->name('admin.appointment.details');
 
     Route::get('/calendar', 'Admin\Appointment\AppointmentController@calendar')->name('admin.appointment.calendar');

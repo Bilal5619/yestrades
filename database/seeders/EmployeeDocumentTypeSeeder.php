@@ -45,7 +45,7 @@ class EmployeeDocumentTypeSeeder extends Seeder
                 'slug' => 'proof-of-address',
                 'category' => 'address',
                 'description' => 'Recent evidence of the employee’s home address.',
-                'is_required_by_default' => true,
+                'is_required_by_default' => false,
                 'requires_expiry_date' => false,
                 'requires_review' => true,
                 'status' => true,

@@ -2,9 +2,13 @@
 
 namespace App\Http\Helpers;
 
+use App\Models\Services\AppointmentCompletionImage;
 use App\Models\Services\ServiceBooking;
 use App\Models\Services\ServiceReview;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Throwable;
 
 class AppointmentCompletion
 {
@@ -16,6 +20,61 @@ class AppointmentCompletion
       'completed_by_type' => $actorType,
       'completed_by_id' => $actorId,
     ]);
+  }
+
+  public static function completeWithEvidence(ServiceBooking $booking, Request $request, string $actorType, ?int $actorId, ?callable $afterComplete = null): ServiceBooking
+  {
+    $storedFiles = [];
+
+    try {
+      DB::transaction(function () use ($booking, $request, $actorType, $actorId, $afterComplete, &$storedFiles) {
+        $lockedBooking = ServiceBooking::lockForUpdate()->findOrFail($booking->id);
+
+        if ($lockedBooking->order_status !== 'accepted') {
+          throw new \LogicException('Only accepted appointments can be completed.');
+        }
+
+        foreach ($request->file('completion_images') as $image) {
+          $fileName = UploadFile::store(public_path('assets/img/appointment-completions/'), $image);
+          $storedFiles[] = public_path('assets/img/appointment-completions/' . $fileName);
+
+          AppointmentCompletionImage::create([
+            'service_booking_id' => $lockedBooking->id,
+            'image' => $fileName,
+            'uploaded_by_type' => $actorType,
+            'uploaded_by_id' => $actorId,
+          ]);
+        }
+
+        $certFileName = UploadFile::store(public_path('assets/file/certificates/'), $request->file('job_certificate'));
+        $storedFiles[] = public_path('assets/file/certificates/' . $certFileName);
+
+        self::complete($lockedBooking, $actorType, $actorId);
+
+        $lockedBooking->update([
+          'job_certificate' => $certFileName,
+        ]);
+
+        if ($afterComplete) {
+          $afterComplete($lockedBooking);
+        }
+      });
+    } catch (Throwable $exception) {
+      foreach ($storedFiles as $path) {
+        @unlink($path);
+      }
+
+      throw $exception;
+    }
+
+    $freshBooking = $booking->fresh('serviceContent');
+    $certificatePath = $freshBooking->job_certificate
+      ? public_path('assets/file/certificates/' . $freshBooking->job_certificate)
+      : null;
+
+    self::notifyCustomer($freshBooking, $certificatePath);
+
+    return $freshBooking;
   }
 
   public static function notifyCustomer(ServiceBooking $booking, ?string $certificatePath = null): void

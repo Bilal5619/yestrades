@@ -568,6 +568,13 @@
                 </div>
               </div>
             </div>
+            @if ($details->order_status == 'accepted' && !in_array($details->employeeJob->status, ['completed', 'awaiting_review', 'cancelled'], true) && !$details->employeeJob->finished_at)
+              <div class="mt-3">
+                <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#adminCompleteEmployeeJobModal">
+                  <i class="fas fa-check-circle"></i> {{ __('Complete Job') }}
+                </button>
+              </div>
+            @endif
           @else
             <p class="text-muted mb-0">{{ __('Not assigned to an internal employee. Use the external vendor assignment above, or assign this job directly to one of your own employees.') }}</p>
           @endif
@@ -833,6 +840,47 @@
     </div>
   </div>
 
+  @if ($details->employeeJob && $details->employeeJob->employee && $details->order_status == 'accepted' && !in_array($details->employeeJob->status, ['completed', 'awaiting_review', 'cancelled'], true) && !$details->employeeJob->finished_at)
+    <div class="modal fade" id="adminCompleteEmployeeJobModal" tabindex="-1" role="dialog" aria-labelledby="adminCompleteEmployeeJobModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <form action="{{ route('admin.appointment.employee_complete', ['id' => $details->id]) }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="modal-header">
+              <h5 class="modal-title" id="adminCompleteEmployeeJobModalLabel">{{ __('Complete Job') }}</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="{{ __('Close') }}">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label><strong>{{ __('Completion Photos') }}</strong> <span class="text-danger">*</span></label>
+                <input type="file" name="completion_images[]" class="form-control" accept=".jpg,.jpeg,.png,.webp" multiple required>
+                <small class="form-text text-muted">{{ __('1 to 10 photos. JPG, PNG or WEBP. Max 5 MB each.') }}</small>
+                @error('completion_images')<p class="mt-1 mb-0 text-danger">{{ $message }}</p>@enderror
+                @error('completion_images.*')<p class="mt-1 mb-0 text-danger">{{ $message }}</p>@enderror
+              </div>
+              <div class="form-group">
+                <label><strong>{{ __('Job Certificate') }}</strong> <span class="text-danger">*</span></label>
+                <input type="file" name="job_certificate" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                <small class="form-text text-muted">{{ __('PDF, JPG or PNG. Max 10 MB. Will be emailed to the customer.') }}</small>
+                @error('job_certificate')<p class="mt-1 mb-0 text-danger">{{ $message }}</p>@enderror
+              </div>
+              <div class="form-group">
+                <label>{{ __('Completion Notes') }}</label>
+                <textarea name="completion_notes" class="form-control" rows="3" maxlength="5000">{{ old('completion_notes') }}</textarea>
+                @error('completion_notes')<p class="mt-1 mb-0 text-danger">{{ $message }}</p>@enderror
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">{{ __('Cancel') }}</button>
+              <button type="submit" class="btn btn-success btn-sm">{{ __('Mark as Completed') }}</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  @endif
   @if ($details->staff_id != null && $staff != null)
   <!-- info modal -->
   <div class="modal fade" id="staffInfoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -953,7 +1001,9 @@
         data: form.serialize(),
         success: function (response) {
           if (response.status === 'success') {
-            location.reload();
+            var nextUrl = new URL(window.location.href);
+            nextUrl.searchParams.set('complete_employee', '1');
+            window.location.href = nextUrl.toString();
           }
         },
         error: function (xhr) {
@@ -966,6 +1016,10 @@
         }
       });
     });
+
+    @if (request()->input('complete_employee') && $details->employeeJob && $details->employeeJob->employee && $details->order_status == 'accepted')
+      $('#adminCompleteEmployeeJobModal').modal('show');
+    @endif
 
     @if ($errors->has('booking_date') || $errors->has('start_time') || $errors->has('end_time'))
       $('#rescheduleModal').modal('show');

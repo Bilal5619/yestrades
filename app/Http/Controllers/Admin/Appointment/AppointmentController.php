@@ -1085,6 +1085,51 @@ class AppointmentController extends Controller
     return Response::json(['status' => 'success'], 200);
   }
 
+  public function completeInternalEmployeeAppointment(Request $request, $id)
+  {
+    $request->validate([
+      'completion_images' => ['required', 'array', 'min:1', 'max:10'],
+      'completion_images.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+      'job_certificate' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+      'completion_notes' => ['nullable', 'string', 'max:5000'],
+    ]);
+
+    $booking = ServiceBooking::with(['employeeJob.employee', 'serviceContent'])->findOrFail($id);
+
+    if (!$booking->employeeJob || !$booking->employeeJob->employee) {
+      return redirect()->back()->with('warning', 'This appointment is not assigned to an internal employee.');
+    }
+
+    if ($booking->order_status !== 'accepted') {
+      return redirect()->back()->with('warning', 'Only accepted appointments can be completed.');
+    }
+
+    $adminId = Auth::guard('admin')->id();
+
+    try {
+      AppointmentCompletion::completeWithEvidence($booking, $request, 'admin', $adminId, function (ServiceBooking $lockedBooking) use ($request) {
+        $employeeJob = EmployeeJob::where('service_booking_id', $lockedBooking->id)
+          ->lockForUpdate()
+          ->first();
+
+        if (!$employeeJob || in_array($employeeJob->status, ['completed', 'awaiting_review', 'cancelled'], true) || $employeeJob->finished_at) {
+          throw new \LogicException('This employee job cannot be completed.');
+        }
+
+        $employeeJob->update([
+          'started_at' => $employeeJob->started_at ?: now(),
+          'finished_at' => now(),
+          'status' => 'completed',
+          'completion_notes' => $request->input('completion_notes'),
+        ]);
+      });
+    } catch (\Throwable $exception) {
+      report($exception);
+      return redirect()->back()->with('error', 'Appointment completion failed. Please try again.');
+    }
+
+    return redirect()->back()->with('success', 'Appointment completed successfully.');
+  }
   // Creates (or updates, if this booking was already assigned before) the
   // employee_jobs row linked to this booking via service_booking_id, and
   // keeps it filled with the booking's current details.

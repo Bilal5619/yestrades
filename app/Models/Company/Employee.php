@@ -293,7 +293,6 @@ public function syncRequiredDocumentChecklist(): void
         $requiredSlugs = [
             'passport',
             'employment-contract',
-            'proof-of-address',
         ];
     } else {
         /*
@@ -306,7 +305,6 @@ public function syncRequiredDocumentChecklist(): void
             'passport',
             'right-to-work-evidence',
             'employment-contract',
-            'proof-of-address',
         ];
 
         /*
