@@ -142,7 +142,46 @@
             <h2>8. Vendor verification documents</h2>
             <p>If you register as a vendor, we may ask for documents such as insurance, identity, right to work, certificates or business information. These are used for verification, safety, compliance and platform approval purposes.</p>
 
-            <h2>9. Cookies and analytics</h2>
+            <h2>9. Employee and Staff App Information</h2>
+            <p>If you are a current, former or prospective employee, or an authorised user of the Yes Trades Staff app, we may process employee and staff app information as part of the employment relationship and our internal operations.</p>
+            <h3>Employee and staff information we may process:</h3>
+            <ul>
+              <li>Name and employee number</li>
+              <li>Work and personal contact details</li>
+              <li>Job title, department, employment type and employment status</li>
+              <li>Shift schedules</li>
+              <li>Clock-in and clock-out attendance records</li>
+              <li>Working hours</li>
+              <li>Assigned jobs and job completion records</li>
+              <li>Location information collected when an employee clocks in, clocks out, starts an assigned job or finishes an assigned job</li>
+              <li>Holiday requests and holiday balances</li>
+              <li>Expense claims and uploaded receipts</li>
+              <li>Training records</li>
+              <li>Employment contracts</li>
+              <li>Payslips</li>
+              <li>Equipment or vehicles assigned to employees</li>
+              <li>Internal announcements and notification activity</li>
+              <li>Device/app information needed to operate the staff app</li>
+              <li>Push notification tokens</li>
+            </ul>
+            <p>The Yes Trades Staff app may collect your device location when you choose to clock in, clock out, start an assigned job or finish an assigned job. This information is used to verify attendance and job activity at the relevant work location. The app is not intended to continuously track employee location in the background.</p>
+            <h3>Why we use employee and staff app information:</h3>
+            <ul>
+              <li>Employment administration</li>
+              <li>Staff scheduling</li>
+              <li>Attendance and working time records</li>
+              <li>Job assignment and operational management</li>
+              <li>Payroll-related administration</li>
+              <li>Holiday management</li>
+              <li>Expense reimbursement and company expense records</li>
+              <li>Training and compliance</li>
+              <li>Health and safety</li>
+              <li>Internal communication</li>
+              <li>Legal and regulatory obligations</li>
+              <li>Security and fraud prevention</li>
+            </ul>
+            <p>Staff account and data deletion requests can be made by contacting <a href="mailto:info@yestrades.co.uk">info@yestrades.co.uk</a> or by visiting <a href="{{ route('staff_account_deletion') }}">https://yestrades.co.uk/staff-account-deletion</a>. Deletion requests are subject to identity verification and any legal retention requirements that apply.</p>
+            <h2>10. Cookies and analytics</h2>
             <p>Our website may use cookies or similar technologies to:</p>
             <ul>
               <li>Keep the website working properly</li>
@@ -153,14 +192,15 @@
             </ul>
             <p>You can control cookies through your browser settings. If we use non-essential cookies, we will request consent where required.</p>
 
-            <h2>10. How long we keep your data</h2>
+            <h2>11. How long we keep your data</h2>
             <p>We keep personal data only for as long as necessary for the purpose it was collected.</p>
             <p>Booking, invoice and payment records may be kept for legal, tax and accounting purposes. Contact form data may be kept for as long as needed to respond to your enquiry. Vendor verification records may be kept while the vendor account is active and for a reasonable period afterwards where required for compliance or dispute handling.</p>
+            <p>Some employee information may need to be retained after employment ends where required for payroll, tax, accounting, employment, health and safety, compliance, legal claims, or other legal and legitimate business obligations. Information that is no longer required will be deleted or anonymised in accordance with applicable law and company retention procedures.</p>
 
-            <h2>11. Data security</h2>
+            <h2>12. Data security</h2>
             <p>We take reasonable steps to protect personal data from loss, misuse, unauthorised access, disclosure or alteration. However, no website or online service can be guaranteed to be completely secure.</p>
 
-            <h2>12. Your rights</h2>
+            <h2>13. Your rights</h2>
             <p>Under UK data protection law, you may have rights including:</p>
             <ul>
               <li>The right to access your personal data</li>
@@ -173,21 +213,21 @@
             </ul>
             <p>To exercise your rights, contact us using the details above.</p>
 
-            <h2>13. Marketing</h2>
+            <h2>14. Marketing</h2>
             <p>We may send marketing messages only where allowed by law or where you have consented. You can unsubscribe or ask us to stop marketing messages at any time.</p>
 
-            <h2>14. Third-party links</h2>
+            <h2>15. Third-party links</h2>
             <p>Our website may contain links to third-party websites. We are not responsible for the privacy practices or content of those websites.</p>
 
-            <h2>15. Children's privacy</h2>
-            <p>Our services are not intended for children. We do not knowingly collect personal data from children.</p>
+            <h2>16. Children's privacy</h2>
+            <p>Our public customer services are not directed at children. Authorised employees under 18 may use internal employment systems, including the Yes Trades Staff app, where appropriate. In those cases, employee data is processed as part of the employment relationship and in accordance with applicable law.</p>
 
-            <h2>16. Complaints</h2>
+            <h2>17. Complaints</h2>
             <p>If you are unhappy with how we use your personal data, please contact us first so we can try to resolve the issue.</p>
             <p>You also have the right to complain to the Information Commissioner's Office, the UK data protection regulator.</p>
             <p><strong>ICO website:</strong> <a href="https://ico.org.uk" target="_blank" rel="noopener">https://ico.org.uk</a></p>
 
-            <h2>17. Changes to this policy</h2>
+            <h2>18. Changes to this policy</h2>
             <p>We may update this Privacy Policy from time to time. The latest version will always be available on this page.</p>
           </article>
         </div>

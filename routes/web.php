@@ -359,6 +359,7 @@ Route::get('/sitemap.xml', 'FrontEnd\SitemapController@index')->name('sitemap');
 
 Route::get('/privacy-policy', 'FrontEnd\LegalPageController@privacyPolicy')->name('privacy_policy')->middleware('change.lang');
 Route::get('/cookie-policy', 'FrontEnd\LegalPageController@cookiePolicy')->name('cookie_policy')->middleware('change.lang');
+Route::view('/staff-account-deletion', 'frontend.staff-account-deletion')->name('staff_account_deletion')->middleware('change.lang');
 
 Route::get('/landlords', function () {
   return view('frontend.landlords');
