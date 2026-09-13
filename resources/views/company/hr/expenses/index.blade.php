@@ -690,7 +690,7 @@ data-return-amount="{{ $expense->return_amount ?? '' }}"
 data-return-vat-rate="{{ $expense->return_vat_rate ?? $expense->vat_rate ?? 0 }}"
 
 data-return-date="{{ $expense->return_date
-    ? $expense->return_date->format('Y-m-d')
+    ? \Carbon\Carbon::parse($expense->return_date)->format('Y-m-d')
     : '' }}"
 
 data-return-note="{{ e($expense->return_note ?? '') }}"
