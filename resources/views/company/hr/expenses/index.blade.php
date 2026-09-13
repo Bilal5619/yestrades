@@ -521,44 +521,39 @@
                         <td>{{ ucfirst($expense->category) }}</td>
                         <td>{{ $expense->merchant ?? '—' }}</td>
                      
-                        <td>
-                            @php
-                                $finalTotal =
-                                    (float) $expense->amount
-                                    - (float) ($expense->return_amount ?? 0);
-                            @endphp
+                       <td>
+    <strong>
+        &pound;{{ number_format(
+            (float) $expense->amount
+            - (float) ($expense->return_amount ?? 0),
+            2
+        ) }}
+    </strong>
 
-                            <strong>
-                                &pound;{{ number_format($finalTotal, 2) }}
-                            </strong>
+    @if ((float) ($expense->return_amount ?? 0) > 0)
+        <div style="
+            font-size:11px;
+            color:#aab4ca;
+            margin-top:4px;
+        ">
+            Original:
+            &pound;{{ number_format($expense->amount, 2) }}
 
-                            @if ((float) ($expense->return_amount ?? 0) > 0)
-                                <div style="
-                                    font-size:11px;
-                                    color:#aab4ca;
-                                    margin-top:4px;
-                                ">
-                                    Original:
-                                    &pound;{{ number_format($expense->amount, 2) }}
+            <br>
 
-                                    <br>
-
-                                    Returned:
-                                    <span style="color:#59dc96;">
-                                        -&pound;{{ number_format($expense->return_amount, 2) }}
-                                    </span>
-                                </div>
-                            @endif
-                        </td>
+            Returned:
+            <span style="color:#59dc96;">
+                -&pound;{{ number_format($expense->return_amount, 2) }}
+            </span>
+        </div>
+    @endif
+</td>
 <td>
-    @php
-        $finalNet =
-            (float) ($expense->net_amount ?? 0)
-            -
-            (float) ($expense->return_net_amount ?? 0);
-    @endphp
-
-    &pound;{{ number_format($finalNet, 2) }}
+    &pound;{{ number_format(
+        (float) ($expense->net_amount ?? 0)
+        - (float) ($expense->return_net_amount ?? 0),
+        2
+    ) }}
 
     @if ((float) ($expense->return_net_amount ?? 0) > 0)
         <div style="
@@ -567,10 +562,7 @@
             margin-top:4px;
         ">
             Original:
-            &pound;{{ number_format(
-                $expense->net_amount,
-                2
-            ) }}
+            &pound;{{ number_format($expense->net_amount, 2) }}
 
             <br>
 
@@ -591,14 +583,11 @@
 </td>
 
 <td>
-    @php
-        $finalVat =
-            (float) ($expense->vat_amount ?? 0)
-            -
-            (float) ($expense->return_vat_amount ?? 0);
-    @endphp
-
-    &pound;{{ number_format($finalVat, 2) }}
+    &pound;{{ number_format(
+        (float) ($expense->vat_amount ?? 0)
+        - (float) ($expense->return_vat_amount ?? 0),
+        2
+    ) }}
 
     @if ((float) ($expense->return_vat_amount ?? 0) > 0)
         <div style="
@@ -607,10 +596,7 @@
             margin-top:4px;
         ">
             Original:
-            &pound;{{ number_format(
-                $expense->vat_amount,
-                2
-            ) }}
+            &pound;{{ number_format($expense->vat_amount, 2) }}
 
             <br>
 
