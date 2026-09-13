@@ -326,17 +326,15 @@
             <div class="expense-entry-field">
                 <label>Type</label>
 
-                <select name="expense_type">
-                    @foreach (\App\Models\Company\EmployeeExpense::EXPENSE_TYPES as $type)
-                        <option value="{{ $type }}">
-                            {{ $type === 'personal'
-                                ? 'Personal Money'
-                                : ($type === 'return'
-                                    ? 'Return (money back)'
-                                    : 'Expense') }}
-                        </option>
-                    @endforeach
-                </select>
+               <select name="expense_type">
+    <option value="expense">
+        Expense
+    </option>
+
+    <option value="personal">
+        Personal Money
+    </option>
+</select>
             </div>
 
             <div class="expense-entry-field">
@@ -522,18 +520,68 @@
                         </td>
                         <td>{{ ucfirst($expense->category) }}</td>
                         <td>{{ $expense->merchant ?? '—' }}</td>
-                       <td>
-    &pound;{{ number_format($expense->amount, 2) }}
-</td>
+                     
+                        <td>
+                            @php
+                                $finalTotal =
+                                    (float) $expense->amount
+                                    - (float) ($expense->return_amount ?? 0);
+                            @endphp
 
+                            <strong>
+                                &pound;{{ number_format($finalTotal, 2) }}
+                            </strong>
+
+                            @if ((float) ($expense->return_amount ?? 0) > 0)
+                                <div style="
+                                    font-size:11px;
+                                    color:#aab4ca;
+                                    margin-top:4px;
+                                ">
+                                    Original:
+                                    &pound;{{ number_format($expense->amount, 2) }}
+
+                                    <br>
+
+                                    Returned:
+                                    <span style="color:#59dc96;">
+                                        -&pound;{{ number_format($expense->return_amount, 2) }}
+                                    </span>
+                                </div>
+                            @endif
+                        </td>
 <td>
-    @if ($expense->net_amount !== null)
-        &pound;{{ number_format($expense->net_amount, 2) }}
-    @else
-        —
+    @php
+        $finalNet =
+            (float) ($expense->net_amount ?? 0)
+            -
+            (float) ($expense->return_net_amount ?? 0);
+    @endphp
+
+    &pound;{{ number_format($finalNet, 2) }}
+
+    @if ((float) ($expense->return_net_amount ?? 0) > 0)
+        <div style="
+            font-size:11px;
+            color:#59dc96;
+            margin-top:4px;
+        ">
+            Original:
+            &pound;{{ number_format(
+                $expense->net_amount,
+                2
+            ) }}
+
+            <br>
+
+            Returned:
+            -&pound;{{ number_format(
+                $expense->return_net_amount,
+                2
+            ) }}
+        </div>
     @endif
 </td>
-
 <td>
     @if ($expense->vat_rate !== null)
         {{ number_format($expense->vat_rate, 0) }}%
@@ -543,10 +591,35 @@
 </td>
 
 <td>
-    @if ($expense->vat_amount !== null)
-        &pound;{{ number_format($expense->vat_amount, 2) }}
-    @else
-        —
+    @php
+        $finalVat =
+            (float) ($expense->vat_amount ?? 0)
+            -
+            (float) ($expense->return_vat_amount ?? 0);
+    @endphp
+
+    &pound;{{ number_format($finalVat, 2) }}
+
+    @if ((float) ($expense->return_vat_amount ?? 0) > 0)
+        <div style="
+            font-size:11px;
+            color:#59dc96;
+            margin-top:4px;
+        ">
+            Original:
+            &pound;{{ number_format(
+                $expense->vat_amount,
+                2
+            ) }}
+
+            <br>
+
+            Refund VAT:
+            -&pound;{{ number_format(
+                $expense->return_vat_amount,
+                2
+            ) }}
+        </div>
     @endif
 </td>
 
@@ -569,12 +642,53 @@
                             @endif
                         </td>
                         <td>
-                            @if ($expense->receipt_path)
-                                <a href="{{ route('company.hr.expenses.receipt', $expense) }}" style="color:#6fa8ee;">View</a>
-                            @else
-                                —
-                            @endif
-                        </td>
+
+    @if ($expense->receipt_path)
+
+        <a
+            href="{{ route(
+                'company.hr.expenses.receipt',
+                $expense
+            ) }}"
+            style="
+                color:#6fa8ee;
+                display:block;
+                margin-bottom:5px;
+            "
+        >
+            Original Slip
+        </a>
+
+    @endif
+
+
+    @if ($expense->return_receipt_path)
+
+        <a
+            href="{{ route(
+                'company.hr.expenses.return-receipt',
+                $expense
+            ) }}"
+            style="
+                color:#59dc96;
+                display:block;
+            "
+        >
+            Return Slip
+        </a>
+
+    @endif
+
+
+    @if (
+        !$expense->receipt_path
+        &&
+        !$expense->return_receipt_path
+    )
+        —
+    @endif
+
+</td>
                         <td>
                             <button type="button" class="expenses-link-btn expenses-link-edit"
                                 data-update-url="{{ route('company.hr.expenses.update', $expense) }}"
@@ -585,6 +699,15 @@
                               data-amount="{{ $expense->amount }}"
 data-vat-rate="{{ $expense->vat_rate ?? 0 }}"
 data-expense-date="{{ $expense->expense_date->format('Y-m-d') }}"
+data-return-amount="{{ $expense->return_amount ?? '' }}"
+
+data-return-vat-rate="{{ $expense->return_vat_rate ?? $expense->vat_rate ?? 0 }}"
+
+data-return-date="{{ $expense->return_date
+    ? $expense->return_date->format('Y-m-d')
+    : '' }}"
+
+data-return-note="{{ e($expense->return_note ?? '') }}"
   data-description="{{ $expense->description }}"
                                 onclick="openEditExpenseModal(this)">Edit</button>
                             @if ($expense->status === 'pending')
@@ -697,6 +820,173 @@ data-expense-date="{{ $expense->expense_date->format('Y-m-d') }}"
                     <input type="file" name="receipt" accept=".jpg,.jpeg,.png,.pdf">
                 </div>
             </div>
+            <div
+    style="
+        grid-column:1 / -1;
+        border-top:1px solid rgba(255,255,255,0.1);
+        margin-top:10px;
+        padding-top:18px;
+    "
+>
+    <h3 style="
+        margin:0 0 4px;
+        font-size:15px;
+        color:#59dc96;
+    ">
+        Return / Refund
+    </h3>
+
+    <div style="
+        font-size:12px;
+        color:#aab4ca;
+        margin-bottom:14px;
+    ">
+        Add a refund against this original expense.
+    </div>
+</div>
+
+
+<div class="expenses-form-field">
+
+    <label>Amount Returned (£)</label>
+
+    <input
+        type="number"
+        name="return_amount"
+        id="editReturnAmount"
+        min="0.01"
+        step="0.01"
+        placeholder="0.00"
+    >
+
+</div>
+
+
+<div class="expenses-form-field">
+
+    <label>Return VAT Rate</label>
+
+    <select
+        name="return_vat_rate"
+        id="editReturnVatRate"
+    >
+        <option value="20">20% VAT</option>
+        <option value="5">5% VAT</option>
+        <option value="0">No VAT / 0%</option>
+    </select>
+
+</div>
+
+
+<div class="expenses-form-field">
+
+    <label>Refund Net Amount</label>
+
+    <input
+        type="text"
+        id="editReturnNetPreview"
+        value="£0.00"
+        readonly
+    >
+
+</div>
+
+
+<div class="expenses-form-field">
+
+    <label>Refund VAT</label>
+
+    <input
+        type="text"
+        id="editReturnVatPreview"
+        value="£0.00"
+        readonly
+    >
+
+</div>
+
+
+<div class="expenses-form-field">
+
+    <label>Return Date</label>
+
+    <input
+        type="date"
+        name="return_date"
+        id="editReturnDate"
+    >
+
+</div>
+
+
+<div class="expenses-form-field">
+
+    <label>Return Slip / Credit Note</label>
+
+    <input
+        type="file"
+        name="return_receipt"
+        accept=".jpg,.jpeg,.png,.pdf"
+    >
+
+</div>
+
+
+<div class="expenses-form-field" style="grid-column:1 / -1;">
+
+    <label>Return Note</label>
+
+    <input
+        type="text"
+        name="return_note"
+        id="editReturnNote"
+        maxlength="255"
+        placeholder="e.g. Returned damaged item"
+    >
+
+</div>
+
+
+<div
+    style="
+        grid-column:1 / -1;
+        background:rgba(89,220,150,0.08);
+        border:1px solid rgba(89,220,150,0.2);
+        border-radius:8px;
+        padding:12px;
+    "
+>
+
+    <strong>After Refund</strong>
+
+    <div style="
+        margin-top:8px;
+        font-size:13px;
+        color:#c9d2e5;
+    ">
+
+        Final Total:
+        <strong id="editFinalGross">
+            £0.00
+        </strong>
+
+        &nbsp; | &nbsp;
+
+        Final Net:
+        <strong id="editFinalNet">
+            £0.00
+        </strong>
+
+        &nbsp; | &nbsp;
+
+        Final VAT:
+        <strong id="editFinalVat">
+            £0.00
+        </strong>
+
+    </div>
+
+</div>
             <div class="expenses-form-field" style="margin-bottom:14px;">
                 <label>Description</label>
                 <textarea name="description" id="editDescription" rows="2" maxlength="255" placeholder="What was this expense for?"></textarea>
@@ -722,8 +1012,21 @@ data-expense-date="{{ $expense->expense_date->format('Y-m-d') }}"
         document.getElementById('editMerchant').value = button.dataset.merchant || '';
       document.getElementById('editAmount').value = button.dataset.amount;
 document.getElementById('editVatRate').value = button.dataset.vatRate || '0';
+document.getElementById('editReturnAmount').value =
+    button.dataset.returnAmount || '';
 
+document.getElementById('editReturnVatRate').value =
+    button.dataset.returnVatRate
+    || button.dataset.vatRate
+    || '0';
+
+document.getElementById('editReturnDate').value =
+    button.dataset.returnDate || '';
+
+document.getElementById('editReturnNote').value =
+    button.dataset.returnNote || '';
 calculateEditVat();
+calculateReturnVat();
 
 document.getElementById('editExpenseDate').value = button.dataset.expenseDate;
  document.getElementById('editDescription').value = button.dataset.description || '';
@@ -786,6 +1089,90 @@ function calculateEditVat() {
     document.getElementById('editVatPreview').value =
         '£' + result.vat.toFixed(2);
 }
+function calculateReturnVat() {
+
+    const originalGross =
+        parseFloat(
+            document.getElementById('editAmount').value
+        ) || 0;
+
+    const originalVatRate =
+        parseFloat(
+            document.getElementById('editVatRate').value
+        ) || 0;
+
+    const returnGross =
+        parseFloat(
+            document.getElementById('editReturnAmount').value
+        ) || 0;
+
+    const returnVatRate =
+        parseFloat(
+            document.getElementById('editReturnVatRate').value
+        ) || 0;
+
+
+    const original =
+        calculateVat(
+            originalGross,
+            originalVatRate
+        );
+
+    const returned =
+        calculateVat(
+            returnGross,
+            returnVatRate
+        );
+
+
+    document.getElementById(
+        'editReturnNetPreview'
+    ).value =
+        '£' + returned.net.toFixed(2);
+
+
+    document.getElementById(
+        'editReturnVatPreview'
+    ).value =
+        '£' + returned.vat.toFixed(2);
+
+
+    const finalGross =
+        Math.max(
+            0,
+            originalGross - returnGross
+        );
+
+    const finalNet =
+        Math.max(
+            0,
+            original.net - returned.net
+        );
+
+    const finalVat =
+        Math.max(
+            0,
+            original.vat - returned.vat
+        );
+
+
+    document.getElementById(
+        'editFinalGross'
+    ).textContent =
+        '£' + finalGross.toFixed(2);
+
+
+    document.getElementById(
+        'editFinalNet'
+    ).textContent =
+        '£' + finalNet.toFixed(2);
+
+
+    document.getElementById(
+        'editFinalVat'
+    ).textContent =
+        '£' + finalVat.toFixed(2);
+}
     function closeEditExpenseModal() {
         document.getElementById('editExpenseBackdrop').classList.remove('is-open');
     }
@@ -796,10 +1183,41 @@ document.getElementById('expenseVatRate')
     ?.addEventListener('change', calculateNewExpenseVat);
 
 document.getElementById('editAmount')
-    ?.addEventListener('input', calculateEditVat);
+    ?.addEventListener('input', function () {
+        calculateEditVat();
+        calculateReturnVat();
+    });
 
 document.getElementById('editVatRate')
-    ?.addEventListener('change', calculateEditVat);
+    ?.addEventListener('change', function () {
+        calculateEditVat();
+
+        if (
+            !document.getElementById(
+                'editReturnAmount'
+            ).value
+        ) {
+            document.getElementById(
+                'editReturnVatRate'
+            ).value =
+                document.getElementById(
+                    'editVatRate'
+                ).value;
+        }
+
+        calculateReturnVat();
+    });
+    document.getElementById('editReturnAmount')
+    ?.addEventListener(
+        'input',
+        calculateReturnVat
+    );
+
+document.getElementById('editReturnVatRate')
+    ?.addEventListener(
+        'change',
+        calculateReturnVat
+    );
 </script>
 
 @endsection

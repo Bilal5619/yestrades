@@ -49,8 +49,10 @@ class VatReportController extends Controller
         $vatReceived = (clone $salesQuery)
             ->sum('vat_amount');
 
-        $vatPaid = (clone $expensesQuery)
-            ->sum('vat_amount');
+       $vatPaid =
+    (clone $expensesQuery)->sum('vat_amount')
+    -
+    (clone $expensesQuery)->sum('return_vat_amount');
 
         $grossSales = (clone $salesQuery)
             ->sum('gross_amount');
@@ -58,11 +60,15 @@ class VatReportController extends Controller
         $netSales = (clone $salesQuery)
             ->sum('net_amount');
 
-        $grossExpenses = (clone $expensesQuery)
-            ->sum('amount');
+        $grossExpenses =
+    (clone $expensesQuery)->sum('amount')
+    -
+    (clone $expensesQuery)->sum('return_amount');
 
-        $netExpenses = (clone $expensesQuery)
-            ->sum('net_amount');
+        $netExpenses =
+    (clone $expensesQuery)->sum('net_amount')
+    -
+    (clone $expensesQuery)->sum('return_net_amount');
 
         $vatBalance = round(
             $vatReceived - $vatPaid,

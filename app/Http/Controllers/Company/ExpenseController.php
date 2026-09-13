@@ -42,34 +42,56 @@ class ExpenseController extends Controller
         }
 
         $expenses = $query->orderByDesc('expense_date')->paginate(20)->withQueryString();
+$totalQuery = (clone $query)
+    ->where('expense_type', '!=', 'return');
+
+$pendingQuery = (clone $query)
+    ->where('expense_type', '!=', 'return')
+    ->where('status', 'pending');
+
+$approvedQuery = (clone $query)
+    ->where('expense_type', '!=', 'return')
+    ->where('status', 'approved');
+
+$rejectedQuery = (clone $query)
+    ->where('expense_type', '!=', 'return')
+    ->where('status', 'rejected');
+
+$vatQuery = (clone $query)
+    ->where('expense_type', 'expense')
+    ->where('status', 'approved');
+
+$attachedReturns = (clone $query)
+    ->where('expense_type', '!=', 'return')
+    ->sum('return_amount');
+
+$legacyReturns = (clone $query)
+    ->where('expense_type', 'return')
+    ->sum('amount');
+
 $totals = [
-    'total' => (clone $query)
-        ->where('expense_type', '!=', 'return')
-        ->sum('amount'),
+    'total' =>
+        $totalQuery->sum('amount')
+        - $totalQuery->sum('return_amount'),
 
-    'pending' => (clone $query)
-        ->where('expense_type', '!=', 'return')
-        ->where('status', 'pending')
-        ->sum('amount'),
+    'pending' =>
+        $pendingQuery->sum('amount')
+        - $pendingQuery->sum('return_amount'),
 
-    'approved' => (clone $query)
-        ->where('expense_type', '!=', 'return')
-        ->where('status', 'approved')
-        ->sum('amount'),
+    'approved' =>
+        $approvedQuery->sum('amount')
+        - $approvedQuery->sum('return_amount'),
 
-    'rejected' => (clone $query)
-        ->where('expense_type', '!=', 'return')
-        ->where('status', 'rejected')
-        ->sum('amount'),
+    'rejected' =>
+        $rejectedQuery->sum('amount')
+        - $rejectedQuery->sum('return_amount'),
 
-    'returns' => (clone $query)
-        ->where('expense_type', 'return')
-        ->sum('amount'),
+    'returns' =>
+        $attachedReturns + $legacyReturns,
 
-    'vat_paid' => (clone $query)
-        ->where('expense_type', 'expense')
-        ->where('status', 'approved')
-        ->sum('vat_amount'),
+    'vat_paid' =>
+        $vatQuery->sum('vat_amount')
+        - $vatQuery->sum('return_vat_amount'),
 ];
         $employees = Employee::query()
             ->where('employment_status', 'active')
@@ -127,50 +149,202 @@ $validated['vat_amount'] = $vatAmount;
         return back()->with('success', 'Expense recorded successfully.');
     }
 
-    public function update(Request $request, EmployeeExpense $expense)
-    {
-        $validated = $request->validate([
-            'employee_id' => ['required', 'exists:employees,id'],
-            'category' => ['required', 'in:' . implode(',', EmployeeExpense::CATEGORIES)],
-            'expense_type' => ['nullable', 'in:' . implode(',', EmployeeExpense::EXPENSE_TYPES)],
-            'merchant' => ['nullable', 'string', 'max:255'],
-           'amount' => ['required', 'numeric', 'min:0.01'],
-'vat_rate' => ['required', 'numeric', 'in:0,5,20'],
-'expense_date' => ['required', 'date'],
-            'description' => ['nullable', 'string', 'max:255'],
-            'receipt' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
-        ]);
+public function update(Request $request, EmployeeExpense $expense)
+{
+    $validated = $request->validate([
+        'employee_id' => ['required', 'exists:employees,id'],
+        'category' => ['required', 'in:' . implode(',', EmployeeExpense::CATEGORIES)],
+        'expense_type' => ['nullable', 'in:' . implode(',', EmployeeExpense::EXPENSE_TYPES)],
+        'merchant' => ['nullable', 'string', 'max:255'],
 
-        $validated['expense_type'] = $validated['expense_type'] ?? 'expense';
-        $grossAmount = round((float) $validated['amount'], 2);
-$vatRate = (float) $validated['vat_rate'];
+        'amount' => ['required', 'numeric', 'min:0.01'],
+        'vat_rate' => ['required', 'numeric', 'in:0,5,20'],
 
-if ($vatRate > 0) {
-    $vatAmount = round(
-        $grossAmount * $vatRate / (100 + $vatRate),
+        'expense_date' => ['required', 'date'],
+        'description' => ['nullable', 'string', 'max:255'],
+
+        'receipt' => [
+            'nullable',
+            'file',
+            'mimes:jpg,jpeg,png,pdf',
+            'max:5120'
+        ],
+
+        // Refund / return
+        'return_amount' => [
+            'nullable',
+            'numeric',
+            'min:0.01'
+        ],
+
+        'return_vat_rate' => [
+            'nullable',
+            'numeric',
+            'in:0,5,20'
+        ],
+
+        'return_date' => [
+            'nullable',
+            'date'
+        ],
+
+        'return_receipt' => [
+            'nullable',
+            'file',
+            'mimes:jpg,jpeg,png,pdf',
+            'max:5120'
+        ],
+
+        'return_note' => [
+            'nullable',
+            'string',
+            'max:255'
+        ],
+    ]);
+
+    $validated['expense_type'] =
+        $validated['expense_type'] ?? 'expense';
+
+    /*
+    |--------------------------------------------------------------------------
+    | Original expense VAT
+    |--------------------------------------------------------------------------
+    */
+
+    $grossAmount = round(
+        (float) $validated['amount'],
         2
     );
 
-    $netAmount = round(
-        $grossAmount - $vatAmount,
-        2
-    );
-} else {
-    $netAmount = $grossAmount;
-    $vatAmount = 0;
-}
+    $vatRate = (float) $validated['vat_rate'];
 
-$validated['net_amount'] = $netAmount;
-$validated['vat_amount'] = $vatAmount;
+    if ($vatRate > 0) {
 
-        if ($request->hasFile('receipt')) {
-            $validated['receipt_path'] = $request->file('receipt')->store('expense-receipts', 'public');
+        $vatAmount = round(
+            $grossAmount * $vatRate / (100 + $vatRate),
+            2
+        );
+
+        $netAmount = round(
+            $grossAmount - $vatAmount,
+            2
+        );
+
+    } else {
+
+        $netAmount = $grossAmount;
+        $vatAmount = 0;
+    }
+
+    $validated['net_amount'] = $netAmount;
+    $validated['vat_amount'] = $vatAmount;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Return / refund
+    |--------------------------------------------------------------------------
+    */
+
+    if (!empty($validated['return_amount'])) {
+
+        $returnAmount = round(
+            (float) $validated['return_amount'],
+            2
+        );
+
+        if ($returnAmount > $grossAmount) {
+            return back()
+                ->withErrors([
+                    'return_amount' =>
+                        'Return amount cannot be more than the original expense amount.'
+                ])
+                ->withInput();
         }
 
-        $expense->update($validated);
+        $returnVatRate = (float) (
+            $validated['return_vat_rate'] ?? $vatRate
+        );
 
-        return back()->with('success', 'Expense updated successfully.');
+        if ($returnVatRate > 0) {
+
+            $returnVatAmount = round(
+                $returnAmount
+                * $returnVatRate
+                / (100 + $returnVatRate),
+                2
+            );
+
+            $returnNetAmount = round(
+                $returnAmount - $returnVatAmount,
+                2
+            );
+
+        } else {
+
+            $returnNetAmount = $returnAmount;
+            $returnVatAmount = 0;
+        }
+
+        $validated['return_vat_rate'] =
+            $returnVatRate;
+
+        $validated['return_net_amount'] =
+            $returnNetAmount;
+
+        $validated['return_vat_amount'] =
+            $returnVatAmount;
+
+    } else {
+
+        $validated['return_amount'] = null;
+        $validated['return_net_amount'] = null;
+        $validated['return_vat_rate'] = null;
+        $validated['return_vat_amount'] = null;
+        $validated['return_date'] = null;
+        $validated['return_note'] = null;
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Original receipt
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->hasFile('receipt')) {
+
+        $validated['receipt_path'] =
+            $request
+                ->file('receipt')
+                ->store(
+                    'expense-receipts',
+                    'public'
+                );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Return receipt
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->hasFile('return_receipt')) {
+
+        $validated['return_receipt_path'] =
+            $request
+                ->file('return_receipt')
+                ->store(
+                    'expense-return-receipts',
+                    'public'
+                );
+    }
+
+    $expense->update($validated);
+
+    return back()->with(
+        'success',
+        'Expense updated successfully.'
+    );
+}
 
     public function approve(EmployeeExpense $expense)
     {
@@ -213,6 +387,17 @@ $validated['vat_amount'] = $vatAmount;
 
         return Storage::disk('public')->download($expense->receipt_path);
     }
+    public function downloadReturnReceipt(EmployeeExpense $expense)
+{
+    abort_unless(
+        $expense->return_receipt_path,
+        404
+    );
+
+    return Storage::disk('public')->download(
+        $expense->return_receipt_path
+    );
+}
 
     public function export(Request $request)
     {

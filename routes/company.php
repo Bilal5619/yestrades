@@ -1158,7 +1158,12 @@ Route::get(
     ->middleware('company.permission:expenses.manage')
     ->name('company.hr.expenses.receipt');
 
-
+Route::get(
+    '/hr/expenses/{expense}/return-receipt',
+    'Company\ExpenseController@downloadReturnReceipt'
+)
+    ->middleware('company.permission:expenses.manage')
+    ->name('company.hr.expenses.return-receipt');
     /*
     |--------------------------------------------------------------------------
     | Equipment and Vehicles
