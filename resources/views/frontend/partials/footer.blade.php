@@ -2,6 +2,7 @@
 @if ($secInfo->footer_section_status == 1)
   @php
     $brandName = $websiteInfo->website_title ?? config('app.name');
+    $legalBrandName = 'Yes Trades Ltd';
     $whatsappNumber = !empty($basicInfo->whatsapp_number) ? preg_replace('/\D/', '', $basicInfo->whatsapp_number) : null;
   @endphp
 
@@ -72,7 +73,7 @@
               </a>
             </div>
             <p class="footer-intro">
-              {{ $brandName }} {{ __('is the UK\'s easiest way to book vetted service engineers - plumbing, gas, electrical, cleaning and landlord certificates.') }}
+              {{ $legalBrandName }} {{ __('is the UK\'s easiest way to book vetted service engineers - plumbing, gas, electrical, cleaning and landlord certificates.') }}
             </p>
             <div class="footer-badges" aria-label="{{ __('Accreditations') }}">
               <span><i class="fal fa-check-circle"></i> {{ __('GAS SAFE') }}</span>
@@ -157,7 +158,7 @@
       <div class="container">
         <div class="copy-right-content">
           <span>
-            &copy; {{ date('Y') }} {{ $brandName }} Ltd  | VAT Number: 526611404
+            &copy; {{ date('Y') }} {{ $legalBrandName }} | VAT Number: 526611404
           </span>
           <nav class="footer-legal-links" aria-label="{{ __('Legal links') }}">
             <a href="{{ url('/terms-and-conditions') }}">{{ __('Terms') }}</a>
