@@ -24,504 +24,318 @@
   @endif
 @endsection
 @section('content')
-  <!-- Page title start-->
-  <div class="page-title-area bg-img bg-cover header-next" @if (!empty($bgImg->breadcrumb))
-  data-bg-image="{{ asset('assets/img/' . $bgImg->breadcrumb) }}" @endif>
-    <div class="container">
-      <div class="content">
-        <h2>{{ !empty($title) ? $title : '' }}</h2>
-        <nav aria-label="breadcrumb">
-          <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('index') }}">{{ __('Home') }}</a></li>
-            <li class="breadcrumb-item active" aria-current="page">
-              {{ !empty($pageHeading) ? $pageHeading->service_page_title : __('Service Details') }}
-            </li>
-          </ol>
-        </nav>
-      </div>
+  @php
+    $ytxCategoryImages = [
+      'landlord' => 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1400&q=85',
+      'electric' => 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=1400&q=85',
+      'plumb' => 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=1400&q=85',
+      'boiler' => 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=1400&q=85',
+      'heat' => 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1400&q=85',
+      'clean' => 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1400&q=85',
+      'garden' => 'https://images.unsplash.com/photo-1558904541-efa843a96f01?auto=format&fit=crop&w=1400&q=85',
+      'roof' => 'https://images.unsplash.com/photo-1632759145351-1d592919f522?auto=format&fit=crop&w=1400&q=85',
+      'kitchen' => 'https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1400&q=85',
+      'bathroom' => 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?auto=format&fit=crop&w=1400&q=85',
+      'handy' => 'https://images.unsplash.com/photo-1452860606245-08befc0ff44b?auto=format&fit=crop&w=1400&q=85',
+    ];
+    $ytxDefaultImage = 'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1400&q=85';
+    $ytxHeroImage = !empty($details->service_image)
+      ? asset('assets/img/services/' . $details->service_image)
+      : $ytxDefaultImage;
+    $ytxServiceName = strtolower($service->name ?? '');
+    $ytxCategoryName = strtolower(optional($service->category)->name ?? '');
+    $ytxIntentImage = $ytxDefaultImage;
+    foreach ($ytxCategoryImages as $needle => $url) {
+      if (str_contains($ytxServiceName, $needle) || str_contains($ytxCategoryName, $needle)) {
+        $ytxIntentImage = $url;
+        break;
+      }
+    }
+    $ytxIsBookable = !$details->isQuoteType();
+    $ytxActionLabel = $ytxIsBookable ? __('Book this service') : __('Get my free quote');
+    $ytxActionUrl = $ytxIsBookable ? '#ytx-book' : route('frontend.service_quote.questions', $details->id);
+    $ytxFeatureList = !empty($service->features) ? array_filter(array_map('trim', explode("\n", $service->features))) : [];
+  @endphp
+
+  <div class="ytx-page">
+    <div class="ytx-wrap ytx-breadcrumbs">
+      <a href="{{ route('index') }}">{{ __('Home') }}</a> &gt;
+      <a href="{{ route('frontend.services') }}">{{ __('Services') }}</a> &gt;
+      {{ $service->name ?? __('Service Details') }}
     </div>
-  </div>
-  <!-- Page title end-->
 
-  <!-- Listing-single-area start -->
-  <div class="listing-single-area ptb-60">
-    <div class="container">
-      <div class="row gx-xl-5">
-        <div class="col-lg-8 col-xl-9">
-          <div class="product-single-gallery mb-40" data-aos="fade-up">
-            <div class="swiper product-single-slider radius-md">
-              <div class="swiper-wrapper">
-                @foreach ($details->sliderImage as $item)
-                  <div class="swiper-slide">
-                    <figure class="lazy-container ratio ratio-2-3">
-                      <a href="{{ asset('assets/img/services/service-gallery/' . $item->image) }}" class="lightbox-single">
-                        <img class="lazyload" src="{{ asset('assets/frontend/images/placeholder.png') }}"
-                          data-src="{{ asset('assets/img/services/service-gallery/' . $item->image) }}"
-                          alt="Service image" />
-                      </a>
-                    </figure>
-                  </div>
-                @endforeach
-              </div>
-            </div>
-            <!-- Slider navigation buttons -->
-            <div class="slider-navigation position-middle">
-              <button type="button" title="Slide prev" class="slider-btn slider-btn-prev" id="product-single-btn-prev">
-                <i class="fal fa-angle-left"></i>
-              </button>
-              <button type="button" title="Slide next" class="slider-btn slider-btn-next" id="product-single-btn-next">
-                <i class="fal fa-angle-right"></i>
-              </button>
-            </div>
+    {{-- ══════════ Page hero ══════════ --}}
+    <section class="ytx-page-hero">
+      <div class="ytx-wrap ytx-page-hero-grid">
+        <div>
+          @if (!empty($service->category))
+            <div class="ytx-eyebrow">{{ $service->category->name }}</div>
+          @endif
+          <h1>{{ $service->name }}, {{ __('delivered by a') }} <em>{{ __('trusted local team') }}</em></h1>
+          @if (!empty($service->description))
+            <p class="ytx-lead">{{ Str::limit(strip_tags($service->description), 170) }}</p>
+          @endif
+          <div class="ytx-hero-actions">
+            <a class="ytx-btn" href="{{ $ytxActionUrl }}">{{ $ytxActionLabel }} →</a>
+            @if (!empty($basicInfo->contact_number))
+              <a class="ytx-btn ytx-outline" href="tel:{{ preg_replace('/\s+/', '', $basicInfo->contact_number) }}">{{ __('Speak to our team') }}</a>
+            @endif
           </div>
-          <div class="product-single-details">
-            <div class="row" data-aos="fade-up">
-              <div class="col-md-12">
-                <a href="{{ route('frontend.services', ['category_id' => $service->category->id]) }}">
-                  <span class="product-category">{{ @$service->category->name }}</span>
-                </a>
-                <h3 class="product-title my-1">{{ $service->name }}</h3>
-                @if (!empty($service->address))
-                  <!--span class="font-sm icon-start"><i class="fal fa-map-marker-alt"></i>{{ $service->address }}</span-->
-                @endif
-                @if ($details->zoom_meeting == 1)
-                  <span class="font-sm icon-start"><i class="fal fa-video"></i>{{ __('Online') }}</span>
-                @endif
-              </div>
-              <div class="col-md-4">
-                <!--div class="author mb-20">
-                      <div class="image">
-                        @if ($details->vendor_id != 0)
-                          @if ($details->vendor->photo != null)
-                            <a href="{{ route('frontend.vendor.details', ['username' => $details->vendor->username]) }}">
-                              <img class="lazyload blur-up" src="{{ asset('assets/frontend/images/placeholder.png') }}"
-                                data-src="{{ asset('assets/admin/img/vendor-photo/' . $details->vendor->photo) }}"
-                                alt="{{ $details->vendor->username }}">
-                            </a>
-                          @else
-                            <a href="{{ route('frontend.vendor.details', ['username' => $details->vendor->username]) }}">
-                              <img class="lazyload" src="{{ asset('assets/frontend/images/placeholder.png') }}"
-                                data-src="{{ asset('assets/img/user.png') }}" alt="{{ $details->vendor->username }}">
-                            </a>
-                          @endif
-                        @else
-                          <a href="{{ route('frontend.vendor.details', ['username' => $admin->username]) }}">
-                            <img class="lazyload blur-up" src="{{ asset('assets/frontend/images/placeholder.png') }}"
-                              data-src="{{ asset('assets/img/admins/' . $admin->image) }}" alt="Image">
-                          </a>
-                        @endif
-                      </div>
-                      <div class="author-info">
-
-                        <h6 class="mb-2 lh-1">
-                          {{ __('By') }}
-                          @if ($details->vendor_id != 0)
-                            <a href="{{ route('frontend.vendor.details', ['username' => $details->vendor->username]) }}">
-                              {{ $details->vendor->username }}
-                            </a>
-                          @else
-                            <a href="{{ route('frontend.vendor.details', ['username' => $admin->username]) }}">
-                              {{ $admin->username }}
-                            </a>
-                          @endif
-                        </h6>
-                        <div class="ratings">
-                          <div class="rate bg-img" data-bg-image="{{ asset('assets/frontend/images/rate-star.png') }}">
-                            @php
-                              $ratingStaticWidth = '0%';
-                            @endphp
-                            @if (!empty($details->average_rating))
-                              <div class="rating-icon bg-img" style="width: {{ $details->average_rating * 20 . '%;' }}"
-                                data-bg-image="{{ asset('assets/frontend/images/rate-star.png') }}">
-                              </div>
-                            @else
-                              <div class="rating-icon bg-img" style="width:{{ $ratingStaticWidth }}"
-                                data-bg-image="{{ asset('assets/frontend/images/rate-star.png') }}">
-                              </div>
-                            @endif
-                          </div>
-                          <span class="ratings-total">
-                            @if ($details->average_rating > 0)
-                              {{ $details->average_rating }} {{ __('Ratings') }}
-                            @else
-                              (0 {{ __('Rating') }})
-                            @endif
-                          </span>
-                        </div>
-                      </div>
-                    </div-->
-              </div>
-            </div>
-            <!-- Booking description -->
-            <div class="product-desc pt-40" data-aos="fade-up">
-              <h4 class="mb-15">{{ __('Service Description') }}</h4>
-              <p>
-                {!! $service->description !!}
-              </p>
-
-            </div>
-            <!-- Featured list -->
-            @if ($service->features != null)
-              <div class="featured-list pt-40 mb-20" data-aos="fade-up">
-                <h4 class="mb-15">{{ __('Service Features') }}</h4>
-                <ul class="list-unstyled">
-                  @php
-                    $parts = explode("\n", $service->features);
-                  @endphp
-                  @foreach ($parts as $part)
-                    <li class="icon-start">
-                      <i class="fal fa-check-square"></i>
-                      <span>{{ trim($part) }}</span>
-                    </li>
-                  @endforeach
-                </ul>
-              </div>
-            @endif
-
-            <!-- Add to cart button -->
-            <div class="booking-form mt-40" data-aos="fade-up">
-              <div class="form-wrapper border bg-white px-3 pt-3 radius-md">
-                <div class="row align-items-center">
-                  <!--div class="col-lg-8 col-sm-12">
-                        <h6 class="mb-3">
-                          {{ __('Do you want to book this service') }}?
-                        </h6>
-                      </div-->
-                  <center>
-                    <div class="col-lg-4 col-sm-6">
-                      @if ($details->isQuoteType())
-                        <a href="{{ route('frontend.service_quote.questions', $details->id) }}" class="btn btn-lg btn-primary icon-start w-100 mb-3"
-                          title="{{ __('Get a Quote') }}">
-                          <i class="fal fa-file-invoice"></i>{{ __('Get a Quote') }}
-                        </a>
-                      @else
-                        <form action="{{ route('frontend.services.cart.quick_add') }}" method="POST">
-                          @csrf
-                          <input type="hidden" name="service_id" value="{{ $details->id }}">
-                          <button type="submit" class="btn btn-lg btn-primary icon-start w-100 mb-3"
-                            title="{{ __('Add to Cart') }}">
-                            <i class="fal fa-shopping-cart"></i>{{ __('Add to Cart') }}
-                          </button>
-                        </form>
-                      @endif
-                    </div>
-                  </center>
-
-
-                </div>
-              </div>
-            </div>
-            @if (count($related_services) > 0)
-              <!-- Booking slider -->
-              <div class="service-area pt-60">
-                <h4 class="mb-15">
-                  @if (count($related_services) > 1)
-                    {{ __('Related Services') }}
-                  @else
-                    {{ __('Related Service') }}
-                  @endif
-                </h4>
-
-                <!-- Slider main container -->
-                <div class="swiper product-inline-slider" id="product-inline-slider-1" data-slides-per-view="3"
-                  data-swiper-loop="false" data-aos="fade-up">
-                  <!-- Additional required wrapper -->
-                  <div class="swiper-wrapper">
-                    <!-- Slides -->
-                    @foreach ($related_services as $related_service)
-                      <div class="swiper-slide">
-                        <div class="product-default border radius-md p-15 mb-25">
-                          <figure class="product-img mb-15">
-                            <a href="{{ route('frontend.service.details', ['slug' => $related_service->slug, 'id' => $related_service->id]) }}"
-                              title="Image" target="_self" class="lazy-container radius-sm ratio ratio-2-3">
-                              <img class="lazyload" src="{{ asset('assets/frontend/images/placeholder.png') }}"
-                                data-src="{{ asset('assets/img/services/' . $related_service->service_image) }}"
-                                alt="Service">
-                            </a>
-                          </figure>
-                          <div class="product-details">
-                            <div class="d-flex align-items-center justify-content-between gap-2">
-                              <a href="{{ route('frontend.services', ['category_id' => $related_service->category_id]) }}">
-                                <span class="tag font-sm">
-                                  {{ $related_service->category_name }}
-                                </span>
-                              </a>
-                              @if (Auth::guard('web')->check())
-                                @php
-                                  $user_id = Auth::guard('web')->user()->id;
-                                  $checkWishList = checkWishList($related_service->id, $user_id);
-                                @endphp
-                              @else
-                                @php
-                                  $checkWishList = false;
-                                @endphp
-                              @endif
-                              <a href="{{ $checkWishList == false ? route('addto.wishlist', $related_service->id) : route('remove.wishlist', $related_service->id) }}"
-                                class="btn btn-icon border radius-sm {{ $checkWishList == false ? '' : 'wishlist-active' }}"
-                                data-tooltip="tooltip" data-bs-placement="right"
-                                title="{{ $checkWishList == false ? __('Save to Wishlist') : __('Saved') }}">
-                                <i class="fal fa-heart"></i>
-                              </a>
-
-                            </div>
-                            <h6 class="product-title mb-0">
-                              <a href="{{ route('frontend.service.details', ['slug' => $related_service->slug, 'id' => $related_service->id]) }}"
-                                target="_self" title="{{ $related_service->name }}">
-                                {{ truncateString($related_service->name, 50) }}
-                              </a>
-                            </h6>
-                            <input type="hidden" value="{{ $related_service->language_id }}">
-                            <div class="author mb-10 mt-10">
-                              @if ($related_service->vendor_id != 0)
-                                @if ($related_service->vendor->photo != null)
-                                  <a href="{{ route('frontend.vendor.details', ['username' => $related_service->vendor->username]) }}"
-                                    target="_self" title="{{ $related_service->vendor->username }}">
-                                    <img class="lazyload blur-up" src="{{ asset('assets/frontend/images/placeholder.png') }}"
-                                      data-src="{{ asset('assets/admin/img/vendor-photo/' . $related_service->vendor->photo) }}"
-                                      alt="Image">
-                                  </a>
-                                @else
-                                  <a href="{{ route('frontend.vendor.details', ['username' => $related_service->vendor->username]) }}"
-                                    target="_self" title="{{ $related_service->vendor->username }}">
-                                    <img class="lazyload" src="{{ asset('assets/frontend/images/placeholder.png') }}"
-                                      data-src="{{ asset('assets/img/user.png') }}" alt="Vendor">
-                                  </a>
-                                @endif
-                                <span class="font-sm">
-                                  {{ __('By') }} <a
-                                    href="{{ route('frontend.vendor.details', ['username' => $related_service->vendor->username]) }}"
-                                    target="_self"
-                                    title="{{ $related_service->vendor->username }}">{{ $related_service->vendor->username }}</a>
-                                </span>
-                              @else
-                                <a href="{{ route('frontend.vendor.details', ['username' => $admin->username]) }}"
-                                  target="_self" title="{{ $admin->username }}">
-                                  <img class="lazyload" src="{{ asset('assets/frontend/images/placeholder.png') }}"
-                                    data-src="{{ asset('assets/img/admins/' . $admin->image) }}" alt="Vendor">
-                                </a>
-                                <span class="font-sm">
-                                  {{ __('By') }} <a
-                                    href="{{ route('frontend.vendor.details', ['username' => $admin->username]) }}"
-                                    target="_self" title="{{ $admin->username }}">{{ $admin->username }}</a>
-                                </span>
-                              @endif
-                            </div>
-                            @if (!empty($related_service->address))
-                              <span class="font-sm icon-start"><i class="fal fa-map-marker-alt"></i>
-                                {{ truncateString($related_service->address, 30) }}
-                              </span>
-                            @endif
-                            @if ($related_service->zoom_meeting == 1)
-                              <span class="font-sm icon-start"><i class="fal fa-video"></i>{{ __('Online') }}</span>
-                            @endif
-                            <div class="d-flex align-items-center justify-content-end gap-2 mt-10">
-                              @if ($related_service->isQuoteType())
-                                <a href="{{ route('frontend.service_quote.questions', $related_service->id) }}" class="btn btn-sm btn-outline-2" title="{{ __('Get a Quote') }}">
-                                  <i class="fal fa-file-invoice me-1"></i>{{ __('Get a Quote') }}
-                                </a>
-                              @else
-                                <form action="{{ route('frontend.services.cart.quick_add') }}" method="POST" class="m-0">
-                                  @csrf
-                                  <input type="hidden" name="service_id" value="{{ $related_service->id }}">
-                                  <button type="submit" class="btn btn-sm btn-outline-2" title="{{ __('Add to Cart') }}">
-                                    <i class="fal fa-shopping-cart me-1"></i>{{ __('Add to Cart') }}
-                                  </button>
-                                </form>
-                              @endif
-                            </div>
-                          </div>
-                        </div><!-- product-default -->
-                      </div>
-                    @endforeach
-                  </div>
-                  <!-- If we need pagination -->
-                  <div class="swiper-pagination position-static" id="product-inline-slider-1-pagination"></div>
-                </div>
-              </div>
-            @endif
-
-            <!-- Review area -->
-            <!--div class="row pt-40">
-                  <div class="col-xl-10">
-                    <div class="review-progresses p-30 radius-md border mb-40" data-aos="fade-up">
-                      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-30">
-                        @php
-                          $total_review = App\Models\Services\ServiceReview::approved()->where('service_id', $details->id)->count();
-                        @endphp
-                        <h4 class="mb-0">{{ __('Total Reviews') }}: {{ $total_review }}</h4>
-                        <div class="ratings size-md d-flex">
-                          <div class="rate bg-img" data-bg-image="{{ asset('assets/frontend/images/rate-star-md.png') }}">
-                            @if (!empty($details->average_rating))
-                              <div class="rating-icon bg-img" style="width: {{ $details->average_rating * 20 . '%;' }}"
-                                data-bg-image="{{ asset('assets/frontend/images/rate-star-md.png') }}">
-                              </div>
-                            @endif
-                          </div>
-                          <!--span class="ratings-total font-lg">
-                            ({{ $details->average_rating ? $details->average_rating : 0 }})
-                          </span>
-                        </div>
-                      </div>
-
-                      @php
-                        $ratings = [
-                            5 => '5 Stars',
-                            4 => '4 Stars',
-                            3 => '3 Stars',
-                            2 => '2 Stars',
-                            1 => '1 Stars',
-                        ];
-                      @endphp
-
-                      @foreach ($ratings as $rating => $label)
-                        @php
-                          $totalReviewForRating = App\Models\Services\ServiceReview::approved()->where('service_id', $details->id)
-                              ->where('rating', $rating)
-                              ->count();
-                          $percentage = $total_review > 0 ? round(($totalReviewForRating / $total_review) * 100) : 0;
-                        @endphp
-
-                        <div class="review-progress color-dark mb-10 row align-items-center justify-content-between">
-                          <span class="col-2">{{ __($label) }}</span>
-                          <div class="progress-line col-9">
-                            <div class="progress">
-                              <div class="progress-bar bg-primary" style="width: {{ $percentage . '%' }}"
-                                role="progressbar" aria-label="{{ $label }}" aria-valuenow="{{ $percentage }}"
-                                aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                          </div>
-                        </div>
-                      @endforeach
-                    </div>
-
-                    @if (count($reviews) == 0)
-                      <h5>{{ __('This service has no review yet') . '!' }}</h5>
-                    @else
-                      <h5 class="title mb-15">
-                        {{ __('All Reviews') }}
-                      </h5>
-                      @foreach ($reviews as $review)
-                        <div class="review-box mb-10" data-aos="fade-up">
-                          <div class="review-list mb-30 border radius-md">
-                            <div class="review-item p-30">
-                              <div class="review-header mb-20">
-                                <div class="author d-flex align-items-center justify-content-between gap-3">
-                                  <div class="author-img">
-                                    @if (empty($review->user->image))
-                                      <img class="lazyload blur-up"
-                                        src="{{ asset('assets/frontend/images/placeholder.png') }}"
-                                        data-src="{{ asset('assets/img/user.png') }}" alt="Person Image">
-                                    @else
-                                      <img class="lazyload blur-up"
-                                        src="{{ asset('assets/frontend/images/placeholder.png') }}"
-                                        data-src="{{ asset('assets/img/users/' . $review->user->image) }}"
-                                        alt="Person Image">
-                                    @endif
-                                  </div>
-                                  <div class="author-info">
-                                    <h6 class="mb-1">
-                                      <a href="#" target="_self" title="Link">{{ $review->user->name }}</a>
-                                    </h6>
-                                    <div class="ratings mb-1">
-                                      <div class="rate bg-img"
-                                        data-bg-image="{{ asset('assets/frontend/images/rate-star.png') }}">
-                                        <div class="rating-icon bg-img" style="width: {{ $review->rating * 20 . '%;' }}"
-                                          data-bg-image="{{ asset('assets/frontend/images/rate-star.png') }}">
-                                        </div>
-                                      </div>
-                                      <span class="ratings-total">({{ $review->rating }})</span>
-                                    </div>
-                                    <span class="font-xsm icon-start">
-                                      <span class="color-green"><i class="fas fa-badge-check"></i></span>
-                                      {{ __('Verified User') }}
-                                    </span>
-                                  </div>
-                                </div>
-                                <div class="more-info font-sm">
-                                  <div class="icon-start">
-                                    <i
-                                      class="fal fa-map-marker-alt"></i>{{ $review->user->address }},{{ $review->user->country }}
-                                  </div>
-                                  <div class="icon-start"><i
-                                      class="fal fa-clock"></i>{{ $review->created_at->diffForHumans() }}
-                                  </div>
-                                </div>
-                              </div>
-                              {{ $review->comment }}
-                            </div>
-                          </div>
-                        </div>
-                      @endforeach
-                    @endif
-                    @guest('web')
-                      <div class="cta-btn mt-20">
-                        <a href="{{ route('user.login', ['redirect_path' => 'product-details']) }}"
-                          class="btn btn-md btn-primary">
-                          {{ __('Login') }}
-                        </a>
-                      </div>
-                    @endguest
-
-                    @auth('web')
-                      <div class="shop-review-form mt-30">
-                        <h5 class="title mb-10">
-                          {{ __('Add Review') }}
-                        </h5>
-                        <form action="{{ route('frontend.service.rating.store', ['id' => $details->id]) }}" method="POST"
-                          id="reviewSubmitForm">
-                          @csrf
-                          <div class="form-group mb-20">
-                            <textarea class="form-control" placeholder="{{ __('Comment') }}" name="comment">{{ old('comment') }}</textarea>
-                          </div>
-                          <div class="form-group">
-                            <label class="mb-1">{{ __('Rating') . '*' }}</label>
-                            <ul class="rating list-unstyled mb-20">
-                              <li class="review-value review-1">
-                                <span class="fas fa-star" data-ratingVal="1"></span>
-                              </li>
-                              <li class="review-value review-2">
-                                <span class="fas fa-star" data-ratingVal="2"></span>
-                                <span class="fas fa-star" data-ratingVal="2"></span>
-                              </li>
-                              <li class="review-value review-3">
-                                <span class="fas fa-star" data-ratingVal="3"></span>
-                                <span class="fas fa-star" data-ratingVal="3"></span>
-                                <span class="fas fa-star" data-ratingVal="3"></span>
-                              </li>
-                              <li class="review-value review-4">
-                                <span class="fas fa-star" data-ratingVal="4"></span>
-                                <span class="fas fa-star" data-ratingVal="4"></span>
-                                <span class="fas fa-star" data-ratingVal="4"></span>
-                                <span class="fas fa-star" data-ratingVal="4"></span>
-                              </li>
-                              <li class="review-value review-5">
-                                <span class="fas fa-star" data-ratingVal="5"></span>
-                                <span class="fas fa-star" data-ratingVal="5"></span>
-                                <span class="fas fa-star" data-ratingVal="5"></span>
-                                <span class="fas fa-star" data-ratingVal="5"></span>
-                                <span class="fas fa-star" data-ratingVal="5"></span>
-                              </li>
-                            </ul>
-                          </div>
-                          <input type="hidden" id="rating-id" name="rating">
-                          <input type="hidden" value="{{ $details->vendor_id }}" name="vendor_id">
-                          <div class="form-group">
-                            <input type="submit" class="btn btn-lg btn-primary" value="{{ __('Submit') }}">
-                          </div>
-                        </form>
-                      </div>
-                    @endauth
-                  </div>
-                </div>
-                <!-- Review area -->
+          <div class="ytx-trust-row">
+            <span>{{ __('Qualified trades') }}</span>
+            <span>{{ __('Clear written quote') }}</span>
+            <span>{{ __('Fully insured') }}</span>
           </div>
         </div>
+        <div class="ytx-hero-media">
+          <img src="{{ $ytxHeroImage }}" alt="{{ $service->name }}">
+          <div class="ytx-rating">★★★★★<br>{{ __('Local, trusted support') }}</div>
+        </div>
+      </div>
+    </section>
 
-        @includeIf('frontend.services.details-sidebar')
+    {{-- ══════════ Book / quote panel ══════════ --}}
+    <section class="ytx-finder-section" id="ytx-book">
+      <div class="ytx-wrap">
+        <div class="ytx-finder">
+          <div class="ytx-finder-head">
+            <div>
+              <div class="ytx-eyebrow">{{ __('Ready when you are') }}</div>
+              <h2>{{ $ytxIsBookable ? __('Add this service to your booking') : __('Request your free quote') }}</h2>
+              <p>
+                @if ($ytxIsBookable)
+                  {{ __('Add it to your cart now — you will choose the date, time and address on the next step, with no account required.') }}
+                @else
+                  {{ __('Tell us a little about the job and our team will confirm the best next step.') }}
+                @endif
+              </p>
+            </div>
+            @if (!$details->hasPricePlaceholder() && !$details->isQuoteType())
+              <span class="ytx-finder-badge">{{ __('From') }} {{ symbolPrice($details->price) }}</span>
+            @endif
+          </div>
+
+          @if ($ytxIsBookable)
+            <form action="{{ route('frontend.services.cart.quick_add') }}" method="POST">
+              @csrf
+              <input type="hidden" name="service_id" value="{{ $details->id }}">
+              <button type="submit" class="ytx-btn ytx-full">
+                <i class="fal fa-shopping-cart"></i> {{ __('Add to booking') }} →
+              </button>
+            </form>
+          @else
+            <a href="{{ route('frontend.service_quote.questions', $details->id) }}" class="ytx-btn ytx-full">
+              <i class="fal fa-file-invoice"></i> {{ __('Get a Quote') }} →
+            </a>
+          @endif
+          <p class="ytx-marketplace-note">{{ __('Final availability and any additional work are confirmed before payment.') }}</p>
+        </div>
+      </div>
+    </section>
+
+    {{-- ══════════ Anchor bar ══════════ --}}
+    <nav class="ytx-anchorbar">
+      <div class="ytx-wrap">
+        <a href="#ytx-overview">{{ __('Overview') }}</a>
+        <a href="#ytx-included">{{ __("What's included") }}</a>
+        <a href="#ytx-process">{{ __('Our process') }}</a>
+        <a href="#ytx-faq">{{ __('FAQs') }}</a>
+        <a class="ytx-btn" href="{{ $ytxActionUrl }}">{{ $ytxActionLabel }}</a>
+      </div>
+    </nav>
+
+    {{-- ══════════ Overview / benefits ══════════ --}}
+    <section id="ytx-overview" class="ytx-section">
+      <div class="ytx-wrap">
+        <div class="ytx-section-title">
+          <div>
+            <div class="ytx-eyebrow">{{ __('Complete local service') }}</div>
+            <h2>{{ __('Everything you need, handled properly') }}</h2>
+            <p>{{ __('We make it easy to understand what happens next and who is responsible at every stage.') }}</p>
+          </div>
+        </div>
+        <div class="ytx-benefit-grid">
+          @foreach ([['fa-comments', 'Friendly first conversation', 'Tell us what you need without technical jargon.'], ['fa-user-check', 'Qualified local professional', 'Your job is matched with the right skills.'], ['fa-file-invoice', 'Clear scope and quotation', 'Know what is included before work starts.'], ['fa-home', 'Careful completion', 'Respect for your property and a tidy finish.']] as $ytxBenefit)
+            <div class="ytx-benefit">
+              <span class="ytx-trust-icon"><i class="fal {{ $ytxBenefit[0] }}"></i></span>
+              <h3>{{ __($ytxBenefit[1]) }}</h3>
+              <p>{{ __($ytxBenefit[2]) }}</p>
+            </div>
+          @endforeach
+        </div>
+      </div>
+    </section>
+
+    {{-- ══════════ What's included ══════════ --}}
+    <section id="ytx-included" class="ytx-section ytx-soft">
+      <div class="ytx-wrap ytx-split">
+        <div>
+          <div class="ytx-eyebrow">{{ __("What's included") }}</div>
+          <h2>{{ __('A clear service from first contact to completion') }}</h2>
+          <ul class="ytx-check-list">
+            @forelse ($ytxFeatureList as $feature)
+              <li>{{ $feature }}</li>
+            @empty
+              <li>{{ __('Initial requirements review') }}</li>
+              <li>{{ __('Professional assessment') }}</li>
+              <li>{{ __('Clear written quotation') }}</li>
+              <li>{{ __('Materials discussed in advance') }}</li>
+              <li>{{ __('Qualified workmanship') }}</li>
+              <li>{{ __('Progress communication') }}</li>
+              <li>{{ __('Final safety checks') }}</li>
+              <li>{{ __('Clean and tidy handover') }}</li>
+            @endforelse
+          </ul>
+        </div>
+        <div class="ytx-hero-media">
+          <img src="{{ $ytxIntentImage }}" alt="{{ __('Professional') }} {{ strtolower($service->name ?? '') }} {{ __('service') }}">
+        </div>
+      </div>
+    </section>
+
+    {{-- ══════════ Process ══════════ --}}
+    <section id="ytx-process" class="ytx-section ytx-mint">
+      <div class="ytx-wrap">
+        <div class="ytx-section-title">
+          <div>
+            <div class="ytx-eyebrow">{{ __('How it works') }}</div>
+            <h2>{{ __('A straightforward process') }}</h2>
+          </div>
+        </div>
+        <div class="ytx-steps">
+          @php
+            $ytxProcessSteps = $ytxIsBookable
+              ? ['Choose your service', 'Confirm the details', 'Select a convenient time', 'Completion and confirmation']
+              : ['Tell us about your project', 'Survey or assessment', 'Receive your written quote', 'Work and handover'];
+          @endphp
+          @foreach ($ytxProcessSteps as $i => $ytxStep)
+            <div class="ytx-step">
+              <span class="ytx-step-num">{{ $i + 1 }}</span>
+              <div><h3>{{ __($ytxStep) }}</h3></div>
+            </div>
+          @endforeach
+        </div>
+      </div>
+    </section>
+
+    {{-- ══════════ Trust strip ══════════ --}}
+    <div class="ytx-trust-strip">
+      <div class="ytx-wrap">
+        @foreach ([['fa-user-check', 'Qualified local trades'], ['fa-file-invoice', 'Clear written quotes'], ['fa-shield-check', 'Workmanship guaranteed'], ['fa-phone-volume', 'Support from start to finish']] as $ytxTrust)
+          <div class="ytx-trust-item">
+            <span class="ytx-trust-icon"><i class="fal {{ $ytxTrust[0] }}"></i></span>
+            {{ __($ytxTrust[1]) }}
+          </div>
+        @endforeach
       </div>
     </div>
+
+    {{-- ══════════ Reviews ══════════ --}}
+    <section class="ytx-section">
+      <div class="ytx-wrap">
+        <div class="ytx-section-title">
+          <div>
+            <div class="ytx-eyebrow">{{ __('Customer feedback') }}</div>
+            <h2>{{ __('What customers say') }}</h2>
+          </div>
+        </div>
+        <div class="ytx-reviews">
+          @forelse ($reviews->take(3) as $review)
+            <article class="ytx-review">
+              <div class="ytx-stars">{{ str_repeat('★', max(0, min(5, (int) $review->rating))) }}{{ str_repeat('☆', max(0, 5 - (int) $review->rating)) }}</div>
+              <p>"{{ $review->comment }}"</p>
+              <strong>{{ optional($review->user)->name ?? __('Verified customer') }}</strong>
+            </article>
+          @empty
+            <article class="ytx-review">
+              <div class="ytx-stars">★★★★★</div>
+              <p>{{ __('Be the first to review this service after your booking is complete.') }}</p>
+            </article>
+          @endforelse
+        </div>
+      </div>
+    </section>
+
+    {{-- ══════════ Local SEO copy + related services ══════════ --}}
+    @if (!empty($service->category))
+      <section class="ytx-section">
+        <article class="ytx-wrap ytx-seo-copy">
+          <div class="ytx-eyebrow">{{ __('Local') }} {{ strtolower($service->category->name) }} {{ __('specialists') }}</div>
+          <h2>{{ $service->name }}</h2>
+          <p>{{ __('Yes Trades provides') }} {{ strtolower($service->name) }} {{ __('for homeowners, landlords and property managers.') }} {{ __('We explain the next step clearly and match the work with an appropriately skilled local professional.') }}</p>
+          @if ($related_services->isNotEmpty())
+            <h3>{{ __('Related services') }}</h3>
+            <div class="ytx-related-links">
+              @foreach ($related_services->take(6) as $related)
+                <a href="{{ route('frontend.service.details', ['slug' => $related->slug, 'id' => $related->id]) }}">{{ $related->name }}</a>
+              @endforeach
+            </div>
+          @endif
+        </article>
+      </section>
+    @endif
+
+    {{-- ══════════ FAQ ══════════ --}}
+    <section id="ytx-faq" class="ytx-section ytx-soft">
+      <div class="ytx-wrap">
+        <div class="ytx-section-title">
+          <div>
+            <div class="ytx-eyebrow">{{ __('Common questions') }}</div>
+            <h2>{{ $service->name }} {{ __('FAQs') }}</h2>
+          </div>
+        </div>
+        @php
+          $ytxFaqs = [
+            [__('How does the :service process start?', ['service' => strtolower($service->name)]), __('Tell us what you need online or by phone. We will confirm whether the next step is a booking, assessment or home survey.')],
+            [__('Will I receive a written quotation?'), __('Yes. Where a quotation is required, the scope, assumptions and price will be set out clearly before work starts.')],
+            [__('Are your trades qualified and insured?'), __('Jobs are assigned to appropriately qualified professionals and relevant registration details can be confirmed for your work.')],
+            [__('How soon can the work be completed?'), __('Timescales depend on the service, materials and availability. We will provide a realistic date before you commit.')],
+          ];
+        @endphp
+        @foreach ($ytxFaqs as $ytxFaq)
+          <div class="ytx-faq">
+            <button type="button">{{ $ytxFaq[0] }}<span>+</span></button>
+            <div class="ytx-faq-body">{{ $ytxFaq[1] }}</div>
+          </div>
+        @endforeach
+      </div>
+    </section>
+
+    {{-- ══════════ Final CTA / contact ══════════ --}}
+    <section class="ytx-section">
+      <div class="ytx-wrap ytx-quote-panel">
+        <div class="ytx-contact-grid">
+          <div>
+            <div class="ytx-eyebrow">{{ __('Get started') }}</div>
+            <h2>{{ $ytxActionLabel }}</h2>
+            <p>{{ __('Share a few details and our team will contact you to confirm the best next step.') }}</p>
+            <a class="ytx-btn" href="{{ $ytxActionUrl }}">{{ $ytxActionLabel }} →</a>
+          </div>
+          <aside class="ytx-contact-card">
+            <h3>{{ __('Prefer to speak to someone?') }}</h3>
+            @if (!empty($basicInfo->contact_number))
+              <p class="ytx-lead"><a href="tel:{{ preg_replace('/\s+/', '', $basicInfo->contact_number) }}">{{ $basicInfo->contact_number }}</a></p>
+            @endif
+            @if (!empty($basicInfo->address))
+              <p>{{ __('Serving') }} {{ $basicInfo->address }} {{ __('and surrounding areas.') }}</p>
+            @endif
+          </aside>
+        </div>
+      </div>
+    </section>
   </div>
-  <!-- Listing-single-area start -->
+
+  @push('scripts')
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.ytx-faq > button').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            btn.parentElement.classList.toggle('ytx-open');
+          });
+        });
+      });
+    </script>
+  @endpush
 @endsection
 @section('script')
   <script src="{{ asset('assets/frontend/js/vendors/leaflet.js') }}"></script>

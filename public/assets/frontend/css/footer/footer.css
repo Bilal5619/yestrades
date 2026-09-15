@@ -162,7 +162,7 @@
 
 .footer-primary-btn {
   color: #ffffff;
-  background: linear-gradient(120deg, var(--color-primary), #0a7d57);
+  background: linear-gradient(120deg, var(--color-primary), #187a28);
   border: 1px solid transparent;
   box-shadow: 0 14px 30px rgba(var(--color-primary-rgb), 0.32);
 }

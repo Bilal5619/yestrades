@@ -1,3 +1,19 @@
+{{-- Utility bar — matches the approved reference design --}}
+<div class="ytx-utility">
+  <div class="ytx-wrap">
+    @if (!empty($basicInfo->address))
+      <span>* {{ __('Serving') }} {{ $basicInfo->address }} {{ __('and surrounding areas') }}</span>
+    @else
+      <span></span>
+    @endif
+    @if (!empty($basicInfo->contact_number))
+      <span>
+        <a href="tel:{{ preg_replace('/\s+/', '', $basicInfo->contact_number) }}" style="color:#fff;">{{ __('Phone') }} {{ $basicInfo->contact_number }}</a>
+        &nbsp;-&nbsp; {{ __('Open Mon-Fri 8am-6pm') }}
+      </span>
+    @endif
+  </div>
+</div>
 <!-- Header-area start -->
 <header class="header-area header-2 @if(!request()->routeIs('index')) header-static @endif" data-aos="fade-down">
   <!-- Start mobile menu -->

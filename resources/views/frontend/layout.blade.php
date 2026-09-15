@@ -22,6 +22,10 @@
 
   <!-- Google font -->
   <link rel="stylesheet" href="{{ asset('assets/frontend/css/font.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ asset('assets/frontend/css/ytx-theme.css') }}">
   @php
     $primaryColor = $basicInfo->primary_color;
     $secondaryColor = $basicInfo->secondary_color;
@@ -66,12 +70,17 @@
       --color-primary-rgb: {{ rgb(htmlspecialchars($primaryColor)) }};
     }
 
-    /* Site chrome (navbar + footer CTA) uses the new emerald brand look site-wide */
+    /* Site chrome (navbar + footer CTA) uses the ytx brand green site-wide,
+       matching the approved reference design. */
     .header-area,
     .footer-signal-wrap,
     .eleven-footer .go-top {
-      --color-primary: #0e9f6e;
-      --color-primary-rgb: 14, 159, 110;
+      --color-primary: #2da63b;
+      --color-primary-rgb: 45, 166, 59;
+    }
+
+    body {
+      font-family: 'Manrope', Arial, sans-serif;
     }
   </style>
 </head>

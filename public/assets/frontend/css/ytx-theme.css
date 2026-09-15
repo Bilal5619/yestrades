@@ -1,0 +1,233 @@
+/*
+ * Yes Trades "ytx" theme — ported from the approved reference design
+ * (example yestrades / Example-yes-trade-website). Used by the home page,
+ * service details page, and the booking/cart page. Every selector is
+ * prefixed ytx- so it never collides with existing site-wide CSS.
+ */
+
+:root {
+  --ytx-green: #2da63b;
+  --ytx-green-dark: #187a28;
+  --ytx-mint: #eff9f1;
+  --ytx-ink: #111713;
+  --ytx-muted: #5e6861;
+  --ytx-line: #dfe7e1;
+  --ytx-paper: #fff;
+  --ytx-soft: #f6f8f6;
+  --ytx-radius: 18px;
+  --ytx-shadow: 0 10px 35px rgba(18, 48, 26, .09);
+}
+
+.ytx-page { font-family: 'Manrope', Arial, sans-serif; color: var(--ytx-ink); background: var(--ytx-paper); font-size: 16px; line-height: 1.55; }
+.ytx-page a { color: inherit; text-decoration: none; }
+.ytx-page img { display: block; max-width: 100%; object-fit: cover; }
+.ytx-wrap { width: min(1180px, calc(100% - 40px)); margin: auto; }
+
+/* Buttons */
+.ytx-btn { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 48px; padding: 0 22px; border-radius: 10px; border: 1px solid transparent; background: var(--ytx-green); color: #fff; font-weight: 800; cursor: pointer; font-size: 15px; }
+.ytx-btn:hover { background: var(--ytx-green-dark); color: #fff; }
+.ytx-btn.ytx-outline { background: #fff; color: var(--ytx-ink); border-color: #9aa69d; }
+.ytx-btn.ytx-dark { background: #18201b; }
+.ytx-btn.ytx-full { width: 100%; }
+.ytx-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+/* Utility bar + header */
+.ytx-utility { background: #151b17; color: #fff; font-size: 13px; }
+.ytx-utility .ytx-wrap { display: flex; justify-content: space-between; padding: 8px 0; flex-wrap: wrap; gap: 4px; }
+
+/* Hero */
+.ytx-hero { background: linear-gradient(90deg, #fff 48%, #eef6ef 48%); overflow: hidden; }
+.ytx-hero-grid { display: grid; grid-template-columns: 1fr 1fr; min-height: 560px; align-items: center; gap: 46px; padding: 30px 0; }
+.ytx-eyebrow { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--ytx-green-dark); font-weight: 800; }
+.ytx-hero h1, .ytx-page-hero h1 { font-size: clamp(42px, 5vw, 67px); line-height: 1.03; letter-spacing: -.045em; margin: 16px 0 20px; }
+.ytx-hero h1 em, .ytx-page-hero h1 em { color: var(--ytx-green); font-style: normal; }
+.ytx-lead { font-size: 18px; color: var(--ytx-muted); max-width: 640px; }
+.ytx-hero-actions { display: flex; gap: 12px; margin: 28px 0; flex-wrap: wrap; }
+.ytx-trust-row { display: flex; gap: 22px; flex-wrap: wrap; font-weight: 700; font-size: 14px; }
+.ytx-trust-row span:before, .ytx-check-list li:before { content: '✓'; display: inline-grid; place-items: center; width: 23px; height: 23px; border-radius: 50%; background: var(--ytx-green); color: #fff; margin-right: 8px; font-size: 12px; }
+.ytx-hero-media { height: 500px; border-radius: 30px; overflow: hidden; position: relative; box-shadow: var(--ytx-shadow); }
+.ytx-hero-media img { height: 100%; width: 100%; }
+.ytx-rating { position: absolute; right: 18px; bottom: 18px; background: #fff; border-radius: 14px; padding: 14px 18px; box-shadow: var(--ytx-shadow); font-weight: 800; }
+
+/* Sections */
+.ytx-section { padding: 82px 0; }
+.ytx-section.ytx-soft { background: var(--ytx-soft); }
+.ytx-section.ytx-mint { background: var(--ytx-mint); }
+.ytx-section-title { display: flex; justify-content: space-between; align-items: end; margin-bottom: 30px; gap: 20px; flex-wrap: wrap; }
+.ytx-section-title h2 { font-size: clamp(30px, 4vw, 46px); letter-spacing: -.035em; line-height: 1.1; margin: 7px 0; }
+.ytx-section-title p { color: var(--ytx-muted); max-width: 650px; margin: 0; }
+
+/* Intent grid (home) */
+.ytx-intent-grid, .ytx-card-grid, .ytx-benefit-grid, .ytx-reviews { display: grid; gap: 18px; }
+.ytx-intent-grid { grid-template-columns: repeat(4, 1fr); }
+.ytx-intent { background: #fff; border: 1px solid var(--ytx-line); border-radius: var(--ytx-radius); overflow: hidden; transition: .2s; box-shadow: 0 4px 16px rgba(0, 0, 0, .03); }
+.ytx-intent:hover, .ytx-service-card:hover { transform: translateY(-3px); box-shadow: var(--ytx-shadow); }
+.ytx-intent img { height: 150px; }
+.ytx-intent div { padding: 18px; }
+.ytx-intent h3 { margin: 0 0 6px; font-size: 18px; }
+.ytx-intent p, .ytx-service-card p { color: var(--ytx-muted); font-size: 14px; margin: 0; }
+
+/* Availability form */
+.ytx-availability { display: grid; grid-template-columns: 1fr auto; gap: 12px; background: #fff; padding: 15px; border: 1px solid var(--ytx-line); border-radius: 14px; margin-top: 24px; }
+.ytx-availability input, .ytx-quote-form input, .ytx-quote-form select, .ytx-quote-form textarea { min-height: 50px; border: 1px solid #cfd8d1; border-radius: 9px; padding: 12px 14px; font: inherit; width: 100%; }
+
+/* Service cards */
+.ytx-card-grid { grid-template-columns: repeat(3, 1fr); }
+.ytx-service-card { border: 1px solid var(--ytx-line); border-radius: var(--ytx-radius); overflow: hidden; background: #fff; transition: .2s; display: block; }
+.ytx-service-card img { height: 220px; }
+.ytx-service-card .ytx-content { padding: 20px; }
+.ytx-service-card h3 { font-size: 21px; margin: 0 0 7px; }
+.ytx-service-card .ytx-link { display: inline-block; color: var(--ytx-green-dark); font-weight: 800; margin-top: 15px; }
+.ytx-tag { position: absolute; background: var(--ytx-green); color: #fff; padding: 6px 10px; border-radius: 8px; margin: 12px; font-weight: 800; font-size: 12px; }
+.ytx-image-wrap { position: relative; }
+
+/* Trust strip */
+.ytx-trust-strip { border-block: 1px solid var(--ytx-line); padding: 25px 0; background: #fff; }
+.ytx-trust-strip .ytx-wrap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.ytx-trust-item { display: flex; align-items: center; gap: 12px; font-weight: 800; }
+.ytx-trust-icon { width: 43px; height: 43px; display: grid; place-items: center; border-radius: 50%; background: var(--ytx-mint); color: var(--ytx-green); font-size: 20px; flex-shrink: 0; }
+
+/* Split sections */
+.ytx-split { display: grid; grid-template-columns: 1.05fr .95fr; gap: 55px; align-items: center; }
+.ytx-split-media { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ytx-split-media img { height: 390px; border-radius: 18px; }
+.ytx-steps { display: grid; gap: 18px; margin: 25px 0; }
+.ytx-step { display: grid; grid-template-columns: 45px 1fr; gap: 14px; }
+.ytx-step-num { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--ytx-green); color: #fff; font-weight: 800; }
+.ytx-step h3 { margin: 0; font-size: 17px; }
+.ytx-step p { margin: 4px 0; color: var(--ytx-muted); }
+
+/* Benefits + reviews */
+.ytx-benefit-grid { grid-template-columns: repeat(4, 1fr); }
+.ytx-benefit { padding: 24px; border: 1px solid var(--ytx-line); border-radius: 15px; background: #fff; }
+.ytx-reviews { grid-template-columns: repeat(3, 1fr); }
+.ytx-review { padding: 24px; background: #fff; border: 1px solid var(--ytx-line); border-radius: 15px; }
+.ytx-stars { color: var(--ytx-green); letter-spacing: 2px; }
+
+/* CTA + footer */
+.ytx-cta { background: #17201a; color: #fff; padding: 50px 0; }
+.ytx-cta .ytx-wrap { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.ytx-cta h2 { margin: 0 0 6px; }
+.ytx-cta p { margin: 0; opacity: .85; }
+.ytx-footer { padding: 54px 0 20px; background: #fff; }
+.ytx-footer-grid { display: grid; grid-template-columns: 1.4fr repeat(4, 1fr); gap: 34px; }
+.ytx-footer h4 { margin: 0 0 12px; }
+.ytx-footer a { display: block; color: var(--ytx-muted); font-size: 14px; margin: 7px 0; }
+.ytx-footer-bottom { border-top: 1px solid var(--ytx-line); margin-top: 35px; padding-top: 20px; display: flex; justify-content: space-between; color: var(--ytx-muted); font-size: 13px; flex-wrap: wrap; gap: 8px; }
+
+/* Service details page */
+.ytx-breadcrumbs { padding: 16px 0; color: var(--ytx-muted); font-size: 13px; }
+.ytx-page-hero { background: var(--ytx-soft); }
+.ytx-page-hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 45px; align-items: center; padding: 50px 0 65px; }
+.ytx-page-hero h1 { font-size: clamp(40px, 4.5vw, 60px); }
+.ytx-page-hero img { height: 470px; border-radius: 24px; }
+.ytx-anchorbar { position: sticky; top: 0; z-index: 30; background: #fff; border-bottom: 1px solid var(--ytx-line); }
+.ytx-anchorbar .ytx-wrap { display: flex; gap: 28px; align-items: center; min-height: 60px; font-size: 14px; font-weight: 700; flex-wrap: wrap; }
+.ytx-anchorbar .ytx-btn { margin-left: auto; min-height: 40px; }
+.ytx-check-list { list-style: none; padding: 0; columns: 2; margin: 0; }
+.ytx-check-list li { break-inside: avoid; padding: 9px 0; }
+.ytx-faq { border: 1px solid var(--ytx-line); border-radius: 12px; margin: 10px 0; background: #fff; }
+.ytx-faq button { width: 100%; background: transparent; border: 0; padding: 19px; text-align: left; font: inherit; font-weight: 800; display: flex; justify-content: space-between; cursor: pointer; }
+.ytx-faq .ytx-faq-body { display: none; padding: 0 19px 20px; color: var(--ytx-muted); }
+.ytx-faq.ytx-open .ytx-faq-body { display: block; }
+.ytx-quote-panel { background: var(--ytx-mint); border-radius: 22px; padding: 34px; }
+.ytx-quote-form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.ytx-quote-form .ytx-full { grid-column: 1/-1; }
+.ytx-contact-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 30px; }
+.ytx-contact-card { padding: 30px; border: 1px solid var(--ytx-line); border-radius: 18px; background: #fff; }
+.ytx-related-links { display: flex; gap: 9px; flex-wrap: wrap; }
+.ytx-related-links a { border: 1px solid var(--ytx-line); padding: 9px 13px; border-radius: 99px; color: var(--ytx-green-dark); font-weight: 700; background: #fff; }
+.ytx-seo-copy { max-width: 900px; }
+
+/* Quick service finder (home + service page) */
+.ytx-finder-section { background: #eef8f0; padding: 34px 0; border-block: 1px solid #d9e9dc; }
+.ytx-finder { background: #fff; border: 1px solid #dce6de; border-radius: 20px; padding: 28px; box-shadow: 0 12px 35px rgba(20, 65, 30, .08); }
+.ytx-finder-head { display: flex; justify-content: space-between; gap: 24px; align-items: start; margin-bottom: 20px; flex-wrap: wrap; }
+.ytx-finder-head h2 { font-size: 30px; line-height: 1.1; margin: 5px 0; }
+.ytx-finder-head p { margin: 0; color: var(--ytx-muted); }
+.ytx-finder-badge { white-space: nowrap; background: #e5f7e8; color: var(--ytx-green-dark); padding: 8px 12px; border-radius: 99px; font-weight: 800; font-size: 13px; }
+.ytx-finder-grid { display: grid; grid-template-columns: 1.35fr .7fr 1fr auto; gap: 12px; }
+.ytx-finder-grid select, .ytx-finder-grid input { min-height: 52px; border: 1px solid #cbd7cd; border-radius: 10px; padding: 0 14px; font: inherit; background: #fff; }
+.ytx-top-searches { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 18px; align-items: center; }
+.ytx-top-searches span { font-weight: 800; font-size: 13px; margin-right: 4px; padding: 8px 0; }
+.ytx-top-searches a { padding: 8px 12px; border: 1px solid #d7e1d9; border-radius: 99px; background: #fff; font-weight: 700; font-size: 13px; }
+.ytx-marketplace-note { font-size: 13px; color: var(--ytx-muted); margin-top: 12px; }
+
+/* Booking/cart page — progress + choice cards + order summary */
+.ytx-booking-shell { background: #f5f7f5; min-height: 60vh; padding: 34px 0 70px; }
+.ytx-booking-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; flex-wrap: wrap; gap: 10px; }
+.ytx-booking-top h1 { font-size: 30px; margin: 0; }
+.ytx-secure-note { font-size: 14px; color: var(--ytx-muted); }
+.ytx-progress { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; margin-bottom: 28px; }
+.ytx-progress-item { height: 7px; background: #d8dfd9; border-radius: 20px; }
+.ytx-progress-item.ytx-active { background: var(--ytx-green); }
+.ytx-booking-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; }
+.ytx-booking-main, .ytx-order-card { background: #fff; border: 1px solid #dde5df; border-radius: 20px; box-shadow: 0 10px 30px rgba(20, 50, 25, .06); }
+.ytx-booking-main { padding: 34px; }
+.ytx-booking-main h2 { font-size: 26px; line-height: 1.2; margin: 0 0 8px; }
+.ytx-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 24px 0; }
+.ytx-choice { position: relative; }
+.ytx-choice input { position: absolute; opacity: 0; }
+.ytx-choice label, .ytx-field-choice { display: block; border: 2px solid #dbe3dc; border-radius: 13px; padding: 18px; cursor: pointer; font-weight: 800; background: #fff; }
+.ytx-choice input:checked + label, .ytx-field-choice.ytx-selected { border-color: var(--ytx-green); background: var(--ytx-mint); color: var(--ytx-green-dark); }
+.ytx-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; margin: 22px 0; }
+.ytx-field { display: grid; gap: 7px; }
+.ytx-field.ytx-full { grid-column: 1/-1; }
+.ytx-field label { font-size: 14px; font-weight: 800; }
+.ytx-field input, .ytx-field select, .ytx-field textarea { min-height: 52px; border: 1px solid #cbd6cd; border-radius: 10px; padding: 12px; font: inherit; width: 100%; }
+.ytx-booking-actions { display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid #e3e8e4; padding-top: 22px; margin-top: 25px; flex-wrap: wrap; }
+.ytx-order-card { padding: 24px; position: sticky; top: 100px; }
+.ytx-order-service { display: grid; grid-template-columns: 80px 1fr; gap: 13px; align-items: center; }
+.ytx-order-service img { height: 70px; width: 80px; border-radius: 10px; }
+.ytx-order-service h3 { margin: 0; font-size: 16px; }
+.ytx-summary-line { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #edf0ed; font-size: 14px; }
+.ytx-summary-line.ytx-total { font-size: 19px; font-weight: 800; border: 0; padding-top: 17px; }
+.ytx-payment-box { border: 1px solid #d8e1da; border-radius: 14px; padding: 20px; margin-top: 20px; }
+.ytx-mini-trust { display: grid; gap: 9px; margin-top: 20px; color: var(--ytx-muted); font-size: 13px; }
+.ytx-mini-trust span:before { content: '✓'; color: var(--ytx-green); font-weight: 900; margin-right: 7px; }
+.ytx-confirmation { text-align: center; padding: 35px 10px; }
+.ytx-confirm-icon { margin: auto; width: 75px; height: 75px; border-radius: 50%; display: grid; place-items: center; background: var(--ytx-green); color: #fff; font-size: 34px; }
+.ytx-ref { display: inline-block; background: var(--ytx-mint); padding: 10px 18px; border-radius: 99px; font-weight: 800; margin: 10px; }
+
+/* Directory / filter chips */
+.ytx-directory-hero { padding: 75px 0 45px; background: var(--ytx-mint); }
+.ytx-directory-hero h1 { font-size: 55px; line-height: 1.05; margin: 10px 0; }
+.ytx-filterbar { display: flex; gap: 10px; flex-wrap: wrap; margin: 25px 0; }
+.ytx-chip { border: 1px solid var(--ytx-line); background: #fff; border-radius: 99px; padding: 10px 16px; font-weight: 700; cursor: pointer; text-decoration: none; color: var(--ytx-ink); }
+.ytx-chip.ytx-active { background: var(--ytx-green); color: #fff; }
+
+@media (max-width: 900px) {
+  .ytx-wrap { width: min(calc(100% - 30px), 720px); }
+  .ytx-hero { background: #fff; }
+  .ytx-hero-grid, .ytx-page-hero-grid, .ytx-split, .ytx-contact-grid { grid-template-columns: 1fr; }
+  .ytx-hero-media { height: 360px; }
+  .ytx-intent-grid, .ytx-card-grid, .ytx-benefit-grid, .ytx-reviews { grid-template-columns: 1fr 1fr; }
+  .ytx-trust-strip .ytx-wrap { grid-template-columns: 1fr 1fr; }
+  .ytx-section { padding: 58px 0; }
+  .ytx-footer-grid { grid-template-columns: 1fr 1fr; }
+  .ytx-page-hero img { height: 350px; }
+  .ytx-finder-grid { grid-template-columns: 1fr 1fr; }
+  .ytx-finder-grid .ytx-btn { grid-column: 1/-1; }
+  .ytx-booking-grid { grid-template-columns: 1fr; }
+  .ytx-order-card { position: static; }
+}
+
+@media (max-width: 600px) {
+  .ytx-hero-actions, .ytx-cta .ytx-wrap, .ytx-section-title { align-items: stretch; flex-direction: column; }
+  .ytx-hero-actions .ytx-btn { width: 100%; }
+  .ytx-intent-grid, .ytx-card-grid, .ytx-benefit-grid, .ytx-reviews, .ytx-trust-strip .ytx-wrap { grid-template-columns: 1fr; }
+  .ytx-intent { display: grid; grid-template-columns: 120px 1fr; }
+  .ytx-intent img { height: 100%; }
+  .ytx-service-card { display: grid; grid-template-columns: 42% 1fr; }
+  .ytx-service-card img { height: 100%; min-height: 175px; }
+  .ytx-availability, .ytx-quote-form, .ytx-form-grid, .ytx-choice-grid { grid-template-columns: 1fr; }
+  .ytx-split-media img { height: 260px; }
+  .ytx-footer-grid { grid-template-columns: 1fr; }
+  .ytx-footer-bottom { display: block; }
+  .ytx-check-list { columns: 1; }
+  .ytx-section { padding: 46px 0; }
+  .ytx-page-hero img { height: 290px; }
+  .ytx-cta .ytx-btn { width: 100%; }
+  .ytx-directory-hero h1 { font-size: 36px; }
+  .ytx-finder-grid { grid-template-columns: 1fr; }
+}
