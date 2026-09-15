@@ -347,18 +347,32 @@
 
       @endif
 
+@php
+  $jobAddress = !empty($orderInfo->site_address)
+      ? $orderInfo->site_address
+      : $orderInfo->customer_address;
 
-      @if ($serviceInfo && $serviceInfo->address)
+  $jobPostcode = !empty($orderInfo->site_zip_code)
+      ? $orderInfo->site_zip_code
+      : $orderInfo->customer_zip_code;
 
-        <p>
+  $jobCountry = !empty($orderInfo->site_country)
+      ? $orderInfo->site_country
+      : $orderInfo->customer_country;
+@endphp
 
-          <strong>{{ __('Location') }}:</strong>
-
-          {{ $serviceInfo->address }}
-
-        </p>
-
-      @endif
+@if ($jobAddress)
+  <p>
+    <strong>{{ __('Property / Job Location') }}:</strong>
+    {{ $jobAddress }}
+    @if ($jobPostcode)
+      , {{ $jobPostcode }}
+    @endif
+    @if ($jobCountry)
+      , {{ $jobCountry }}
+    @endif
+  </p>
+@endif
 
     </div>
 
@@ -470,20 +484,6 @@
         </td>
 
       </tr>
-
-
-      <tr>
-
-        <th>
-          {{ __('Payment Method') }}
-        </th>
-
-        <td>
-          {{ $orderInfo->payment_method }}
-        </td>
-
-      </tr>
-
 
       <tr>
 
