@@ -104,8 +104,88 @@
         <div class="card">
           <div class="card-header"><div class="card-title">{{ __('Schedule & Status') }}</div></div>
           <div class="card-body">
-            <div class="form-group"><label>{{ __('Booking Date') }} *</label><input type="date" name="booking_date" class="form-control" value="{{ old('booking_date') }}" required></div>
-            <div class="form-group">
+  <div class="custom-control custom-checkbox mb-4">
+  <input
+    type="checkbox"
+    class="custom-control-input"
+    id="tenantSelectsDate"
+    name="tenant_selects_date"
+    value="1"
+    @checked(old('tenant_selects_date'))
+  >
+  <label class="custom-control-label" for="tenantSelectsDate">
+    {{ __('Tenant / occupier will select the appointment date and time') }}
+  </label>
+</div>
+
+<div id="manualTenantFields" style="display:none;">
+  <div class="border rounded p-3 mb-4">
+    <h5 class="mb-3">{{ __('Tenant / Occupier Details') }}</h5>
+
+    <div class="form-group">
+      <label>{{ __('Tenant Name') }} *</label>
+      <input
+        type="text"
+        name="tenant_name"
+        id="manualTenantName"
+        class="form-control"
+        value="{{ old('tenant_name') }}"
+      >
+    </div>
+
+    <div class="form-group">
+      <label>{{ __('Tenant Email') }}</label>
+      <input
+        type="email"
+        name="tenant_email"
+        id="manualTenantEmail"
+        class="form-control"
+        value="{{ old('tenant_email') }}"
+      >
+    </div>
+
+    <div class="form-group">
+      <label>{{ __('Tenant Phone') }}</label>
+      <input
+        type="text"
+        name="tenant_phone"
+        id="manualTenantPhone"
+        class="form-control"
+        value="{{ old('tenant_phone') }}"
+      >
+      <small class="form-text text-muted">
+        {{ __('Enter at least an email address or phone number.') }}
+      </small>
+    </div>
+
+    <div class="form-group">
+      <label>{{ __('Message / Access Note for Tenant') }}</label>
+      <textarea
+        name="tenant_note"
+        id="manualTenantNote"
+        rows="3"
+        class="form-control"
+      >{{ old('tenant_note') }}</textarea>
+    </div>
+
+    <div class="alert alert-info">
+      {{ __('The tenant will receive a secure link to choose their appointment date and time. The link expires after 3 days.') }}
+    </div>
+  </div>
+</div>
+
+<div id="manualScheduleFields">
+  <div class="form-group">
+    <label>{{ __('Booking Date') }} *</label>
+    <input
+      type="date"
+      name="booking_date"
+      id="manualBookingDate"
+      class="form-control"
+      value="{{ old('booking_date') }}"
+    >
+  </div>
+   <div class="form-group">
               <label>{{ __('Assign Staff') }}</label>
               <select name="staff_id" id="manualStaffId" class="form-control">
                 <option value="">{{ __('No staff selected') }}</option>
@@ -135,6 +215,7 @@
               <div class="col-6"><div class="form-group"><label>{{ __('Start Time') }}</label><input type="time" name="start_date" class="form-control" value="{{ old('start_date') }}"></div></div>
               <div class="col-6"><div class="form-group"><label>{{ __('End Time') }}</label><input type="time" name="end_date" class="form-control" value="{{ old('end_date') }}"></div></div>
             </div>
+            </div>
             <div class="form-group"><label>{{ __('Payment Status') }}</label><select name="payment_status" class="form-control"><option value="pending" @selected(old('payment_status') === 'pending')>{{ __('Pending') }}</option><option value="completed" @selected(old('payment_status', 'completed') === 'completed')>{{ __('Completed') }}</option><option value="rejected" @selected(old('payment_status') === 'rejected')>{{ __('Rejected') }}</option></select></div>
             <div class="form-group"><label>{{ __('Job Status') }}</label><select name="order_status" class="form-control"><option value="pending" @selected(old('order_status') === 'pending')>{{ __('Pending') }}</option><option value="accepted" @selected(old('order_status', 'accepted') === 'accepted')>{{ __('Accepted') }}</option><option value="completed" @selected(old('order_status') === 'completed')>{{ __('Completed') }}</option><option value="rejected" @selected(old('order_status') === 'rejected')>{{ __('Rejected') }}</option></select></div>
             <div class="form-group"><label>{{ __('Notes') }}</label><textarea name="access_notes" rows="4" class="form-control">{{ old('access_notes') }}</textarea></div>
@@ -163,6 +244,13 @@
       const noQuestions = document.getElementById('manualNoQuestions');
       const staffSelect = document.getElementById('manualStaffId');
       const hourSelect = document.getElementById('manualServiceHourId');
+      const tenantSelectsDate = document.getElementById('tenantSelectsDate');
+const tenantFields = document.getElementById('manualTenantFields');
+const scheduleFields = document.getElementById('manualScheduleFields');
+const bookingDateInput = document.getElementById('manualBookingDate');
+const tenantNameInput = document.getElementById('manualTenantName');
+const tenantEmailInput = document.getElementById('manualTenantEmail');
+const tenantPhoneInput = document.getElementById('manualTenantPhone');
       let priceTimer = null;
 
       function collectQuestionAnswers() {
@@ -187,7 +275,56 @@
 
         return answers;
       }
+function syncTenantScheduling() {
+  if (!tenantSelectsDate) return;
 
+  const tenantMode = tenantSelectsDate.checked;
+
+  if (tenantFields) {
+    tenantFields.style.display = tenantMode ? '' : 'none';
+  }
+
+  if (scheduleFields) {
+    scheduleFields.style.display = tenantMode ? 'none' : '';
+  }
+
+  if (bookingDateInput) {
+    bookingDateInput.required = !tenantMode;
+    bookingDateInput.disabled = tenantMode;
+  }
+
+  if (staffSelect) {
+    staffSelect.disabled = tenantMode;
+  }
+
+  if (hourSelect) {
+    hourSelect.disabled = tenantMode;
+  }
+
+  const startTime = document.querySelector('[name="start_date"]');
+  const endTime = document.querySelector('[name="end_date"]');
+
+  if (startTime) {
+    startTime.disabled = tenantMode;
+  }
+
+  if (endTime) {
+    endTime.disabled = tenantMode;
+  }
+
+  if (tenantNameInput) {
+    tenantNameInput.required = tenantMode;
+  }
+
+  if (!tenantMode) {
+    if (tenantNameInput) tenantNameInput.required = false;
+  }
+}
+if (tenantSelectsDate) {
+  tenantSelectsDate.addEventListener('change', syncTenantScheduling);
+}
+
+syncTenantScheduling();
       function schedulePriceCalculation() {
         window.clearTimeout(priceTimer);
         priceTimer = window.setTimeout(calculatePrice, 250);

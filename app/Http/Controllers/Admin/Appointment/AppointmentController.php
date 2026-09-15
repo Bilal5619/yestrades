@@ -27,6 +27,7 @@ use App\Models\Staff\Staff;
 use App\Models\Staff\StaffGlobalHour;
 use App\Models\Staff\StaffServiceHour;
 use App\Models\Vendor;
+use App\Services\TenantSlotService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -148,8 +149,17 @@ class AppointmentController extends Controller
       'customer_address' => ['required', 'string', 'max:500'],
       'customer_zip_code' => ['required', 'string', 'max:100'],
       'customer_country' => ['nullable', 'string', 'max:255'],
-      'booking_date' => ['required', 'date'],
-      'staff_id' => ['nullable', 'integer', 'exists:staff,id'],
+      'tenant_selects_date' => ['nullable', 'boolean'],
+'tenant_name' => ['nullable', 'string', 'max:255'],
+'tenant_email' => ['nullable', 'email', 'max:255'],
+'tenant_phone' => ['nullable', 'string', 'max:50'],
+'tenant_note' => ['nullable', 'string', 'max:1000'],
+
+'booking_date' => [
+    'nullable',
+    Rule::requiredIf(!$request->boolean('tenant_selects_date')),
+    'date'
+], 'staff_id' => ['nullable', 'integer', 'exists:staff,id'],
       'service_hour_id' => ['nullable', 'integer'],
       'start_date' => ['nullable', 'date_format:H:i'],
       'end_date' => ['nullable', 'date_format:H:i'],
@@ -160,15 +170,34 @@ class AppointmentController extends Controller
       'question_answers.*' => ['nullable'],
       'send_customer_email' => ['nullable', 'boolean'],
     ]);
+$tenantDeferred = $request->boolean('tenant_selects_date');
 
+if ($tenantDeferred) {
+    $tenantEmail = trim((string) ($data['tenant_email'] ?? ''));
+    $tenantPhone = trim((string) ($data['tenant_phone'] ?? ''));
+
+    if (empty($data['tenant_name'])) {
+        return redirect()
+            ->back()
+            ->withInput()
+            ->with('warning', __('Please enter the tenant / occupier name.'));
+    }
+
+    if ($tenantEmail === '' && $tenantPhone === '') {
+        return redirect()
+            ->back()
+            ->withInput()
+            ->with('warning', __('Please enter at least a tenant email address or phone number.'));
+    }
+}
     $service = Services::findOrFail($data['service_id']);
-    $staffId = $data['staff_id'] ?? null;
-    $serviceHourId = $data['service_hour_id'] ?? null;
-    $startTime = $data['start_date'] ?? null;
-    $endTime = $data['end_date'] ?? null;
+   $staffId = $tenantDeferred ? null : ($data['staff_id'] ?? null);
+$serviceHourId = $tenantDeferred ? null : ($data['service_hour_id'] ?? null);
+$startTime = $tenantDeferred ? null : ($data['start_date'] ?? null);
+$endTime = $tenantDeferred ? null : ($data['end_date'] ?? null);
 
-    if ($serviceHourId) {
-      $hour = $staffId ? StaffServiceHour::find($serviceHourId) : null;
+   if (!$tenantDeferred && $serviceHourId) {
+       $hour = $staffId ? StaffServiceHour::find($serviceHourId) : null;
       $hour = $hour ?: StaffGlobalHour::find($serviceHourId);
 
       if (!$hour) {
@@ -179,7 +208,7 @@ class AppointmentController extends Controller
       $endTime = $hour->end_time;
     }
 
-    if (empty($startTime) || empty($endTime)) {
+    if (!$tenantDeferred && (empty($startTime) || empty($endTime))) {
       return redirect()->back()->withInput()->with('warning', __('Please select an existing time slot or enter both start and end time.'));
     }
 
@@ -194,12 +223,16 @@ class AppointmentController extends Controller
     $calculatedCustomerPaid = round((float) ($pricing['total'] ?? $data['customer_paid']), 2);
 
     session()->forget('multiServiceOrder');
+$tenantToken = null;
 
+if ($tenantDeferred) {
+    $tenantToken = app(TenantSlotService::class)->issueToken();
+}
     $arrData = [
       'item_type' => 'service',
-      'zoom_status' => $service->zoom_meeting == 1 ? 1 : 0,
-      'calender_status' => $service->calendar_status == 1 ? 1 : 0,
-      'customer_name' => $data['customer_name'],
+    'zoom_status' => $tenantDeferred ? 0 : ($service->zoom_meeting == 1 ? 1 : 0),
+'calender_status' => $tenantDeferred ? 0 : ($service->calendar_status == 1 ? 1 : 0),
+'customer_name' => $data['customer_name'],
       'customer_phone' => $data['customer_phone'],
       'customer_email' => $data['customer_email'],
       'customer_address' => $data['customer_address'],
@@ -207,7 +240,7 @@ class AppointmentController extends Controller
       'customer_country' => $data['customer_country'] ?? 'United Kingdom',
       'start_date' => $startTime,
       'end_date' => $endTime,
-      'booking_date' => $data['booking_date'],
+      'booking_date' => $tenantDeferred ? null : $data['booking_date'],
       'staff_id' => $staffId,
       'service_id' => $service->id,
       'service_package_id' => null,
@@ -236,15 +269,68 @@ class AppointmentController extends Controller
       'paymentMethod' => 'Manual Admin',
       'gatewayType' => 'offline',
       'paymentStatus' => $data['payment_status'],
-      'orderStatus' => $data['order_status'],
+      'orderStatus' => $tenantDeferred ? 'pending' : $data['order_status'],
       'refund' => 'pending',
+      'scheduling_mode' => $tenantDeferred ? 'tenant' : 'customer',
+
+'tenant_name' => $tenantDeferred ? trim((string) $data['tenant_name']) : null,
+
+'tenant_email' => $tenantDeferred
+    ? (trim((string) ($data['tenant_email'] ?? '')) ?: null)
+    : null,
+
+'tenant_phone' => $tenantDeferred
+    ? (trim((string) ($data['tenant_phone'] ?? '')) ?: null)
+    : null,
+
+'tenant_note' => $tenantDeferred
+    ? (trim((string) ($data['tenant_note'] ?? '')) ?: null)
+    : null,
+
+'tenant_slot_status' => $tenantDeferred
+    ? TenantSlotService::STATUS_WAITING
+    : null,
+
+'tenant_slot_plain_token' => $tenantDeferred
+    ? $tenantToken['plain']
+    : null,
+
+'tenant_slot_token_hash' => $tenantDeferred
+    ? $tenantToken['hash']
+    : null,
+
+'tenant_slot_expires_at' => $tenantDeferred
+    ? $tenantToken['expires_at']
+    : null,
       'attachment' => null,
       'group_token' => null,
       'question_answers' => json_encode($questionAnswers),
     ];
 
-    $booking = $paymentProcess->finalizeOrder($arrData)->first();
+   $bookings = $paymentProcess->finalizeOrder($arrData);
+$booking = $bookings->first();
 
+if ($tenantDeferred) {
+    try {
+        app(TenantSlotService::class)->sendInvitations($bookings);
+    } catch (\Throwable $exception) {
+        \Log::error('Manual tenant scheduling invitation failed', [
+            'booking_id' => optional($booking)->id,
+            'message' => $exception->getMessage(),
+        ]);
+
+        return redirect()
+            ->route('admin.appointment.details', [
+                'id' => $booking->id,
+                'language' => request()->language
+            ])
+            ->with(
+                'warning',
+                __('Booking was created, but the tenant appointment email could not be sent: ')
+                . $exception->getMessage()
+            );
+    }
+}
     if ($request->boolean('send_customer_email')) {
       try {
         if ($data['payment_status'] === 'completed') {
