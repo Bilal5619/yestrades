@@ -118,6 +118,11 @@ class AppointmentController extends Controller
       'postcode' => ['nullable', 'string', 'max:100'],
       'question_answers' => ['nullable', 'array'],
       'question_answers.*' => ['nullable'],
+      'urgency_surcharge_amount' => [
+    'nullable',
+    'numeric',
+    Rule::in([0, 50, 100, 150]),
+],
     ]);
 
     $service = Services::findOrFail($data['service_id']);
@@ -127,14 +132,26 @@ class AppointmentController extends Controller
       $answers,
       $data['postcode'] ?? null
     );
+$urgencySurcharge = (float) ($data['urgency_surcharge_amount'] ?? 0);
 
+if (!in_array($urgencySurcharge, [0.0, 50.0, 100.0, 150.0], true)) {
+    $urgencySurcharge = 0.0;
+}
+
+$normalPrice = round((float) ($pricing['total'] ?? 0), 2);
+
+$finalPrice = round(
+    $normalPrice + $urgencySurcharge,
+    2
+);
     return response()->json([
       'success' => true,
-      'price' => round((float) ($pricing['total'] ?? 0), 2),
+      'price' => $finalPrice,
       'base_price' => round((float) ($pricing['base'] ?? 0), 2),
       'question_surcharge' => round((float) ($pricing['questions'] ?? 0), 2),
       'postcode_surcharge' => round((float) ($pricing['postcode_surcharge'] ?? 0), 2),
-      'price_display' => symbolPrice(round((float) ($pricing['total'] ?? 0), 2)),
+     'urgency_surcharge' => $urgencySurcharge,
+'price_display' => symbolPrice($finalPrice),
     ]);
   }
 
@@ -143,6 +160,11 @@ class AppointmentController extends Controller
     $data = $request->validate([
       'service_id' => ['required', 'integer', 'exists:services,id'],
       'customer_paid' => ['required', 'numeric', 'min:0'],
+      'urgency_surcharge_amount' => [
+    'nullable',
+    'numeric',
+    Rule::in([0, 50, 100, 150]),
+],
       'customer_name' => ['required', 'string', 'max:255'],
       'customer_phone' => ['required', 'string', 'max:255'],
       'customer_email' => ['required', 'email', 'max:255'],
@@ -220,8 +242,32 @@ $endTime = $tenantDeferred ? null : ($data['end_date'] ?? null);
       $questionAnswers,
       $data['customer_zip_code'] ?? null
     );
-    $calculatedCustomerPaid = round((float) ($pricing['total'] ?? $data['customer_paid']), 2);
+  $urgencySurcharge = $tenantDeferred
+    ? 0.0
+    : (float) ($data['urgency_surcharge_amount'] ?? 0);
 
+if (!in_array($urgencySurcharge, [0.0, 50.0, 100.0, 150.0], true)) {
+    $urgencySurcharge = 0.0;
+}
+
+$baseCalculatedPrice = round(
+    (float) ($pricing['total'] ?? $data['customer_paid']),
+    2
+);
+
+$calculatedCustomerPaid = round(
+    $baseCalculatedPrice + $urgencySurcharge,
+    2
+);
+$urgencyPeriod = null;
+
+if ($urgencySurcharge === 50.0) {
+    $urgencyPeriod = 'Within 48 hours';
+} elseif ($urgencySurcharge === 100.0) {
+    $urgencyPeriod = 'Within 24 hours';
+} elseif ($urgencySurcharge === 150.0) {
+    $urgencyPeriod = 'Within 4 hours';
+}
     session()->forget('multiServiceOrder');
 $tenantToken = null;
 
@@ -252,8 +298,8 @@ if ($tenantDeferred) {
       'vendor_id' => (int) ($service->vendor_id ?? 0),
       'service_hour_id' => $serviceHourId,
       'customer_paid' => $calculatedCustomerPaid,
-      'urgency_surcharge_amount' => null,
-      'urgency_surcharge_period' => null,
+      'urgency_surcharge_amount' => $urgencySurcharge,
+'urgency_surcharge_period' => $urgencyPeriod,
       'billing_same' => 1,
       'site_name' => null,
       'site_phone' => null,

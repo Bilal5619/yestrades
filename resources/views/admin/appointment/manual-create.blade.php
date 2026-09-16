@@ -176,6 +176,81 @@
 
 <div id="manualScheduleFields">
   <div class="form-group">
+  <label class="font-weight-bold">
+    {{ __('Urgent Booking') }}
+  </label>
+
+  <div class="border rounded p-3 mb-3">
+
+    <div class="custom-control custom-radio mb-2">
+      <input
+        type="radio"
+        class="custom-control-input manual-urgency-option"
+        id="manualUrgencyNone"
+        name="urgency_surcharge_amount"
+        value="0"
+        @checked(old('urgency_surcharge_amount', '0') == '0')
+      >
+
+      <label class="custom-control-label" for="manualUrgencyNone">
+        {{ __('Normal booking - No urgency fee') }}
+      </label>
+    </div>
+
+
+    <div class="custom-control custom-radio mb-2">
+      <input
+        type="radio"
+        class="custom-control-input manual-urgency-option"
+        id="manualUrgency48"
+        name="urgency_surcharge_amount"
+        value="50"
+        @checked(old('urgency_surcharge_amount') == '50')
+      >
+
+      <label class="custom-control-label" for="manualUrgency48">
+        <strong>{{ __('Within 48 hours') }}</strong>
+        — +£50
+      </label>
+    </div>
+
+
+    <div class="custom-control custom-radio mb-2">
+      <input
+        type="radio"
+        class="custom-control-input manual-urgency-option"
+        id="manualUrgency24"
+        name="urgency_surcharge_amount"
+        value="100"
+        @checked(old('urgency_surcharge_amount') == '100')
+      >
+
+      <label class="custom-control-label" for="manualUrgency24">
+        <strong>{{ __('Within 24 hours') }}</strong>
+        — +£100
+      </label>
+    </div>
+
+
+    <div class="custom-control custom-radio">
+      <input
+        type="radio"
+        class="custom-control-input manual-urgency-option"
+        id="manualUrgency4"
+        name="urgency_surcharge_amount"
+        value="150"
+        @checked(old('urgency_surcharge_amount') == '150')
+      >
+
+      <label class="custom-control-label" for="manualUrgency4">
+        <strong>{{ __('Within 4 hours') }}</strong>
+        — +£150
+      </label>
+    </div>
+
+  </div>
+</div>
+  <div class="form-group">
     <label>{{ __('Booking Date') }} *</label>
     <input
       type="date"
@@ -245,6 +320,9 @@
       const staffSelect = document.getElementById('manualStaffId');
       const hourSelect = document.getElementById('manualServiceHourId');
       const tenantSelectsDate = document.getElementById('tenantSelectsDate');
+      const urgencyOptions = Array.from(
+  document.querySelectorAll('.manual-urgency-option')
+);
 const tenantFields = document.getElementById('manualTenantFields');
 const scheduleFields = document.getElementById('manualScheduleFields');
 const bookingDateInput = document.getElementById('manualBookingDate');
@@ -279,7 +357,17 @@ function syncTenantScheduling() {
   if (!tenantSelectsDate) return;
 
   const tenantMode = tenantSelectsDate.checked;
+urgencyOptions.forEach(function (option) {
+  option.disabled = tenantMode;
+});
 
+if (tenantMode) {
+  const normalUrgency = document.getElementById('manualUrgencyNone');
+
+  if (normalUrgency) {
+    normalUrgency.checked = true;
+  }
+}
   if (tenantFields) {
     tenantFields.style.display = tenantMode ? '' : 'none';
   }
@@ -350,11 +438,18 @@ syncTenantScheduling();
               'X-CSRF-TOKEN': csrfToken,
             },
             credentials: 'same-origin',
-            body: JSON.stringify({
-              service_id: serviceId,
-              postcode: postcodeInput ? postcodeInput.value : '',
-              question_answers: collectQuestionAnswers(),
-            }),
+          body: JSON.stringify({
+  service_id: serviceId,
+  postcode: postcodeInput ? postcodeInput.value : '',
+  question_answers: collectQuestionAnswers(),
+  urgency_surcharge_amount: tenantSelectsDate && tenantSelectsDate.checked
+    ? 0
+    : Number(
+        document.querySelector(
+          'input[name="urgency_surcharge_amount"]:checked'
+        )?.value || 0
+      ),
+}),
           });
           const data = await response.json();
           if (!response.ok || !data.success) throw new Error(data.message || 'Price calculation failed');
@@ -394,6 +489,9 @@ syncTenantScheduling();
 
       if (serviceSelect) serviceSelect.addEventListener('change', function () { syncQuestions(); schedulePriceCalculation(); });
       if (postcodeInput) postcodeInput.addEventListener('input', schedulePriceCalculation);
+      urgencyOptions.forEach(function (option) {
+  option.addEventListener('change', schedulePriceCalculation);
+});
       document.querySelectorAll('[name^="question_answers"]').forEach(input => input.addEventListener('change', schedulePriceCalculation));
       document.querySelectorAll('[name^="question_answers"]').forEach(input => input.addEventListener('input', schedulePriceCalculation));
       if (staffSelect) staffSelect.addEventListener('change', syncHourGroups);
