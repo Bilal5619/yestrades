@@ -433,7 +433,7 @@ class VendorController extends Controller
     }
 
 
-    $in = $request->all();
+    $in = $request->only(['username', 'email', 'phone']);
     $vendor  = Vendor::where('id', $id)->first();
     $file = $request->file('photo');
     if ($file) {

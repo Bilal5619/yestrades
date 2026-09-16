@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 //========== staff login =========
 Route::prefix('staff')->group(function () {
   Route::get('login', 'Staff\StaffController@login')->name('staff.login');
-  Route::post('login_submit', 'Staff\StaffController@loginSubmit')->name('staff.login_submit');
+  Route::post('login_submit', 'Staff\StaffController@loginSubmit')->middleware('throttle:5,1')->name('staff.login_submit');
 });
 Route::prefix('staff')->middleware('auth:staff', 'staffCheck')->group(function () {
   Route::get('dashboard', 'Staff\StaffController@index')->name('staff.dashboard');

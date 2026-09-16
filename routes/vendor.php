@@ -13,7 +13,7 @@ Route::prefix('vendor')->middleware('change.lang')->group(function () {
   Route::get('/signup', 'Vendor\VendorController@signup')->name('vendor.signup');
   Route::post('/signup/submit', 'Vendor\VendorController@create')->name('vendor.signup_submit');
   Route::get('/login', 'Vendor\VendorController@login')->name('vendor.login')->middleware('guest:vendor');
-  Route::post('/login/submit', 'Vendor\VendorController@authentication')->name('vendor.login_submit');
+  Route::post('/login/submit', 'Vendor\VendorController@authentication')->middleware('throttle:5,1')->name('vendor.login_submit');
 
   Route::get('/email/verify', 'Vendor\VendorController@confirm_email');
 

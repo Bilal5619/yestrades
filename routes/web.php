@@ -297,7 +297,7 @@ Route::prefix('/user')->middleware(['guest:web', 'change.lang'])->group(function
     Route::get('', 'FrontEnd\UserController@login')->name('user.login');
   });
   // user login submit route
-  Route::post('/login-submit', 'FrontEnd\UserController@loginSubmit')->name('user.login_submit')->withoutMiddleware('change.lang');
+  Route::post('/login-submit', 'FrontEnd\UserController@loginSubmit')->middleware('throttle:5,1')->name('user.login_submit')->withoutMiddleware('change.lang');
 
   // user forget password route
   Route::get('/forget-password', 'FrontEnd\UserController@forgetPassword')->name('user.forget_password');
@@ -376,7 +376,7 @@ Route::prefix('/admin')->middleware('guest:admin')->group(function () {
   Route::get('/', 'Admin\AdminController@login')->name('admin.login');
 
   // admin login attempt route
-  Route::post('/auth', 'Admin\AdminController@authentication')->name('admin.auth');
+  Route::post('/auth', 'Admin\AdminController@authentication')->middleware('throttle:5,1')->name('admin.auth');
 
   // admin forget password route
   Route::get('/forget-password', 'Admin\AdminController@forgetPassword')->name('admin.forget_password');

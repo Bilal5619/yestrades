@@ -545,8 +545,8 @@ class UserController extends Controller
   public function updateProfile(Request $request)
   {
 
-    $request->validate([
-      'name' => 'required',
+    $data = $request->validate([
+      'name' => 'required|string|max:255',
       'username' => [
         'required',
         'alpha_dash',
@@ -557,10 +557,17 @@ class UserController extends Controller
         'email',
         Rule::unique('users', 'email')->ignore(Auth::guard('web')->user()->id)->whereNull('deleted_at')
       ],
+      'phone' => 'nullable|string|max:50',
+      'country' => 'nullable|string|max:255',
+      'city' => 'nullable|string|max:255',
+      'state' => 'nullable|string|max:255',
+      'zip_code' => 'nullable|string|max:50',
+      'address' => 'nullable|string|max:500',
+      'image' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:5120',
     ]);
 
     $authUser = Auth::guard('web')->user();
-    $in = $request->all();
+    $in = collect($data)->except('image')->toArray();
     $file = $request->file('image');
     if ($file) {
       $extension = $file->getClientOriginalExtension();

@@ -58,8 +58,10 @@ Route::prefix('v1/vendor')->group(function () {
 });
 
 Route::prefix('v1/employee')->group(function () {
-  Route::post('/activate', [EmployeeAuthController::class, 'activate']);
-  Route::post('/login', [EmployeeAuthController::class, 'login']);
+  Route::middleware('throttle:5,1')->group(function () {
+    Route::post('/activate', [EmployeeAuthController::class, 'activate']);
+    Route::post('/login', [EmployeeAuthController::class, 'login']);
+  });
 
   Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [EmployeeAuthController::class, 'me']);

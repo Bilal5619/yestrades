@@ -37,7 +37,7 @@
 
 /* Hero */
 .ytx-hero { background: linear-gradient(90deg, #fff 48%, #eef6ef 48%); overflow: hidden; }
-.ytx-hero-grid { display: grid; grid-template-columns: 1fr 1fr; min-height: 560px; align-items: center; gap: 46px; padding: 30px 0; }
+.ytx-hero-grid { display: grid; grid-template-columns: 1fr 1fr; min-height: 560px; align-items: center; gap: 46px; padding: 150px 0 30px; }
 .ytx-eyebrow { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--ytx-green-dark); font-weight: 800; }
 .ytx-hero h1, .ytx-page-hero h1 { font-size: clamp(42px, 5vw, 67px); line-height: 1.03; letter-spacing: -.045em; margin: 16px 0 20px; }
 .ytx-hero h1 em, .ytx-page-hero h1 em { color: var(--ytx-green); font-style: normal; }
@@ -116,12 +116,13 @@
 .ytx-footer-bottom { border-top: 1px solid var(--ytx-line); margin-top: 35px; padding-top: 20px; display: flex; justify-content: space-between; color: var(--ytx-muted); font-size: 13px; flex-wrap: wrap; gap: 8px; }
 
 /* Service details page */
-.ytx-breadcrumbs { padding: 16px 0; color: var(--ytx-muted); font-size: 13px; }
+.ytx-breadcrumbs { padding: 130px 0 16px; color: var(--ytx-muted); font-size: 13px; }
 .ytx-page-hero { background: var(--ytx-soft); }
 .ytx-page-hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 45px; align-items: center; padding: 50px 0 65px; }
 .ytx-page-hero h1 { font-size: clamp(40px, 4.5vw, 60px); }
 .ytx-page-hero img { height: 470px; border-radius: 24px; }
-.ytx-anchorbar { position: sticky; top: 0; z-index: 30; background: #fff; border-bottom: 1px solid var(--ytx-line); }
+.ytx-anchorbar { background: #fff; border-bottom: 1px solid var(--ytx-line); }
+#ytx-overview, #ytx-included, #ytx-process, #ytx-faq { scroll-margin-top: 130px; }
 .ytx-anchorbar .ytx-wrap { display: flex; gap: 28px; align-items: center; min-height: 60px; font-size: 14px; font-weight: 700; flex-wrap: wrap; }
 .ytx-anchorbar .ytx-btn { margin-left: auto; min-height: 40px; }
 .ytx-check-list { list-style: none; padding: 0; columns: 2; margin: 0; }
@@ -199,6 +200,11 @@
 @media (max-width: 900px) {
   .ytx-wrap { width: min(calc(100% - 30px), 720px); }
   .ytx-hero { background: #fff; }
+  .ytx-utility { display: none; }
+  .ytx-hero-grid { padding-top: 90px; }
+  .ytx-page-hero-grid { padding-top: 90px; }
+  .ytx-breadcrumbs { padding-top: 76px; }
+  #ytx-overview, #ytx-included, #ytx-process, #ytx-faq { scroll-margin-top: 76px; }
   .ytx-hero-grid, .ytx-page-hero-grid, .ytx-split, .ytx-contact-grid { grid-template-columns: 1fr; }
   .ytx-hero-media { height: 360px; }
   .ytx-intent-grid, .ytx-card-grid, .ytx-benefit-grid, .ytx-reviews { grid-template-columns: 1fr 1fr; }
