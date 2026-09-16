@@ -1553,6 +1553,26 @@ a#cartIcon .cart-total {
   color: inherit;
 }
 
+@media (max-width: 600px) {
+  a#cartIcon {
+    top: auto;
+    right: 12px;
+    bottom: 18px;
+    transform: none;
+    overflow: hidden;
+    border-radius: 12px;
+    font-size: 11px;
+  }
+
+  a#cartIcon .cart-length {
+    padding: 7px 9px;
+  }
+
+  a#cartIcon .cart-total {
+    padding: 4px 8px;
+  }
+}
+
 .bg-facebook {
   color: #fff;
   background: #4267B2;

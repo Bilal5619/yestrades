@@ -245,7 +245,7 @@
         <span>{{ !empty($pageHeading) ? $pageHeading->about_us_title : __('About Us') }}</span>
       </nav>
       <h1>{{ !empty($pageHeading) ? $pageHeading->about_us_title : (!empty($websiteInfo->website_title) ? __('About') . ' ' . $websiteInfo->website_title : __('About Us')) }}</h1>
-      <p>{{ __('The UK\'s easiest way to book vetted service engineers - plumbing, gas, electrical, cleaning and landlord certificates.') }}</p>
+      <p>{{ __('The UK\'s easiest way to book plumbing, gas, electrical, cleaning and landlord certificate services.') }}</p>
     </div>
   </section>
 

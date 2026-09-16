@@ -344,7 +344,7 @@
             <span class="careers-eyebrow">{{ __('Careers at yestrades') }}</span>
             <h1>{{ __('Help make home services') }} <span>{{ __('simple to book.') }}</span></h1>
             <p>
-              {{ __('We are building a practical, trusted way for customers, landlords and property teams to book vetted home-service professionals. Join the team shaping the tools, service standards and customer experience behind every booking.') }}
+              {{ __('We are building a practical, trusted way for customers, landlords and property teams to book home-service professionals. Join the team shaping the tools, service standards and customer experience behind every booking.') }}
             </p>
             <div class="careers-actions">
               <a href="#current-openings" class="careers-primary-btn">

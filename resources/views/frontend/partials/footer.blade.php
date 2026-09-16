@@ -19,7 +19,7 @@
           <div class="footer-signal-copy">
             <span class="footer-signal-eyebrow"><span class="footer-signal-dot"></span>{{ __('Ready when you are') }}</span>
             <h2>{{ __('Booked, confirmed and') }} <span>{{ __('sorted — today.') }}</span></h2>
-            <p>{{ __('Tell us the job, pick a time and we\'ll match you with a vetted local engineer. No call-outs, no guesswork.') }}</p>
+            <p>{{ __('Tell us the job, pick a time and we\'ll match you with a local professional. No call-outs, no guesswork.') }}</p>
             <div class="footer-signal-actions">
               <a href="{{ route('frontend.services') }}" class="footer-primary-btn">
                 {{ __('Book a service now') }} <i class="fal fa-long-arrow-right"></i>
@@ -43,7 +43,7 @@
             <div class="footer-signal-point">
               <span class="footer-signal-icon"><i class="fal fa-shield-check"></i></span>
               <div>
-                <strong>{{ __('Vetted engineers') }}</strong>
+                <strong>{{ __('Registered engineers') }}</strong>
                 <span class="footer-signal-point-label">{{ __('Gas Safe & NICEIC registered') }}</span>
               </div>
             </div>
@@ -73,7 +73,7 @@
               </a>
             </div>
             <p class="footer-intro">
-              {{ $legalBrandName }} {{ __('is the UK\'s easiest way to book vetted service engineers - plumbing, gas, electrical, cleaning and landlord certificates.') }}
+              {{ $legalBrandName }} {{ __('is the UK\'s easiest way to book plumbing, gas, electrical, cleaning and landlord certificate services.') }}
             </p>
             <div class="footer-badges" aria-label="{{ __('Accreditations') }}">
               <span><i class="fal fa-check-circle"></i> {{ __('GAS SAFE') }}</span>

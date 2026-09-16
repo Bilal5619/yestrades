@@ -26,7 +26,7 @@
             <div class="au-brand-inner">
               <span class="au-brand-eyebrow"><span class="au-eyebrow-dot"></span>{{ __('Join') }} {{ $websiteInfo->website_title ?? config('app.name') }}</span>
               <h1>{{ __('Create your account') }} <span>{{ __('in under a minute.') }}</span></h1>
-              <p>{{ __('Book vetted engineers for certificates, repairs and cleaning with clear pricing every time.') }}</p>
+              <p>{{ __('Book certificates, repairs and cleaning with clear pricing every time.') }}</p>
               <ul class="au-points">
                 <li><i class="fal fa-check-circle"></i>{{ __('Fixed prices, no hidden fees') }}</li>
                 <li><i class="fal fa-check-circle"></i>{{ __('Manage all your bookings in one place') }}</li>

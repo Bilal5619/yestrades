@@ -9,7 +9,7 @@
 @endsection
 
 @section('metaDescription')
-  {{ __('Book landlord certificates, compliance checks, repairs and cleaning with vetted UK engineers.') }}
+  {{ __('Book landlord certificates, compliance checks, repairs and cleaning with UK engineers.') }}
 @endsection
 
 @section('content')
@@ -28,7 +28,7 @@
             </span>
             <h1>{{ __('Compliance, repairs and cleaning') }} <span>{{ __('without the chasing.') }}</span></h1>
             <p>
-              {{ __('Book vetted engineers for rental property certificates, urgent repairs, boiler services and end-of-tenancy jobs. Fixed prices, instant booking and documents you can share with tenants or agents.') }}
+              {{ __('Book rental property certificates, urgent repairs, boiler services and end-of-tenancy jobs. Fixed prices, instant booking and documents you can share with tenants or agents.') }}
             </p>
             <div class="ld-hero-actions">
               <a href="{{ route('frontend.services', ['service_title' => 'Landlord certificate']) }}" class="ld-btn-primary">
@@ -89,7 +89,7 @@
             <span class="ld-stat-icon"><i class="fal fa-user-hard-hat"></i></span>
             <div>
               <strong>{{ __('180+') }}</strong>
-              <span class="ld-stat-label">{{ __('Vetted pros') }}</span>
+              <span class="ld-stat-label">{{ __('Service pros') }}</span>
             </div>
           </div>
           <div class="ld-stat">
@@ -188,7 +188,7 @@
           </div>
           <div class="ld-flow-step" data-aos="fade-up" data-aos-delay="200">
             <div class="ld-flow-node"><i class="fal fa-user-hard-hat"></i><em>2</em></div>
-            <h4>{{ __('We assign a vetted engineer') }}</h4>
+            <h4>{{ __('We assign an engineer') }}</h4>
             <p>{{ __('A Gas Safe or NICEIC registered pro is matched and confirmed with an arrival window.') }}</p>
           </div>
           <div class="ld-flow-step" data-aos="fade-up" data-aos-delay="300">
