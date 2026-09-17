@@ -7,11 +7,7 @@
        instead of above it. --}}
   <div class="ytx-utility">
     <div class="ytx-wrap">
-      @if (!empty($basicInfo->address))
-        <span>* {{ __('Serving') }} {{ $basicInfo->address }} {{ __('and surrounding areas') }}</span>
-      @else
-        <span></span>
-      @endif
+      <span>* {{ __('Serving Edinburgh, Livingston, Central Scotland and surrounding area.') }}</span>
       @if (!empty($basicInfo->contact_number))
         <span>
           <a href="tel:{{ preg_replace('/\s+/', '', $basicInfo->contact_number) }}" style="color:#fff;">{{ __('Phone') }} {{ $basicInfo->contact_number }}</a>
@@ -65,6 +61,9 @@
           <ul id="mainMenu" class="navbar-nav mobile-item mx-auto">
             <li class="nav-item">
               <a href="{{ route('frontend.services') }}" class="nav-link">{{ __('Services') }}</a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('frontend.services', ['category' => 'home-improvements']) }}" class="nav-link">{{ __('Home Improvements') }}</a>
             </li>
             <li class="nav-item">
   <a

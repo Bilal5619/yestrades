@@ -33,19 +33,32 @@
 .ytx-btn:disabled { opacity: .6; cursor: not-allowed; }
 
 /* Utility bar + header */
-.ytx-utility { background: #151b17; color: #fff; font-size: 13px; }
-.ytx-utility .ytx-wrap { display: flex; justify-content: space-between; padding: 8px 0; flex-wrap: wrap; gap: 4px; }
+.ytx-utility { background: #151b17; color: #fff; font-size: 13px; line-height: 1.35; }
+.ytx-utility .ytx-wrap { display: flex; justify-content: space-between; padding: 8px 0; flex-wrap: wrap; gap: 6px 18px; }
+.ytx-utility span { min-width: 0; }
+.ytx-utility a { white-space: nowrap; }
 
 /* Hero */
 .ytx-hero { background: linear-gradient(90deg, #fff 48%, #eef6ef 48%); overflow: hidden; }
-.ytx-hero-grid { display: grid; grid-template-columns: 1fr 1fr; min-height: 560px; align-items: center; gap: 46px; padding: 150px 0 30px; }
+.ytx-hero-grid { display: grid; grid-template-columns: 1fr 1fr; min-height: 560px; align-items: center; gap: 46px; padding: 190px 0 38px; }
 .ytx-eyebrow { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--ytx-green-dark); font-weight: 800; }
-.ytx-hero h1, .ytx-page-hero h1 { font-size: clamp(42px, 5vw, 67px); line-height: 1.03; letter-spacing: -.045em; margin: 16px 0 20px; }
+.ytx-hero h1, .ytx-page-hero h1 { font-size: 60px; line-height: 1.04; letter-spacing: 0; margin: 16px 0 20px; }
 .ytx-hero h1 em, .ytx-page-hero h1 em { color: var(--ytx-green); font-style: normal; }
 .ytx-lead { font-size: 18px; color: var(--ytx-muted); max-width: 640px; }
 .ytx-hero-actions { display: flex; gap: 12px; margin: 28px 0; flex-wrap: wrap; }
 .ytx-trust-row { display: flex; gap: 22px; flex-wrap: wrap; font-weight: 700; font-size: 14px; }
 .ytx-trust-row span:before, .ytx-check-list li:before { content: '✓'; display: inline-grid; place-items: center; width: 23px; height: 23px; border-radius: 50%; background: var(--ytx-green); color: #fff; margin-right: 8px; font-size: 12px; }
+.ytx-credential-row { display: flex; align-items: center; gap: 10px; margin-top: 26px; flex-wrap: wrap; }
+.ytx-credential { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 7px 12px; border: 1px solid #dbe6de; border-radius: 10px; background: #fff; color: var(--ytx-ink); box-shadow: 0 6px 18px rgba(17, 23, 19, .06); font-size: 13px; font-weight: 800; line-height: 1; }
+.ytx-credential strong { font-size: 13px; line-height: 1; white-space: nowrap; }
+.ytx-credential small { display: block; margin-top: 3px; font-size: 11px; font-weight: 800; line-height: 1; white-space: nowrap; }
+.ytx-credential-logo img { width: 34px; height: 31px; object-fit: contain; border-radius: 3px; }
+.ytx-niceic-badge { color: #d71920; border-color: #f1c9cb; min-width: 92px; }
+.ytx-niceic-badge strong { font-size: 16px; letter-spacing: .02em; }
+.ytx-niceic-badge small { color: #4f5962; text-align: center; }
+.ytx-google-badge small { color: #fbbc04; letter-spacing: 1px; font-size: 12px; }
+.ytx-google-mark { width: 24px; height: 24px; display: inline-grid; place-items: center; border-radius: 50%; background: conic-gradient(from -45deg, #4285f4 0 25%, #34a853 0 50%, #fbbc04 0 75%, #ea4335 0 100%); color: #fff; font-weight: 900; font-size: 15px; font-family: Arial, sans-serif; }
+.ytx-insured-badge i, .ytx-experience-badge i { color: var(--ytx-green); font-size: 18px; }
 .ytx-hero-media { height: 500px; border-radius: 30px; overflow: hidden; position: relative; box-shadow: var(--ytx-shadow); }
 .ytx-hero-media img { height: 100%; width: 100%; }
 .ytx-rating { position: absolute; right: 18px; bottom: 18px; background: #fff; border-radius: 14px; padding: 14px 18px; box-shadow: var(--ytx-shadow); font-weight: 800; }
@@ -201,9 +214,13 @@
 @media (max-width: 900px) {
   .ytx-wrap { width: min(calc(100% - 30px), 720px); }
   .ytx-hero { background: #fff; }
-  .ytx-utility { display: none; }
-  .ytx-hero-grid { padding-top: 90px; }
-  .ytx-page-hero-grid { padding-top: 90px; }
+  .header-area.header-2 { height: auto; }
+  .ytx-utility { display: block; font-size: 12px; }
+  .ytx-utility .ytx-wrap { display: grid; justify-content: stretch; gap: 2px; padding: 6px 0; text-align: center; }
+  .ytx-utility a { white-space: normal; }
+  .ytx-hero-grid { padding-top: 150px; }
+  .ytx-page-hero-grid { padding-top: 135px; }
+  .ytx-hero h1, .ytx-page-hero h1 { font-size: 42px; }
   .ytx-breadcrumbs { padding-top: 76px; }
   #ytx-overview, #ytx-included, #ytx-process, #ytx-faq { scroll-margin-top: 76px; }
   .ytx-hero-grid, .ytx-page-hero-grid, .ytx-split, .ytx-contact-grid { grid-template-columns: 1fr; }
@@ -222,6 +239,8 @@
 @media (max-width: 600px) {
   .ytx-hero-actions, .ytx-cta .ytx-wrap, .ytx-section-title { align-items: stretch; flex-direction: column; }
   .ytx-hero-actions .ytx-btn { width: 100%; }
+  .ytx-credential-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .ytx-credential { width: 100%; min-width: 0; padding-inline: 8px; }
   .ytx-intent-grid, .ytx-card-grid, .ytx-benefit-grid, .ytx-reviews, .ytx-trust-strip .ytx-wrap { grid-template-columns: 1fr; }
   .ytx-intent { display: grid; grid-template-columns: 120px 1fr; }
   .ytx-intent img { height: 100%; }
@@ -236,6 +255,8 @@
   .ytx-page-hero img { height: 290px; }
   .ytx-cta .ytx-btn { width: 100%; }
   .ytx-directory-hero h1 { font-size: 36px; }
+  .ytx-hero-grid { padding-top: 140px; }
+  .ytx-hero h1, .ytx-page-hero h1 { font-size: 34px; line-height: 1.08; }
   .ytx-finder-section { padding: 20px 0; }
   .ytx-finder { padding: 18px; border-radius: 14px; }
   .ytx-finder-head { display: grid; gap: 12px; margin-bottom: 16px; }

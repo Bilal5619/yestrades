@@ -27,6 +27,8 @@ public/assets/front/invoices/*
 !/public/assets/img/products/.gitkeep
 /public/assets/img/services/*
 !/public/assets/img/services/.gitkeep
+!/public/assets/img/services/bathroom-renovation.jpg
+!/public/assets/img/services/kitchen-renovation.jpg
 /public/assets/img/blogs/*
 !/public/assets/img/blogs/.gitkeep
 /public/assets/img/questions/*

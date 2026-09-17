@@ -53,7 +53,7 @@
     }
     $ytxIsBookable = !$details->isQuoteType();
     $ytxActionLabel = $ytxIsBookable ? __('Book this service') : __('Get my free quote');
-    $ytxActionUrl = $ytxIsBookable ? '#ytx-book' : route('frontend.service_quote.questions', $details->id);
+    $ytxActionUrl = route('frontend.service_quote.questions', $details->id);
     $ytxFeatureList = !empty($service->features) ? array_filter(array_map('trim', explode("\n", $service->features))) : [];
   @endphp
 
@@ -76,7 +76,11 @@
             <p class="ytx-lead">{{ Str::limit(strip_tags($service->description), 170) }}</p>
           @endif
           <div class="ytx-hero-actions">
-            <a class="ytx-btn" href="{{ $ytxActionUrl }}">{{ $ytxActionLabel }} →</a>
+            @if ($ytxIsBookable)
+              <a class="ytx-btn bookNowBtn product-details" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#makeBooking" data-service-id="{{ $details->id }}">{{ $ytxActionLabel }} →</a>
+            @else
+              <a class="ytx-btn" href="{{ $ytxActionUrl }}">{{ $ytxActionLabel }} →</a>
+            @endif
             @if (!empty($basicInfo->contact_number))
               <a class="ytx-btn ytx-outline" href="tel:{{ preg_replace('/\s+/', '', $basicInfo->contact_number) }}">{{ __('Speak to our team') }}</a>
             @endif
@@ -140,7 +144,6 @@
         <a href="#ytx-included">{{ __("What's included") }}</a>
         <a href="#ytx-process">{{ __('Our process') }}</a>
         <a href="#ytx-faq">{{ __('FAQs') }}</a>
-        <a class="ytx-btn" href="{{ $ytxActionUrl }}">{{ $ytxActionLabel }}</a>
       </div>
     </nav>
 
@@ -309,7 +312,11 @@
             <div class="ytx-eyebrow">{{ __('Get started') }}</div>
             <h2>{{ $ytxActionLabel }}</h2>
             <p>{{ __('Share a few details and our team will contact you to confirm the best next step.') }}</p>
-            <a class="ytx-btn" href="{{ $ytxActionUrl }}">{{ $ytxActionLabel }} →</a>
+            @if ($ytxIsBookable)
+              <a class="ytx-btn bookNowBtn product-details" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#makeBooking" data-service-id="{{ $details->id }}">{{ $ytxActionLabel }} →</a>
+            @else
+              <a class="ytx-btn" href="{{ $ytxActionUrl }}">{{ $ytxActionLabel }} →</a>
+            @endif
           </div>
           <aside class="ytx-contact-card">
             <h3>{{ __('Prefer to speak to someone?') }}</h3>

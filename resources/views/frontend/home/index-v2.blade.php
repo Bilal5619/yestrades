@@ -65,10 +65,23 @@
             <a class="ytx-btn" href="{{ route('contact') }}">{{ __('Get a free quote') }} →</a>
             <a class="ytx-btn ytx-outline" href="{{ route('frontend.services') }}">{{ __('Book a service') }}</a>
           </div>
-          <div class="ytx-trust-row">
-            <span>{{ __('Gas Safe registered') }}</span>
-            <span>{{ __('NICEIC approved') }}</span>
-            <span>{{ __('Fully insured') }}</span>
+          <div class="ytx-credential-row" aria-label="{{ __('Trust credentials') }}">
+            <span class="ytx-credential ytx-credential-logo">
+              <img src="{{ asset('assets/img/trust/gas-safe-register.jpg') }}" alt="{{ __('Gas Safe Register') }}">
+              <strong>{{ __('Registered') }}</strong>
+            </span>
+            <span class="ytx-credential ytx-niceic-badge" aria-label="{{ __('NICEIC approved') }}">
+              <strong>{{ __('NICEIC') }}</strong>
+              <small>{{ __('Approved') }}</small>
+            </span>
+            <span class="ytx-credential ytx-google-badge" aria-label="{{ __('Google 5 star rating') }}">
+              <span class="ytx-google-mark" aria-hidden="true">G</span>
+              <span><strong>{{ __('Google') }}</strong><small>&#9733;&#9733;&#9733;&#9733;&#9733;</small></span>
+            </span>
+            <span class="ytx-credential ytx-experience-badge">
+              <i class="fal fa-award" aria-hidden="true"></i>
+              <strong>{{ __('14 years experience') }}</strong>
+            </span>
           </div>
         </div>
         <div class="ytx-hero-media">
@@ -120,14 +133,23 @@
             <input type="text" name="postcode" placeholder="{{ __('Enter postcode, e.g. EH54 6AA') }}" aria-label="{{ __('Postcode') }}">
             <button type="submit" class="ytx-btn">{{ __('Check options') }} →</button>
           </form>
-          @if ($ytxPopularServices->isNotEmpty())
-            <div class="ytx-top-searches">
-              <span>{{ __('Top searches:') }}</span>
-              @foreach ($ytxPopularServices->take(5) as $svc)
-                <a href="{{ route('frontend.service.details', ['slug' => $svc->slug, 'id' => $svc->id]) }}">{{ $svc->name }}</a>
-              @endforeach
-            </div>
-          @endif
+          @php
+            $ytxTopSearches = [
+              ['label' => 'Landlord gas safety', 'query' => 'Gas Safety Certificate'],
+              ['label' => 'PAT test', 'query' => 'PAT test'],
+              ['label' => 'EICR', 'query' => 'EICR'],
+              ['label' => 'Bathroom renovation or installation', 'query' => 'Bathroom renovation'],
+              ['label' => 'Kitchen renovation', 'query' => 'Kitchen renovation'],
+              ['label' => 'New boiler installations', 'query' => 'Boiler installation'],
+              ['label' => 'Boiler service', 'query' => 'Boiler service'],
+            ];
+          @endphp
+          <div class="ytx-top-searches">
+            <span>{{ __('Top searches:') }}</span>
+            @foreach ($ytxTopSearches as $ytxSearch)
+              <a href="{{ route('frontend.services', ['service_title' => $ytxSearch['query']]) }}">{{ __($ytxSearch['label']) }}</a>
+            @endforeach
+          </div>
           <p class="ytx-marketplace-note">{{ __('Starting prices apply only where shown. Final availability and any additional work are confirmed before booking.') }}</p>
         </div>
       </div>
