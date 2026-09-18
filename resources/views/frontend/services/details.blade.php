@@ -23,6 +23,40 @@
     {{ $service->meta_description }}
   @endif
 @endsection
+
+@push('head')
+  @if ($service)
+    {{-- Service + Breadcrumb structured data — lets Google show this service
+         directly as a rich result and understand the page hierarchy. --}}
+    <script type="application/ld+json">
+      {!! json_encode(array_filter([
+        '@context' => 'https://schema.org',
+        '@type' => 'Service',
+        'name' => $service->name,
+        'description' => strip_tags($service->meta_description ?: $service->description ?: ''),
+        'serviceType' => $service->name,
+        'url' => url()->current(),
+        'provider' => array_filter([
+          '@type' => 'LocalBusiness',
+          'name' => $websiteInfo->website_title ?? config('app.name'),
+          'telephone' => $websiteInfo->contact_number ?? null,
+        ]),
+      ]), JSON_UNESCAPED_SLASHES) !!}
+    </script>
+    <script type="application/ld+json">
+      {!! json_encode([
+        '@context' => 'https://schema.org',
+        '@type' => 'BreadcrumbList',
+        'itemListElement' => [
+          ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => url('/')],
+          ['@type' => 'ListItem', 'position' => 2, 'name' => 'Services', 'item' => route('frontend.services')],
+          ['@type' => 'ListItem', 'position' => 3, 'name' => $service->name, 'item' => url()->current()],
+        ],
+      ], JSON_UNESCAPED_SLASHES) !!}
+    </script>
+  @endif
+@endpush
+
 @section('content')
   @php
     $ytxCategoryImages = [

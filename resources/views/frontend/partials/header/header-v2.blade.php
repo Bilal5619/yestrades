@@ -63,7 +63,10 @@
               <a href="{{ route('frontend.services') }}" class="nav-link">{{ __('Services') }}</a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('frontend.services', ['category' => 'home-improvements']) }}" class="nav-link">{{ __('Home Improvements') }}</a>
+              {{-- No "home-improvements" category exists in Admin > Services > Categories yet, so this
+                   filter would return zero results. Linking to the unfiltered list until that
+                   category is created (Admin panel, no code change needed after that). --}}
+              <a href="{{ route('frontend.services') }}" class="nav-link">{{ __('Home Improvements') }}</a>
             </li>
             <li class="nav-item">
   <a

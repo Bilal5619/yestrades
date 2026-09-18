@@ -12,6 +12,41 @@
   <meta name="csrf-token" content="{{ csrf_token() }}" />
   <!-- Title -->
   <title>@yield('pageHeading') {{ '| ' . $websiteInfo->website_title }}</title>
+
+  {{-- Open Graph / Twitter Card / canonical — used when pages are shared on
+       social media and by search engines for rich result matching. --}}
+  <link rel="canonical" href="{{ url()->current() }}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ $websiteInfo->website_title ?? config('app.name') }}">
+  <meta property="og:locale" content="en_GB">
+  <meta property="og:title" content="@yield('pageHeading') | {{ $websiteInfo->website_title ?? config('app.name') }}">
+  <meta property="og:description" content="@yield('metaDescription')">
+  <meta property="og:url" content="{{ url()->current() }}">
+  @if (!empty($websiteInfo->logo))
+    <meta property="og:image" content="{{ asset('assets/img/' . $websiteInfo->logo) }}">
+  @endif
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="@yield('pageHeading') | {{ $websiteInfo->website_title ?? config('app.name') }}">
+  <meta name="twitter:description" content="@yield('metaDescription')">
+
+  {{-- LocalBusiness structured data — helps search engines show Yes Trades'
+       phone, address and reviews directly in search results. --}}
+  <script type="application/ld+json">
+    {!! json_encode(array_filter([
+      '@context' => 'https://schema.org',
+      '@type' => ['LocalBusiness', 'HomeAndConstructionBusiness'],
+      'name' => $websiteInfo->website_title ?? config('app.name'),
+      'url' => url('/'),
+      'logo' => !empty($websiteInfo->logo) ? asset('assets/img/' . $websiteInfo->logo) : null,
+      'telephone' => $websiteInfo->contact_number ?? null,
+      'email' => $websiteInfo->from_mail ?? null,
+      'address' => !empty($websiteInfo->address) ? [
+        '@type' => 'PostalAddress',
+        'addressLocality' => $websiteInfo->address,
+        'addressCountry' => 'GB',
+      ] : null,
+    ]), JSON_UNESCAPED_SLASHES) !!}
+  </script>
   <!-- Favicon: fixed icon-only image (not derived from the admin logo,
        which isn't square/padded enough to survive the tiny tab-icon size
        without looking cropped). -->
@@ -83,6 +118,7 @@
       font-family: 'Manrope', Arial, sans-serif;
     }
   </style>
+  @stack('head')
 </head>
 
 

@@ -1619,7 +1619,8 @@ $(document).ready(function () {
 
 function populateSummary() {
   var sym = $("#currency_symbol_value").val() || "£";
-  var serviceName = currentServiceData.name || "Service";
+  var serviceName =
+    $("#service_name_value").val() || currentServiceData.name || "Service";
   var baseServicePrice = currentServiceData.price || "N/A";
   var totalPriceValue =
     $("#total_price").val() ||
