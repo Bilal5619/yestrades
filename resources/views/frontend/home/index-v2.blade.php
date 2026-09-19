@@ -58,9 +58,8 @@
     <section class="ytx-hero">
       <div class="ytx-wrap ytx-hero-grid">
         <div>
-          <div class="ytx-eyebrow">{{ __('Local people · Great results') }}</div>
-          <h1>{{ __('Local trades you can trust') }} — <em>{{ __('from quick repairs to complete renovations') }}</em></h1>
-          <p class="ytx-lead">{{ __('Qualified work for homes and landlords, with one trusted team for repairs, heating, electrical and home improvements.') }}</p>
+          <h1>{{ __('Family-run trades you can trust') }} — <em>{{ __('from quick repairs to complete renovations') }}</em></h1>
+          <p class="ytx-lead">{{ __('A trusted family business providing professional repairs, heating, electrical, plumbing and renovation services with quality you can rely on.') }}</p>
           <div class="ytx-hero-actions">
             <a class="ytx-btn" href="{{ route('contact') }}">{{ __('Get a free quote') }} →</a>
             <a class="ytx-btn ytx-outline" href="{{ route('frontend.services') }}">{{ __('Book a service') }}</a>
@@ -103,57 +102,6 @@
         @endif
       @endforeach
     @endif
-
-    {{-- ══════════ Quick service finder ══════════ --}}
-    <section class="ytx-finder-section">
-      <div class="ytx-wrap">
-        <div class="ytx-finder">
-          <div class="ytx-finder-head">
-            <div>
-              <div class="ytx-eyebrow">{{ __('Quick service finder') }}</div>
-              <h2>{{ __('Check the right service for your property') }}</h2>
-              <p>{{ __('Choose the work, add your postcode and go straight to booking or a quote.') }}</p>
-            </div>
-            <span class="ytx-finder-badge">{{ __('Takes about 60 seconds') }}</span>
-          </div>
-          <form class="ytx-finder-grid" id="ytxQuickFinder">
-            <select name="service_redirect" id="ytxFinderService" required>
-              <option value="">{{ __('Choose a service') }}</option>
-              @foreach ($ytxPopularServices as $svc)
-                <option value="{{ route('frontend.service.details', ['slug' => $svc->slug, 'id' => $svc->id]) }}">{{ $svc->name }}</option>
-              @endforeach
-            </select>
-            <select name="property_size" aria-label="{{ __('Property size') }}">
-              <option value="">{{ __('Property size') }}</option>
-              <option>{{ __('Studio / 1 bedroom') }}</option>
-              <option>{{ __('2 bedrooms') }}</option>
-              <option>{{ __('3 bedrooms') }}</option>
-              <option>{{ __('4+ bedrooms') }}</option>
-            </select>
-            <input type="text" name="postcode" placeholder="{{ __('Enter postcode, e.g. EH54 6AA') }}" aria-label="{{ __('Postcode') }}">
-            <button type="submit" class="ytx-btn">{{ __('Check options') }} →</button>
-          </form>
-          @php
-            $ytxTopSearches = [
-              ['label' => 'Landlord gas safety', 'query' => 'Gas Safety Certificate'],
-              ['label' => 'PAT test', 'query' => 'PAT test'],
-              ['label' => 'EICR', 'query' => 'EICR'],
-              ['label' => 'Bathroom renovation or installation', 'query' => 'Bathroom renovation'],
-              ['label' => 'Kitchen renovation', 'query' => 'Kitchen renovation'],
-              ['label' => 'New boiler installations', 'query' => 'Boiler installation'],
-              ['label' => 'Boiler service', 'query' => 'Boiler service'],
-            ];
-          @endphp
-          <div class="ytx-top-searches">
-            <span>{{ __('Top searches:') }}</span>
-            @foreach ($ytxTopSearches as $ytxSearch)
-              <a href="{{ route('frontend.services', ['service_title' => $ytxSearch['query']]) }}">{{ __($ytxSearch['label']) }}</a>
-            @endforeach
-          </div>
-          <p class="ytx-marketplace-note">{{ __('Starting prices apply only where shown. Final availability and any additional work are confirmed before booking.') }}</p>
-        </div>
-      </div>
-    </section>
 
     @if (count($after_category) > 0)
       @foreach ($after_category as $cusCategory)
@@ -420,25 +368,6 @@
     @endif
 
   </div>
-
-  @push('scripts')
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        var finder = document.getElementById('ytxQuickFinder');
-        if (finder) {
-          finder.addEventListener('submit', function (e) {
-            var select = document.getElementById('ytxFinderService');
-            e.preventDefault();
-            if (select && select.value) {
-              window.location.href = select.value;
-            } else {
-              window.location.href = "{{ route('frontend.services') }}";
-            }
-          });
-        }
-      });
-    </script>
-  @endpush
 @endsection
 @section('script')
   <script defer src="https://js.stripe.com/v3/"></script>
