@@ -97,6 +97,11 @@
 
               @if (Session::has('success'))
                 <div class="ct-alert ct-alert-success">{{ __(Session::get('success')) }}</div>
+                <script>
+                  if (typeof fbq === 'function') {
+                    fbq('track', 'Contact');
+                  }
+                </script>
               @endif
               @if (Session::has('error'))
                 <div class="ct-alert ct-alert-error">{{ __(Session::get('error')) }}</div>

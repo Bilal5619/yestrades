@@ -2387,6 +2387,13 @@
 
 @section('script')
   <script async id="cart-stripe-sdk" src="https://js.stripe.com/v3/"></script>
+  @if ($serviceCart->isNotEmpty())
+    <script>
+      if (typeof fbq === 'function') {
+        fbq('track', 'InitiateCheckout');
+      }
+    </script>
+  @endif
   <script>
     (function () {
       const currencySymbol = @json(html_entity_decode($symbol, ENT_QUOTES, 'UTF-8'));

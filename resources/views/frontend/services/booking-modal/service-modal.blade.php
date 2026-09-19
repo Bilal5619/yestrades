@@ -1927,6 +1927,30 @@
               </div>
             @endif
           </div>
+
+          @if (isset($bookingInfo) && $bookingInfo->payment_status == 'completed' && !$isWeekendRequestConfirmation)
+            {{-- Meta Pixel Purchase event — only for a genuinely completed,
+                 paid booking (never for pending/offline/weekend-request
+                 bookings), using the real amount charged. Guarded against
+                 firing twice for the same order (e.g. on a page refresh
+                 while this success screen is still open). --}}
+            <script>
+              (function () {
+                if (typeof fbq !== 'function') return;
+                var orderNumber = @json($bookingInfo->order_number);
+                var storageKey = 'fb_purchase_tracked_' + orderNumber;
+                try {
+                  if (sessionStorage.getItem(storageKey)) return;
+                  sessionStorage.setItem(storageKey, '1');
+                } catch (e) {}
+                fbq('track', 'Purchase', {
+                  value: {{ (float) $purchaseTotal }},
+                  currency: @json($purchaseCurrency),
+                });
+              })();
+            </script>
+          @endif
+
           <div class="btn-groups justify-content-center w-100">
             <button type="button" class="btn-text color-primary icon-end" data-bs-dismiss="modal"
               aria-label="Close">{{ __('Close') }}</button>

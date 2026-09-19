@@ -1308,6 +1308,15 @@ class ServiceController extends Controller
       'payment_status' => $information['bookingInfo']->payment_status,
     ]);
 
+    // Real order total for ad-platform Purchase events: when several
+    // services were checked out together they share a group_token, so the
+    // customer actually paid the sum across that group, not just this one
+    // booking row.
+    $information['purchaseTotal'] = !empty($information['bookingInfo']->group_token)
+      ? ServiceBooking::where('group_token', $information['bookingInfo']->group_token)->sum('customer_paid')
+      : $information['bookingInfo']->customer_paid;
+    $information['purchaseCurrency'] = $information['bookingInfo']->currency_text ?: 'GBP';
+
     return view('frontend.services.booking-modal.service-modal', $information);
   }
 
