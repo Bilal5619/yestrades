@@ -600,3 +600,14 @@
 @media (max-width: 600px) {
   .ytx-values-grid, .ytx-reviews-3 { grid-template-columns: 1fr; }
 }
+
+/* ── Accreditations: continuous right-to-left marquee ────────────────── */
+.ytx-accreditations .ytx-wrap { flex-wrap: nowrap; }
+.ytx-accreditations-marquee { flex: 1; min-width: 0; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.ytx-accreditations-track { display: flex; width: max-content; animation: ytxMarquee 28s linear infinite; }
+.ytx-accreditations-track:hover { animation-play-state: paused; }
+.ytx-accreditations-track .ytx-accreditations-row { flex-wrap: nowrap; padding-right: 18px; }
+.ytx-accreditation { white-space: nowrap; }
+@keyframes ytxMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .ytx-accreditations-track { animation: none; } }
+@media (max-width: 600px) { .ytx-accreditations .ytx-wrap { flex-direction: column; align-items: stretch; } }

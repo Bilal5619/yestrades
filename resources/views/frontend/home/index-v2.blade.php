@@ -373,12 +373,23 @@
     <div class="ytx-accreditations">
       <div class="ytx-wrap">
         <span class="ytx-accreditations-label">{{ __('Registered & accredited') }}</span>
-        <div class="ytx-accreditations-row">
+        <div class="ytx-accreditations-marquee" aria-label="{{ __('Accreditations') }}">
+        <div class="ytx-accreditations-track">
+          <div class="ytx-accreditations-row">
           <span class="ytx-accreditation"><img src="{{ asset('assets/img/trust/gas-safe-register.jpg') }}" alt="{{ __('Gas Safe Register') }}"></span>
           <span class="ytx-accreditation ytx-accreditation-text ytx-niceic-badge"><strong>NICEIC</strong></span>
           <span class="ytx-accreditation ytx-accreditation-text"><i class="fal fa-shield-check"></i> {{ __('Fully insured') }}</span>
           <span class="ytx-accreditation ytx-accreditation-text"><i class="fal fa-id-card"></i> {{ __('DBS checked') }}</span>
           <span class="ytx-accreditation ytx-accreditation-text ytx-google-badge"><span class="ytx-google-mark" aria-hidden="true">G</span> {{ __('Google reviews') }}</span>
+          </div>
+          <div class="ytx-accreditations-row" aria-hidden="true">
+          <span class="ytx-accreditation"><img src="{{ asset('assets/img/trust/gas-safe-register.jpg') }}" alt="{{ __('Gas Safe Register') }}"></span>
+          <span class="ytx-accreditation ytx-accreditation-text ytx-niceic-badge"><strong>NICEIC</strong></span>
+          <span class="ytx-accreditation ytx-accreditation-text"><i class="fal fa-shield-check"></i> {{ __('Fully insured') }}</span>
+          <span class="ytx-accreditation ytx-accreditation-text"><i class="fal fa-id-card"></i> {{ __('DBS checked') }}</span>
+          <span class="ytx-accreditation ytx-accreditation-text ytx-google-badge"><span class="ytx-google-mark" aria-hidden="true">G</span> {{ __('Google reviews') }}</span>
+          </div>
+        </div>
         </div>
       </div>
     </div>
