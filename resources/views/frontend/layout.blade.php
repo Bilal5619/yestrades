@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="xxx" dir="{{ $currentLanguageInfo->direction == 1 ? 'rtl' : '' }}">
+<html lang="{{ str_replace('_', '-', $currentLanguageInfo->code ?? 'en-GB') }}" dir="{{ $currentLanguageInfo->direction == 1 ? 'rtl' : '' }}">
 
 <head>
   <meta charset="utf-8">
@@ -25,11 +25,20 @@
   /></noscript>
   <!-- End Meta Pixel Code -->
 
-  <meta name="keywords" content="@yield('metaKeywords')">
-  <meta name="description" content="@yield('metaDescription')">
+  @php
+    $ytxSiteName = $websiteInfo->website_title ?? config('app.name');
+    $ytxMetaTitle = html_entity_decode(trim(preg_replace('/\s+/', ' ', $__env->yieldContent('metaTitle'))) ?: (trim($__env->yieldContent('pageHeading')) . ' | ' . $ytxSiteName), ENT_QUOTES);
+    $ytxMetaDescription = html_entity_decode(trim(preg_replace('/\s+/', ' ', $__env->yieldContent('metaDescription'))), ENT_QUOTES);
+    $ytxMetaKeywords = html_entity_decode(trim(preg_replace('/\s+/', ' ', $__env->yieldContent('metaKeywords'))), ENT_QUOTES);
+    // Checkout / account pages should never appear in search results.
+    $ytxNoIndex = request()->routeIs('frontend.services.cart*', 'user.login', 'user.signup', 'user.forget*', 'user.dashboard*', 'user.*profile*', 'vendor.*', 'staff.*', 'company.*');
+  @endphp
+  <meta name="keywords" content="{{ $ytxMetaKeywords }}">
+  <meta name="description" content="{{ $ytxMetaDescription }}">
+  <meta name="robots" content="{{ $ytxNoIndex ? 'noindex,follow' : 'index,follow,max-image-preview:large' }}">
   <meta name="csrf-token" content="{{ csrf_token() }}" />
   <!-- Title -->
-  <title>@yield('pageHeading') {{ '| ' . $websiteInfo->website_title }}</title>
+  <title>{{ $ytxMetaTitle }}</title>
 
   {{-- Open Graph / Twitter Card / canonical — used when pages are shared on
        social media and by search engines for rich result matching. --}}
@@ -37,15 +46,15 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="{{ $websiteInfo->website_title ?? config('app.name') }}">
   <meta property="og:locale" content="en_GB">
-  <meta property="og:title" content="@yield('pageHeading') | {{ $websiteInfo->website_title ?? config('app.name') }}">
-  <meta property="og:description" content="@yield('metaDescription')">
+  <meta property="og:title" content="{{ $ytxMetaTitle }}">
+  <meta property="og:description" content="{{ $ytxMetaDescription }}">
   <meta property="og:url" content="{{ url()->current() }}">
   @if (!empty($websiteInfo->logo))
     <meta property="og:image" content="{{ asset('assets/img/' . $websiteInfo->logo) }}">
   @endif
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="@yield('pageHeading') | {{ $websiteInfo->website_title ?? config('app.name') }}">
-  <meta name="twitter:description" content="@yield('metaDescription')">
+  <meta name="twitter:title" content="{{ $ytxMetaTitle }}">
+  <meta name="twitter:description" content="{{ $ytxMetaDescription }}">
 
   {{-- LocalBusiness structured data — helps search engines show Yes Trades'
        phone, address and reviews directly in search results. --}}
@@ -58,11 +67,17 @@
       'logo' => !empty($websiteInfo->logo) ? asset('assets/img/' . $websiteInfo->logo) : null,
       'telephone' => $websiteInfo->contact_number ?? null,
       'email' => $websiteInfo->from_mail ?? null,
-      'address' => !empty($websiteInfo->address) ? [
+      // Registered address per the Google Business Profile (YES TRADES, Livingston).
+      'address' => [
         '@type' => 'PostalAddress',
-        'addressLocality' => $websiteInfo->address,
+        'streetAddress' => '128 Waverley Crescent',
+        'addressLocality' => 'Livingston',
+        'addressRegion' => 'West Lothian',
+        'postalCode' => 'EH54 8JR',
         'addressCountry' => 'GB',
-      ] : null,
+      ],
+      'areaServed' => ['Livingston', 'Edinburgh', 'West Lothian', 'Bathgate', 'Broxburn', 'Linlithgow'],
+      'sameAs' => ['https://www.google.co.uk/maps/place/YES+TRADES/@55.9015079,-3.545075,17z/data=!4m6!3m5!1s0x4887d93d19ebc8b9:0x4328e70bc2a3ea10!8m2!3d55.9015079!4d-3.545075!16s%2Fg%2F1q6kk8x89'],
     ]), JSON_UNESCAPED_SLASHES) !!}
   </script>
   <!-- Favicon: fixed icon-only image (not derived from the admin logo,
@@ -79,6 +94,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ asset('assets/frontend/css/ytx-theme.css') }}">
+  <link rel="stylesheet" href="{{ asset('assets/frontend/css/ytx-pages.css') }}">
   @php
     $primaryColor = $basicInfo->primary_color;
     $secondaryColor = $basicInfo->secondary_color;

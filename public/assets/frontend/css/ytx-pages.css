@@ -1,0 +1,124 @@
+/*
+ * Inner-page harmonisation: Services, Landlords, About, Contact, Request a Job.
+ * Those pages ship their own inline <style> blocks (older emerald/orange look,
+ * header offset that predates the taller header). Selectors here are prefixed
+ * with `body` so they beat the single-class inline rules regardless of order.
+ */
+
+:root { --ytx-navy: #0f1b2d; --ytx-navy-2: #16263d; }
+
+/* ── Unified dark hero on every inner page ────────────────────────────── */
+body .sv-banner,
+body .ld-hero,
+body .ab-hero,
+body .ct-hero,
+body .job-request-hero {
+  margin-top: 0;
+  padding: 176px 0 84px;
+  background: linear-gradient(120deg, var(--ytx-navy) 0%, var(--ytx-navy-2) 100%);
+  color: #fff;
+}
+body .sv-banner-dots, body .ab-hero-dots, body .ct-hero-dots, body .ld-hero-dots,
+body .ld-hero-blob, body .ct-hero-blob { display: none; }
+
+body .sv-banner h1, body .ld-hero h1, body .ab-hero h1, body .ct-hero h1, body .job-request-hero h1 {
+  font-family: 'Manrope', Arial, sans-serif;
+  font-size: clamp(38px, 4.6vw, 58px);
+  line-height: 1.06;
+  letter-spacing: -.02em;
+  color: #fff;
+}
+body .ld-hero h1 span, body .sv-banner h1 span, body .ab-hero h1 span, body .ct-hero h1 span { color: #6fd97d; }
+body .sv-banner p, body .ld-hero p, body .ab-hero p, body .ct-hero p, body .job-request-hero p { color: rgba(255,255,255,.82); font-size: 18px; }
+body .sv-breadcrumb, body .ab-breadcrumb, body .ct-breadcrumb, body .ld-eyebrow, body .job-request-kicker { color: #6fd97d; }
+body .sv-breadcrumb a, body .ab-breadcrumb a, body .ct-breadcrumb a { color: rgba(255,255,255,.7); }
+
+/* Buttons inside heroes: solid green primary, light outline secondary */
+body .ld-btn-primary, body .ld-btn-light { background: var(--color-primary, #2da63b); color: #fff; border-color: transparent; }
+body .ld-btn-outline-light, body .ld-btn-ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.45); }
+
+/* ── Section spacing: open everything up ──────────────────────────────── */
+body .sv-page, body .ld-page, body .ab-page, body .ct-page { font-family: 'Manrope', Arial, sans-serif; }
+body .ld-section, body .ct-section, body .job-request-section, body .about-area, body .feature-area, body .works-area, body .testimonial-area { padding: 104px 0; }
+body .sv-page .container > .row, body .sv-toolbar { margin-top: 24px; }
+body .ld-section-head { margin-bottom: 52px; }
+body .ld-section-head h2, body .ld-why-intro h2, body .ld-cta-inner h2, body .ct-form-card h2, body .job-request-card-header h2, body .about-area h2.title, body .feature-area h2.title, body .works-area h2.title {
+  font-family: 'Manrope', Arial, sans-serif;
+  font-size: clamp(30px, 3.4vw, 46px);
+  letter-spacing: -.03em;
+  line-height: 1.1;
+}
+
+/* ── Cards: consistent radius, padding, hover ─────────────────────────── */
+body .sv-card, body .ld-service-card, body .ld-panel-card, body .ct-form-card, body .ct-info-card, body .job-request-card, body .ld-cta-panel {
+  border-radius: 22px;
+  border: 1px solid #dfe7e1;
+  box-shadow: 0 4px 16px rgba(0,0,0,.03);
+  transition: transform .2s, box-shadow .2s;
+}
+body .sv-card:hover, body .ld-service-card:hover { transform: translateY(-3px); box-shadow: 0 10px 35px rgba(18,48,26,.09); }
+body .ld-service-card, body .ct-form-card, body .ct-info-card, body .job-request-card { padding: 36px; }
+body .ld-service-grid, body .ld-why-grid, body .ct-grid { gap: 28px; }
+body .sv-card-title, body .ld-service-card h3, body .ct-info-label { font-size: 20px; }
+body .sv-card-body { padding: 22px; }
+
+/* Old orange / emerald accents → brand green */
+body .ld-tag, body .sv-featured-badge, body .sv-price-chip, body .ld-stat-icon, body .ld-service-icon, body .ld-panel-icon, body .ld-why-icon, body .ct-info-icon, body .ld-flow-node {
+  background: #eff9f1; color: #187a28;
+}
+body .sv-price-chip { background: #fff; color: #187a28; font-weight: 800; }
+
+/* Landlords CTA band + stat bar */
+body .ld-cta-section, body .ld-statbar { background: var(--ytx-navy); color: #fff; }
+body .ld-cta-panel { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); }
+body .ld-stat-label { color: rgba(255,255,255,.8); }
+
+/* Contact / job request forms */
+body .ct-form-card input, body .ct-form-card textarea, body .ct-form-card select,
+body .job-request-card input, body .job-request-card textarea, body .job-request-card select {
+  min-height: 54px; border-radius: 12px; font-size: 16px; padding: 12px 16px; border: 1px solid #cfd8d1;
+}
+body .ct-submit-btn, body .job-request-card button[type="submit"] {
+  min-height: 52px; border-radius: 12px; font-weight: 800; font-size: 16px;
+  background: var(--color-primary, #2da63b); color: #fff; border: 0;
+}
+
+/* Job request page */
+body .job-request-hero-content { max-width: 820px; }
+body .job-request-card { border-radius: 22px; }
+
+/* Services listing toolbar / category pills */
+body .sv-cat-pill { padding: 10px 16px; border-radius: 99px; font-weight: 700; }
+body .sv-cat-pill.is-active, body .sv-cat-pill.active { background: var(--color-primary, #2da63b); color: #fff; }
+
+@media (max-width: 900px) {
+  body .sv-banner, body .ld-hero, body .ab-hero, body .ct-hero, body .job-request-hero { padding: 100px 0 56px; }
+  body .ld-section, body .ct-section, body .job-request-section, body .about-area, body .feature-area, body .works-area, body .testimonial-area { padding: 64px 0; }
+  body .ld-service-card, body .ct-form-card, body .ct-info-card, body .job-request-card { padding: 26px; }
+}
+
+/* ── Service details page: same dark hero as everywhere else ──────────── */
+body .ytx-page > .ytx-breadcrumbs { background: var(--ytx-navy); color: rgba(255,255,255,.7); padding: 150px 0 0; box-shadow: 0 0 0 100vmax var(--ytx-navy); clip-path: inset(0 -100vmax); }
+body .ytx-page > .ytx-breadcrumbs a { color: rgba(255,255,255,.7); }
+body .ytx-page-hero { background: linear-gradient(120deg, var(--ytx-navy) 0%, var(--ytx-navy-2) 100%); color: #fff; }
+body .ytx-page-hero .ytx-page-hero-grid { padding: 28px 0 72px; }
+body .ytx-page-hero h1 { color: #fff; }
+body .ytx-page-hero h1 em { color: #6fd97d; }
+body .ytx-page-hero .ytx-lead { color: rgba(255,255,255,.82); }
+body .ytx-page-hero .ytx-eyebrow { color: #6fd97d; }
+body .ytx-page-hero .ytx-trust-row { color: rgba(255,255,255,.9); }
+body .ytx-page-hero .ytx-btn.ytx-outline { background: transparent; color: #fff; border-color: rgba(255,255,255,.45); }
+body .ytx-page-hero .ytx-rating { color: #111713; }
+@media (max-width: 900px) {
+  body .ytx-page > .ytx-breadcrumbs { padding-top: 90px; }
+}
+
+/* ── Contact page: form card stretches to match the info cards column ── */
+body .ct-grid { align-items: stretch; }
+body .ct-form-col, body .ct-form-card { height: 100%; }
+body .ct-form-card { display: flex; flex-direction: column; }
+body .ct-form-card > form { display: flex; flex-direction: column; flex: 1; }
+body .ct-form-card > form > .row { display: flex; flex-wrap: wrap; flex: 1; align-content: flex-start; }
+body .ct-form-card > form > .row > .col-md-12:has(#message) { flex: 1 1 100%; display: flex; flex-direction: column; }
+body .ct-form-card .ct-field:has(#message) { flex: 1; display: flex; flex-direction: column; }
+body .ct-form-card #message { flex: 1; min-height: 180px; resize: vertical; }

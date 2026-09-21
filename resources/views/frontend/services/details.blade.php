@@ -12,6 +12,10 @@
   @endif
 @endsection
 
+@section('metaTitle')
+  @if ($service){{ $service->name }} {{ __('in Livingston, Edinburgh & West Lothian') }} | {{ $websiteInfo->website_title ?? config('app.name') }}@endif
+@endsection
+
 @section('metaKeywords')
   @if ($service)
     {{ $service->meta_keyword }}
