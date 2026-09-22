@@ -149,6 +149,54 @@
       </div>
     </div>
 
+    {{-- ── Slide text & links (shown on the website hero slider) ── --}}
+    @if ($existing > 0)
+      <div class="col-md-12 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">{{ __('Slide Text & Links') }}</div>
+          </div>
+          <div class="card-body">
+            @if (session('details_success'))
+              <div class="alert alert-success">{{ session('details_success') }}</div>
+            @endif
+            <p class="text-muted mb-3">
+              These slides appear in the big slider at the top of the home page. Text is optional — a slide with no title shows the image only. Recommended image size: <strong>1200 × 800px</strong> (3:2).
+            </p>
+            <form action="{{ route('admin.home_page.ad_slider.update_details') }}" method="POST">
+              @csrf
+              <div class="table-responsive">
+                <table class="table table-bordered align-middle mb-3">
+                  <thead>
+                    <tr>
+                      <th style="width:120px">{{ __('Image') }}</th>
+                      <th style="width:70px">{{ __('Order') }}</th>
+                      <th>{{ __('Title') }}</th>
+                      <th>{{ __('Subtitle') }}</th>
+                      <th style="width:150px">{{ __('Button text') }}</th>
+                      <th>{{ __('Link (URL)') }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @foreach ($images as $img)
+                      <tr>
+                        <td><img src="{{ asset('assets/img/hero/' . $img->image) }}" alt="" style="width:100px;height:66px;object-fit:cover;border-radius:6px;"></td>
+                        <td><input type="number" class="form-control" name="slides[{{ $img->id }}][sort_order]" value="{{ $img->sort_order }}" min="0"></td>
+                        <td><input type="text" class="form-control" name="slides[{{ $img->id }}][title]" value="{{ $img->title }}" placeholder="e.g. Boiler service from £79"></td>
+                        <td><input type="text" class="form-control" name="slides[{{ $img->id }}][subtitle]" value="{{ $img->subtitle }}" placeholder="e.g. Gas Safe engineer, fixed price"></td>
+                        <td><input type="text" class="form-control" name="slides[{{ $img->id }}][button_text]" value="{{ $img->button_text }}" placeholder="Book now"></td>
+                        <td><input type="text" class="form-control" name="slides[{{ $img->id }}][url]" value="{{ $img->url }}" placeholder="https://yestrades.co.uk/services"></td>
+                      </tr>
+                    @endforeach
+                  </tbody>
+                </table>
+              </div>
+              <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> {{ __('Save slide text') }}</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    @endif
     {{-- ── Upload new images ──────────────────────────────── --}}
     <div class="col-md-12">
       <div class="card">

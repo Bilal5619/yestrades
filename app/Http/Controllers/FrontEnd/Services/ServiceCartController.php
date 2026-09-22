@@ -65,9 +65,113 @@ class ServiceCartController extends Controller
             'needs_checkout_details' => true,
         ];
 
+        // Details pre-collected on the service page (questions, postcode,
+        // date/time or tenant hand-off). When present the cart opens straight
+        // at the address + payment step.
+        $prefill = $this->prefillFromRequest($request);
+        if ($prefill) {
+            $cart[$itemKey] = array_merge($cart[$itemKey], $prefill);
+        }
+
         Session::put('serviceCart', $cart);
 
         return redirect()->route('frontend.services.cart')->with('success', __('Service added to cart'));
+    }
+
+    /**
+     * Live price for the on-page booking panel: base + question surcharges +
+     * postcode surcharge, using the same resolver the checkout uses.
+     */
+    public function bookingPrice(Request $request)
+    {
+        $data = $request->validate([
+            'service_id' => ['required', 'integer', 'exists:services,id'],
+            'postcode' => ['nullable', 'string', 'max:100'],
+            'question_answers' => ['nullable'],
+        ]);
+
+        $service = Services::findOrFail($data['service_id']);
+        $answers = $this->normalizeAnswers($request->input('question_answers'));
+
+        $pricing = app(\App\Http\Controllers\FrontEnd\Booking\ServicePaymentController::class)
+            ->resolveServiceCartItemPrice($service, $answers, $data['postcode'] ?? null);
+
+        return response()->json([
+            'success' => true,
+            'base' => round((float) ($pricing['base'] ?? 0), 2),
+            'questions' => round((float) ($pricing['questions'] ?? 0), 2),
+            'postcode_surcharge' => round((float) ($pricing['postcode_surcharge'] ?? 0), 2),
+            'total' => round((float) ($pricing['total'] ?? 0), 2),
+            'total_display' => symbolPrice(round((float) ($pricing['total'] ?? 0), 2)),
+        ]);
+    }
+
+    private function normalizeAnswers($raw): array
+    {
+        if (is_string($raw)) {
+            $raw = json_decode($raw, true);
+        }
+        if (!is_array($raw)) {
+            return [];
+        }
+        $answers = [];
+        foreach ($raw as $questionId => $value) {
+            if ($value === null || $value === '' || $value === []) {
+                continue;
+            }
+            $answers[(string) (int) $questionId] = is_array($value) ? array_values(array_map('strval', $value)) : (string) $value;
+        }
+        return $answers;
+    }
+
+    private function prefillFromRequest(Request $request): array
+    {
+        $answers = $this->normalizeAnswers($request->input('question_answers'));
+        $postcode = trim((string) $request->input('postcode', ''));
+        $mode = $request->input('scheduling_mode') === 'tenant' ? 'tenant' : 'now';
+        $bookingDate = trim((string) $request->input('booking_date', ''));
+        $slot = trim((string) $request->input('time_slot', ''));
+
+        $hasDate = $mode === 'tenant' || ($bookingDate !== '' && $slot !== '');
+        if (empty($answers) && $postcode === '' && !$hasDate) {
+            return [];
+        }
+
+        $prefill = [
+            'question_answers' => $answers ?: null,
+            'scheduling_mode' => $mode,
+            'prefilled' => true,
+            'needs_checkout_details' => !$hasDate,
+        ];
+
+        if ($postcode !== '') {
+            $prefill['site'] = ['zip_code' => $postcode];
+        }
+
+        if ($mode === 'tenant') {
+            $prefill['booking_date'] = null;
+            $prefill['start_time'] = null;
+            $prefill['end_time'] = null;
+            $prefill['tenant'] = [
+                'name' => trim((string) $request->input('tenant_name', '')),
+                'email' => trim((string) $request->input('tenant_email', '')),
+                'phone' => trim((string) $request->input('tenant_phone', '')),
+                'note' => trim((string) $request->input('tenant_note', '')),
+            ];
+        } elseif ($hasDate) {
+            $prefill['booking_date'] = $bookingDate;
+            $prefill['time_slot'] = $slot;
+            if (preg_match('/^(.+?)\s*-\s*(.+)$/', $slot, $m)) {
+                try {
+                    $prefill['start_time'] = Carbon::parse(trim($m[1]))->format('H:i:s');
+                    $prefill['end_time'] = Carbon::parse(trim($m[2]))->format('H:i:s');
+                } catch (\Throwable $e) {
+                    // leave times empty; the cart date step still shows the slot text
+                }
+            }
+        }
+
+        return $prefill;
     }
 
     public function quickAddPackage(Request $request)

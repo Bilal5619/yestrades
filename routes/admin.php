@@ -750,6 +750,7 @@ Route::prefix('/admin')->middleware('auth:admin')->group(function () {
       Route::post('/advertisement-slides/update-limit', 'Admin\HomePage\AdvertisementSliderController@updateLimit')->name('admin.home_page.ad_slider.update_limit');
       Route::post('/advertisement-slides/store', 'Admin\HomePage\AdvertisementSliderController@store')->name('admin.home_page.ad_slider.store');
       Route::post('/advertisement-slides/bulk-delete', 'Admin\HomePage\AdvertisementSliderController@bulkDelete')->name('admin.home_page.ad_slider.bulk_delete');
+      Route::post('/advertisement-slides/update-details', 'Admin\HomePage\AdvertisementSliderController@updateDetails')->name('admin.home_page.ad_slider.update_details');
       // section customization
       Route::get('/section-customization', 'Admin\HomePage\SectionController@index')->name('admin.home_page.section_customization');
 
@@ -1081,6 +1082,7 @@ Route::prefix('/admin')->middleware('auth:admin')->group(function () {
     Route::post('/google-calender', 'Admin\BasicSettings\BasicController@updateCalender')->name('admin.basic_settings.update_calender');
 
     Route::post('/update-tawkto', 'Admin\BasicSettings\BasicController@updateTawkTo')->name('admin.basic_settings.update_tawkto');
+    Route::post('/update-google-reviews', 'Admin\BasicSettings\BasicController@updateGoogleReviews')->name('admin.basic_settings.update_google_reviews');
 
     Route::post('/update-recaptcha', 'Admin\BasicSettings\BasicController@updateRecaptcha')->name('admin.basic_settings.update_recaptcha');
 

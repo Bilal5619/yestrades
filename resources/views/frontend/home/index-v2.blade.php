@@ -30,17 +30,20 @@
     // the page is driven by the admin panel / database.
     $ytxFounded = 2012;
     $ytxYears = max(1, (int) date('Y') - $ytxFounded);
+    // Google Business Profile (YES TRADES, Livingston). Review badges link here.
+    $ytxGoogleUrl = 'https://www.google.co.uk/maps/place/YES+TRADES/@55.9015079,-3.545075,17z/data=!4m6!3m5!1s0x4887d93d19ebc8b9:0x4328e70bc2a3ea10!8m2!3d55.9015079!4d-3.545075!16s%2Fg%2F1q6kk8x89';
+    // Live data from Google (Admin > Basic Settings > Plugins > Google Reviews); falls back to placeholders.
+    $ytxGoogle = \App\Services\GoogleReviewsService::get();
+    $ytxGoogleRating = !empty($ytxGoogle['rating']) ? number_format($ytxGoogle['rating'], 1) : '5.0';
+    $ytxGoogleCount = $ytxGoogle['count'] ?? null;
+    if (!empty($ytxGoogle['url'])) { $ytxGoogleUrl = $ytxGoogle['url']; }
     $ytxStats = [
       ['value' => $ytxYears . '+', 'label' => __('Years in business')],
       ['value' => '5,000+', 'label' => __('Jobs completed')],           // TODO real figure
-      ['value' => '5.0', 'label' => __('Google rating')],               // TODO real figure
+      ['value' => $ytxGoogleRating, 'label' => __('Google rating')],
       ['value' => __('Gas Safe & NICEIC'), 'label' => __('Registered engineers')],
     ];
-    $ytxAreas = ['Edinburgh', 'Livingston', 'Bathgate', 'Broxburn', 'Linlithgow', 'West Lothian', 'Central Scotland'];
-    // Google Business Profile (YES TRADES, Livingston). Review badges link here.
-    $ytxGoogleUrl = 'https://www.google.co.uk/maps/place/YES+TRADES/@55.9015079,-3.545075,17z/data=!4m6!3m5!1s0x4887d93d19ebc8b9:0x4328e70bc2a3ea10!8m2!3d55.9015079!4d-3.545075!16s%2Fg%2F1q6kk8x89';
-    $ytxGoogleRating = '5.0';   // TODO real rating from the Google profile
-    $ytxGoogleCount = null;     // TODO e.g. 120 — shown as "120+ Google reviews" when set
+    $ytxAreas = ['West Lothian', 'Livingston', 'Edinburgh', 'Glasgow', 'Stirling', 'Dundee', 'Bathgate', 'Broxburn', 'Linlithgow'];
     $ytxGuaranteeText = __('Every job is covered by our workmanship guarantee. If something is not right, we come back and put it right.');
 
     // Real photos: drop files into public/assets/img/yt/ (see README there).
@@ -93,88 +96,132 @@
 
   <div class="ytx-page">
 
-    {{-- ══════════ Hero ══════════ --}}
-    <section class="ytx-hero ytx-hero-dark">
-      <div class="ytx-wrap ytx-hero-grid">
-        <div>
-          <div class="ytx-eyebrow ytx-eyebrow-light">{{ __('Family-run · Est.') }} {{ $ytxFounded }} · {{ __('Gas Safe & NICEIC registered') }}</div>
-          <h1>{{ __('Family-run trades you can trust') }} — <em>{{ __('from quick repairs to complete renovations') }}</em></h1>
-          <p class="ytx-lead">{{ __('A trusted family business providing professional repairs, heating, electrical, plumbing and renovation services with quality you can rely on.') }}</p>
-          <div class="ytx-hero-actions">
-            <a class="ytx-btn" href="{{ route('contact') }}">{{ __('Get a free quote') }} →</a>
-            @if ($ytxPhoneHref)
-              <a class="ytx-btn ytx-outline ytx-outline-light" href="{{ $ytxPhoneHref }}"><i class="fal fa-phone"></i> {{ $ytxPhone }}</a>
-            @endif
+    {{-- ══════════ Hero: headline + promo slider (Currys-style card carousel) ══════════ --}}
+    @php
+      // Slides: admin uploads (Admin > Home Page > Slides) first, then popular
+      // services fill up to 6 so the slider is never empty or too short.
+      $ytxSlides = collect($heroSliderImages ?? [])
+        ->filter(fn ($s) => !empty($s->image) && file_exists(public_path('assets/img/hero/' . $s->image)))
+        ->map(fn ($s) => [
+          'image' => asset('assets/img/hero/' . $s->image),
+          'eyebrow' => null,
+          'title' => $s->title,
+          'subtitle' => $s->subtitle,
+          'price' => null,
+          'button' => $s->button_text ?: ($s->title ? __('Find out more') : null),
+          'url' => $s->url ?: route('frontend.services'),
+          'plain' => empty($s->title),
+        ]);
+      if ($ytxSlides->count() < 6) {
+        $ytxSlides = $ytxSlides->concat(
+          $services->getCollection()->take(6 - $ytxSlides->count())->map(fn ($s) => [
+            'image' => $ytxServiceImage($s),
+            'eyebrow' => $s->categoryName ?? __('Popular service'),
+            'title' => $s->name,
+            'subtitle' => !empty($s->short_description) ? truncateString($s->short_description, 80) : null,
+            'price' => $s->isQuoteType() ? __('Free quote') : ($s->hasPricePlaceholder() ? $s->price_placeholder : __('From') . ' ' . symbolPrice($s->price)),
+            'button' => $s->isQuoteType() ? __('Get a quote') : __('Book online'),
+            'url' => route('frontend.service.details', ['slug' => $s->slug, 'id' => $s->id]),
+            'plain' => false,
+          ])
+        );
+      }
+      // Built-in promo slides so the carousel always has enough cards to slide
+      // (a dev copy / new site may only have a couple of services).
+      if ($ytxSlides->count() < 5) {
+        $ytxPromoSlides = collect([
+          [
+            'image' => file_exists(public_path('assets/img/services/bathroom-renovation.jpg')) ? asset('assets/img/services/bathroom-renovation.jpg') : 'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80',
+            'eyebrow' => __('Renovations'), 'title' => __('Bathrooms, kitchens & full renovations'),
+            'subtitle' => __('One family team for design, plumbing, electrics and finishing.'),
+            'price' => __('Free quote'), 'button' => __('Request a quote'), 'url' => route('frontend.job_request.create'), 'plain' => false,
+          ],
+          [
+            'image' => 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80',
+            'eyebrow' => __('Landlords'), 'title' => __('Landlord certificates & safety checks'),
+            'subtitle' => __('Gas safety, EICR, EPC and PAT — sorted in one visit, certificates emailed.'),
+            'price' => null, 'button' => __('Landlord services'), 'url' => route('frontend.landlords'), 'plain' => false,
+          ],
+          [
+            'image' => 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=1200&q=80',
+            'eyebrow' => __('Emergency call-out'), 'title' => __('No heating, a leak or a power fault?'),
+            'subtitle' => __('Call us — same-day response across West Lothian and Edinburgh.'),
+            'price' => null, 'button' => __('Call now'), 'url' => $ytxPhoneHref ?? route('contact'), 'plain' => false,
+          ],
+        ]);
+        $ytxSlides = $ytxSlides->concat($ytxPromoSlides->take(max(0, 5 - $ytxSlides->count())));
+      }
+      $ytxSlides = $ytxSlides->values();
+    @endphp
+    <section class="ytx-hero ytx-hero-dark ytx-hero-slider">
+      <div class="ytx-wrap">
+        <div class="ytx-hero-top">
+          <div>
+            <div class="ytx-eyebrow ytx-eyebrow-light">{{ __('Family-run · Est.') }} {{ $ytxFounded }} · {{ __('Gas Safe & NICEIC registered') }}</div>
+            <h1>{{ __('Family-run trades you can trust') }} — <em>{{ __('from quick repairs to complete renovations') }}</em></h1>
+            <p class="ytx-lead">{{ __('A trusted family business providing professional repairs, heating, electrical, plumbing and renovation services with quality you can rely on.') }}</p>
           </div>
-          <div class="ytx-credential-row" aria-label="{{ __('Trust credentials') }}">
-            <span class="ytx-credential ytx-credential-logo">
-              <img src="{{ asset('assets/img/trust/gas-safe-register.jpg') }}" alt="{{ __('Gas Safe Register') }}">
-              <strong>{{ __('Registered') }}</strong>
-            </span>
-            <span class="ytx-credential ytx-niceic-badge" aria-label="{{ __('NICEIC approved') }}">
-              <strong>{{ __('NICEIC') }}</strong>
-              <small>{{ __('Approved') }}</small>
-            </span>
-            <a class="ytx-credential ytx-google-badge" href="{{ $ytxGoogleUrl }}" target="_blank" rel="noopener" aria-label="{{ __('Google reviews') }}">
-              <span class="ytx-google-mark" aria-hidden="true">G</span>
-              <span><strong>{{ $ytxGoogleRating }} {{ __('Google') }}</strong><small>&#9733;&#9733;&#9733;&#9733;&#9733;{{ $ytxGoogleCount ? ' · ' . $ytxGoogleCount . '+ ' . __('reviews') : '' }}</small></span>
-            </a>
-            <span class="ytx-credential ytx-experience-badge">
-              <i class="fal fa-award" aria-hidden="true"></i>
-              <strong>{{ $ytxYears }} {{ __('years experience') }}</strong>
-            </span>
-          </div>
+
         </div>
 
-        @if (file_exists(public_path('assets/img/yt/hero.jpg')))
-          <div class="ytx-hero-media">
-            <img src="{{ $ytxHeroPhoto }}" alt="{{ __('Yes Trades engineer at work') }}">
-            <div class="ytx-rating">
-              <strong>{{ __('Family-run since') }} {{ $ytxFounded }}</strong><br>
-              <span>{{ __('Fully insured · Local team') }}</span>
-            </div>
-          </div>
-        @else
-          {{-- Action card: works without any photography (Aspect / Heatable pattern) --}}
-          <div class="ytx-hero-card">
-            <div class="ytx-hero-card-head">
-              <span class="ytx-hero-card-pill"><i class="fal fa-bolt"></i> {{ __('Same-day response') }}</span>
-              <h3>{{ __('Request a free quote or callback') }}</h3>
-              <p>{{ __('Tell us what you need — one of the family will call you back, usually within the hour.') }}</p>
-            </div>
-            @if (Session::has('success'))
-              <div class="ytx-form-success">{{ __(Session::get('success')) }}</div>
-            @endif
-            <form class="ytx-hero-form" action="{{ route('contact.send_mail') }}" method="post">
-              @csrf
-              <input type="hidden" name="subject" value="{{ __('Callback request from website') }}">
-              <input type="text" name="name" required placeholder="{{ __('Your name') }}" value="{{ old('name') }}">
-              <input type="email" name="email" required placeholder="{{ __('Email address') }}" value="{{ old('email') }}">
-              <select name="service_hint" aria-label="{{ __('Service') }}">
-                <option value="">{{ __('What do you need?') }}</option>
-                @foreach ($categories as $category)
-                  <option value="{{ $category->name }}">{{ $category->name }}</option>
+        @if ($ytxSlides->isNotEmpty())
+          <div class="ytx-hslider" data-count="{{ min(3, $ytxSlides->count()) }}" data-ytx-slider data-autoplay="4500" aria-roledescription="carousel" aria-label="{{ __('Popular services and offers') }}">
+            <button type="button" class="ytx-hslider-arrow ytx-hslider-prev" data-ytx-prev aria-label="{{ __('Previous') }}"><i class="fal fa-chevron-left"></i></button>
+            <div class="ytx-hslider-viewport" data-ytx-viewport>
+              <div class="ytx-hslider-track" data-ytx-track>
+                @foreach ($ytxSlides as $i => $slide)
+                  <a class="ytx-hslide {{ $slide['plain'] ? 'ytx-hslide-plain' : '' }}" href="{{ $slide['url'] }}" data-ytx-slide aria-label="{{ $slide['title'] ?? __('Offer') }}">
+                    <img src="{{ $slide['image'] }}" alt="{{ $slide['title'] ?? '' }}" @if ($i > 2) loading="lazy" @else fetchpriority="high" @endif>
+                    @unless ($slide['plain'])
+                      <div class="ytx-hslide-body">
+                        @if ($slide['eyebrow'])<span class="ytx-hslide-eyebrow">{{ $slide['eyebrow'] }}</span>@endif
+                        <h3>{{ $slide['title'] }}</h3>
+                        @if ($slide['subtitle'])<p>{{ $slide['subtitle'] }}</p>@endif
+                        <div class="ytx-hslide-foot">
+                          @if ($slide['price'])<span class="ytx-price-pill">{{ $slide['price'] }}</span>@endif
+                          @if ($slide['button'])<span class="ytx-hslide-cta">{{ $slide['button'] }} →</span>@endif
+                        </div>
+                      </div>
+                    @endunless
+                  </a>
                 @endforeach
-                <option value="{{ __('Boiler / heating') }}">{{ __('Boiler / heating') }}</option>
-                <option value="{{ __('Plumbing') }}">{{ __('Plumbing') }}</option>
-                <option value="{{ __('Renovation / other') }}">{{ __('Renovation / other') }}</option>
-              </select>
-              <textarea name="message" rows="2" required placeholder="{{ __('Phone number, postcode and a few words about the job') }}">{{ old('message') }}</textarea>
-              @if (\App\Models\BasicSettings\Basic::recaptchaEnabled())
-                <div>{!! NoCaptcha::renderJs() !!}{!! NoCaptcha::display() !!}</div>
-              @endif
-              <button type="submit" class="ytx-btn ytx-full">{{ __('Request callback') }} →</button>
-              <div class="ytx-mini-trust">
-                <span>{{ __('No obligation') }}</span>
-                <span>{{ __('Family-run since') }} {{ $ytxFounded }}</span>
-                <span>{{ __('Gas Safe & NICEIC registered') }}</span>
               </div>
-            </form>
+            </div>
+            <button type="button" class="ytx-hslider-arrow ytx-hslider-next" data-ytx-next aria-label="{{ __('Next') }}"><i class="fal fa-chevron-right"></i></button>
+            <div class="ytx-hslider-dots" data-ytx-dots role="tablist"></div>
           </div>
         @endif
+
+        <div class="ytx-credential-row ytx-hero-credentials" aria-label="{{ __('Trust credentials') }}">
+          <span class="ytx-credential ytx-credential-logo">
+            <img src="{{ asset('assets/img/trust/gas-safe-register.jpg') }}" alt="{{ __('Gas Safe Register') }}">
+            <strong>{{ __('Registered') }}</strong>
+          </span>
+          <span class="ytx-credential ytx-niceic-badge" aria-label="{{ __('NICEIC approved') }}">
+            <strong>{{ __('NICEIC') }}</strong>
+            <small>{{ __('Approved') }}</small>
+          </span>
+          <a class="ytx-credential ytx-google-badge" href="{{ $ytxGoogleUrl }}" target="_blank" rel="noopener" aria-label="{{ __('Google reviews') }}">
+            <span class="ytx-google-mark" aria-hidden="true">G</span>
+            <span><strong>{{ $ytxGoogleRating }} {{ __('Google') }}</strong><small>&#9733;&#9733;&#9733;&#9733;&#9733;{{ $ytxGoogleCount ? ' · ' . $ytxGoogleCount . '+ ' . __('reviews') : '' }}</small></span>
+          </a>
+          <span class="ytx-credential ytx-experience-badge">
+            <i class="fal fa-award" aria-hidden="true"></i>
+            <strong>{{ $ytxYears }} {{ __('years experience') }}</strong>
+          </span>
+        </div>
       </div>
     </section>
 
+    {{-- USP bar (Currys "service bar" pattern) — scrolls one-at-a-time on phones --}}
+    <div class="ytx-usp-bar" data-ytx-usp>
+      <div class="ytx-wrap ytx-usp-track">
+        <a class="ytx-usp" href="{{ route('frontend.services') }}"><i class="fal fa-badge-check"></i><span>{{ __('Fixed prices — see the cost before you book') }}</span></a>
+        <a class="ytx-usp" href="{{ route('frontend.services') }}"><i class="fal fa-calendar-check"></i><span>{{ __('Book online in minutes, pick a date that suits you') }}</span></a>
+        <a class="ytx-usp" href="{{ route('about_us') }}"><i class="fal fa-shield-check"></i><span>{{ __('Workmanship guaranteed on every job') }}</span></a>
+        <a class="ytx-usp" href="{{ $ytxPhoneHref ?? route('contact') }}"><i class="fal fa-phone"></i><span>{{ __('Family-run local team — talk to a real person') }}</span></a>
+      </div>
+    </div>
     @if (count($after_hero) > 0)
       @foreach ($after_hero as $cusHero)
         @if (isset($homecusSec[$cusHero->id]) && $homecusSec[$cusHero->id] == 1)
@@ -417,9 +464,14 @@
           </div>
         </div>
         @php
-          $ytxReviewItems = ($testimonials ?? collect())->take(6)->map(fn ($t) => [
-            'name' => $t->name, 'meta' => $t->occupation, 'rating' => (int) $t->rating, 'text' => $t->comment,
+          $ytxReviewItems = collect($ytxGoogle['reviews'] ?? [])->take(6)->map(fn ($r) => [
+            'name' => $r['name'], 'meta' => $r['time'], 'rating' => (int) $r['rating'], 'text' => $r['text'], 'photo' => $r['photo'] ?? null,
           ])->values();
+          if ($ytxReviewItems->isEmpty()) {
+            $ytxReviewItems = ($testimonials ?? collect())->take(6)->map(fn ($t) => [
+              'name' => $t->name, 'meta' => $t->occupation, 'rating' => (int) $t->rating, 'text' => $t->comment,
+            ])->values();
+          }
           if ($ytxReviewItems->isEmpty()) {
             $ytxReviewItems = collect([
               ['name' => 'Sarah M.', 'meta' => 'Edinburgh · Boiler service', 'rating' => 5, 'text' => 'Excellent communication and a brilliant finish. The team respected our home throughout.'],
@@ -431,7 +483,7 @@
         <div class="ytx-reviews-layout">
           <aside class="ytx-review-summary">
             <div class="ytx-review-summary-score">{{ $ytxGoogleRating }}</div>
-            <div class="ytx-stars ytx-stars-lg">★★★★★</div>
+            <div class="ytx-stars ytx-stars-lg">{{ str_repeat('★', (int) round((float) $ytxGoogleRating)) }}{{ str_repeat('☆', max(0, 5 - (int) round((float) $ytxGoogleRating))) }}</div>
             <p><span class="ytx-google-mark" aria-hidden="true">G</span> {{ $ytxGoogleCount ? $ytxGoogleCount . '+ ' . __('Google reviews') : __('Rated on Google') }}</p>
             <ul class="ytx-review-points">
               <li>{{ __('Family-run since') }} {{ $ytxFounded }}</li>
@@ -444,7 +496,11 @@
             @foreach ($ytxReviewItems as $r)
               <article class="ytx-review">
                 <div class="ytx-review-head">
-                  <span class="ytx-review-avatar">{{ strtoupper(mb_substr(trim($r['name']), 0, 1)) }}</span>
+                  @if (!empty($r['photo']))
+                    <img class="ytx-review-avatar ytx-review-avatar-img" src="{{ $r['photo'] }}" alt="" loading="lazy" referrerpolicy="no-referrer">
+                  @else
+                    <span class="ytx-review-avatar">{{ strtoupper(mb_substr(trim($r['name']), 0, 1)) }}</span>
+                  @endif
                   <div>
                     <strong>{{ $r['name'] }}</strong>
                     @if (!empty($r['meta']))<small>{{ $r['meta'] }}</small>@endif
@@ -677,6 +733,91 @@
       document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.ytx-faq > button').forEach(function (btn) {
           btn.addEventListener('click', function () { btn.parentElement.classList.toggle('ytx-open'); });
+        });
+        /* Hero promo slider: arrows, dots, autoplay (pauses on hover/focus/drag), swipe, keyboard. */
+        document.querySelectorAll('[data-ytx-slider]').forEach(function (root) {
+          var track = root.querySelector('[data-ytx-track]');
+          var slides = Array.prototype.slice.call(root.querySelectorAll('[data-ytx-slide]'));
+          var prev = root.querySelector('[data-ytx-prev]');
+          var next = root.querySelector('[data-ytx-next]');
+          var dots = root.querySelector('[data-ytx-dots]');
+          var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          var delay = parseInt(root.getAttribute('data-autoplay') || '0', 10);
+          var index = 0, timer = null, paused = false;
+          if (!track || !slides.length) return;
+
+          function perView() { return Math.max(1, parseInt(getComputedStyle(root).getPropertyValue('--ytx-per-view'), 10) || 1); }
+          function pages() { return Math.max(1, slides.length - perView() + 1); }
+          function step() { var gap = parseFloat(getComputedStyle(track).gap) || 0; return slides[0].getBoundingClientRect().width + gap; }
+          function render() {
+            index = Math.max(0, Math.min(index, pages() - 1));
+            root.classList.toggle("is-static", slides.length <= perView());
+            track.style.transform = 'translateX(' + (-index * step()) + 'px)';
+            if (dots) {
+              if (dots.children.length !== pages()) {
+                dots.innerHTML = '';
+                for (var i = 0; i < pages(); i++) {
+                  var b = document.createElement('button');
+                  b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-label', 'Slide ' + (i + 1));
+                  b.addEventListener('click', (function (n) { return function () { go(n, true); }; })(i));
+                  dots.appendChild(b);
+                }
+              }
+              Array.prototype.forEach.call(dots.children, function (d, i) { d.classList.toggle('is-active', i === index); });
+            }
+            slides.forEach(function (s, i) { s.setAttribute('aria-hidden', (i < index || i >= index + perView()) ? 'true' : 'false'); });
+          }
+          function go(n, user) {
+            var p = pages();
+            index = ((n % p) + p) % p;
+            render();
+            if (user) restart();
+          }
+          function restart() {
+            if (timer) clearInterval(timer);
+            timer = null;
+            if (delay > 0 && !reduce && slides.length > perView()) {
+              timer = setInterval(function () { if (!paused && !document.hidden) go(index + 1); }, delay);
+            }
+          }
+          if (prev) prev.addEventListener('click', function () { go(index - 1, true); });
+          if (next) next.addEventListener('click', function () { go(index + 1, true); });
+          root.addEventListener('mouseenter', function () { paused = true; });
+          root.addEventListener('mouseleave', function () { paused = false; });
+          root.addEventListener('focusin', function () { paused = true; });
+          root.addEventListener('focusout', function () { paused = false; });
+          root.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowLeft') { go(index - 1, true); e.preventDefault(); }
+            if (e.key === 'ArrowRight') { go(index + 1, true); e.preventDefault(); }
+          });
+
+          // Pointer drag / touch swipe
+          var startX = null, dragging = false, moved = 0;
+          track.addEventListener('pointerdown', function (e) {
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+            startX = e.clientX; moved = 0; dragging = true; paused = true;
+            root.classList.add('is-dragging');
+            try { track.setPointerCapture(e.pointerId); } catch (err) {}
+          });
+          track.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            moved = e.clientX - startX;
+            track.style.transform = 'translateX(' + (-index * step() + moved) + 'px)';
+          });
+          function endDrag(e) {
+            if (!dragging) return;
+            dragging = false; paused = false;
+            root.classList.remove('is-dragging');
+            if (Math.abs(moved) > 40) { go(index + (moved < 0 ? 1 : -1), true); } else { render(); }
+            if (Math.abs(moved) > 8) { root.dataset.swiped = '1'; setTimeout(function () { delete root.dataset.swiped; }, 50); }
+          }
+          track.addEventListener('pointerup', endDrag);
+          track.addEventListener('pointercancel', endDrag);
+          track.addEventListener('click', function (e) { if (root.dataset.swiped) { e.preventDefault(); } }, true);
+
+          window.addEventListener('resize', function () { render(); restart(); });
+          render();
+          restart();
         });
         // Carry the chosen service into the callback message (contact form only stores name/email/message).
         var heroForm = document.querySelector('.ytx-hero-form');

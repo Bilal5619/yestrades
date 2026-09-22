@@ -1482,6 +1482,19 @@
 @endpush
 
 @section('content')
+  @php
+    // Items whose questions/postcode/date (or tenant hand-off) were already
+    // collected on the service page → open checkout at details + payment.
+    $cartPrefill = collect($serviceCart)->filter(fn ($i) => !empty($i['prefilled']))->map(fn ($i) => [
+      'question_answers' => $i['question_answers'] ?? [],
+      'booking_date' => $i['booking_date'] ?? null,
+      'time_slot' => $i['time_slot'] ?? null,
+      'scheduling_mode' => $i['scheduling_mode'] ?? 'now',
+      'tenant' => $i['tenant'] ?? [],
+    ])->toArray();
+    $cartOneStep = $serviceCart->isNotEmpty()
+      && $serviceCart->every(fn ($i) => !empty($i['prefilled']) && empty($i['needs_checkout_details']));
+  @endphp
   @includeIf('frontend.partials.breadcrumb', [
       'breadcrumb' => $bgImg->breadcrumb ?? null,
       'title' => !empty($pageHeading) ? ($pageHeading->cart_page_title ?? __('Service Cart')) : __('Service Cart'),
@@ -4739,6 +4752,86 @@
         if (postcodeInput && postcodeInput.value.trim() !== '') {
           fetchCartPostalPrice();
         }
+      })();
+
+      /* ── One-step checkout: details pre-collected on the service page ─────── */
+      (function () {
+        const prefill = @json($cartPrefill ?? []);
+        const oneStep = @json((bool) ($cartOneStep ?? false));
+        if (!oneStep || !prefill || !Object.keys(prefill).length) return;
+
+        Object.keys(prefill).forEach(function (key) {
+          const item = document.querySelector('[data-cart-item][data-item-key="' + key + '"]');
+          const data = prefill[key] || {};
+          if (!item) return;
+          const answers = data.question_answers || {};
+          Object.keys(answers).forEach(function (qid) {
+            const val = answers[qid];
+            const inputs = item.querySelectorAll('.cart-question-input[data-question-id="' + qid + '"]');
+            inputs.forEach(function (input) {
+              if (input.type === 'radio' || input.type === 'checkbox') {
+                const values = Array.isArray(val) ? val.map(String) : [String(val)];
+                input.checked = values.includes(String(input.value));
+              } else {
+                input.value = Array.isArray(val) ? val.join(', ') : val;
+              }
+            });
+          });
+        });
+
+        const first = prefill[Object.keys(prefill)[0]] || {};
+        if (first.scheduling_mode === 'tenant') {
+          const tenantRadio = document.querySelector('[data-cart-scheduling-mode][value="tenant"]');
+          if (tenantRadio) { tenantRadio.checked = true; tenantRadio.dispatchEvent(new Event('change', { bubbles: true })); }
+          const t = first.tenant || {};
+          ['name', 'email', 'phone', 'note'].forEach(function (f) {
+            const el = document.querySelector('[data-cart-tenant="' + f + '"]');
+            if (el && t[f]) el.value = t[f];
+          });
+        } else {
+          const dateEl = document.getElementById('cart_booking_date');
+          const slotEl = document.getElementById('cart_service_hour_id');
+          if (dateEl && first.booking_date) { dateEl.value = first.booking_date; dateEl.dispatchEvent(new Event('change', { bubbles: true })); }
+          if (slotEl && first.time_slot) { slotEl.value = first.time_slot; slotEl.dispatchEvent(new Event('change', { bubbles: true })); }
+        }
+
+        document.querySelectorAll('.service-cart-page .question-quantity-selector').forEach(updateCartQuantityDisplay);
+        updateCartConditionalQuestions();
+        updateSequentialCartQuestions();
+        updateCartChoiceVisuals();
+        updateCartTotals();
+
+        if (!cartIsAuthenticated) {
+          cartGuestCheckout = true;
+        }
+        document.body.classList.add('cart-one-step');
+        showCartStep('info');
+        const paymentPanel = document.querySelector('[data-cart-step-panel="payment"]');
+        if (paymentPanel) {
+          paymentPanel.classList.add('is-active');
+          if (!updateWeekendRequestMode()) {
+            mountCartStripePaymentElements();
+          }
+        }
+        const infoTitle = document.querySelector('[data-cart-step-panel="info"] h3');
+        if (infoTitle) infoTitle.textContent = @json(__('Your details & address'));
+        const payTitle = document.querySelector('[data-cart-step-panel="payment"] h3');
+        if (payTitle) payTitle.textContent = @json(__('Payment'));
+        const infoPanel = document.querySelector('[data-cart-step-panel="info"]');
+        if (infoPanel && !infoPanel.querySelector('.cart-edit-hint')) {
+          const hint = document.createElement('p');
+          hint.className = 'cart-edit-hint text-muted';
+          hint.innerHTML = @json(__('Service options, postcode and date were taken from the service page.')) + ' <a href="#" data-cart-edit-booking>' + @json(__('Change them')) + '</a>';
+          const infoHeading = infoPanel.querySelector('h3');
+          if (infoHeading && infoHeading.parentNode) { infoHeading.insertAdjacentElement('afterend', hint); } else { infoPanel.appendChild(hint); }
+          hint.querySelector('[data-cart-edit-booking]').addEventListener('click', function (e) {
+            e.preventDefault();
+            document.body.classList.remove('cart-one-step');
+            hint.remove();
+            showCartStep('questions');
+          });
+        }
+        if (infoPanel && !window.isRestrictedInAppBrowser) infoPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       })();
     })();
   </script>

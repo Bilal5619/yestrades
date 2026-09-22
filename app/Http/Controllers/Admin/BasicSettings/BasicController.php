@@ -357,7 +357,7 @@ class BasicController extends Controller
   {
     $data = DB::table('basic_settings')
       ->where('uniqid', 12345)
-      ->select('disqus_status', 'disqus_short_name', 'google_recaptcha_status', 'google_recaptcha_site_key', 'google_recaptcha_secret_key', 'whatsapp_status', 'whatsapp_number', 'whatsapp_header_title', 'whatsapp_popup_status', 'whatsapp_popup_message', 'facebook_login_status', 'facebook_app_id', 'facebook_app_secret', 'google_login_status', 'google_client_id', 'google_client_secret', 'tawkto_status', 'tawkto_direct_chat_link', 'zoom_account_id', 'zoom_client_id', 'zoom_client_secret', 'google_calendar', 'calender_id')
+      ->select('disqus_status', 'disqus_short_name', 'google_recaptcha_status', 'google_recaptcha_site_key', 'google_recaptcha_secret_key', 'whatsapp_status', 'whatsapp_number', 'whatsapp_header_title', 'whatsapp_popup_status', 'whatsapp_popup_message', 'facebook_login_status', 'facebook_app_id', 'facebook_app_secret', 'google_login_status', 'google_client_id', 'google_client_secret', 'tawkto_status', 'tawkto_direct_chat_link', 'zoom_account_id', 'zoom_client_id', 'zoom_client_secret', 'google_calendar', 'calender_id', 'google_places_api_key', 'google_place_id', 'google_reviews_status')
       ->first();
 
     $vendors = Vendor::join('memberships', 'vendors.id', '=', 'memberships.vendor_id')
@@ -534,6 +534,50 @@ class BasicController extends Controller
     return redirect()->back();
   }
 
+  public function updateGoogleReviews(Request $request)
+  {
+    $rules = [
+      'google_reviews_status' => 'required|in:0,1',
+      'google_places_api_key' => 'required_if:google_reviews_status,1|nullable|string|max:191',
+      'google_place_id' => 'required_if:google_reviews_status,1|nullable|string|max:191',
+    ];
+
+    $messages = [
+      'google_places_api_key.required_if' => 'The Google Places API key is required when Google reviews are enabled.',
+      'google_place_id.required_if' => 'The Google Place ID is required when Google reviews are enabled.',
+    ];
+
+    $validator = Validator::make($request->all(), $rules, $messages);
+
+    if ($validator->fails()) {
+      return redirect()->back()->withErrors($validator->errors());
+    }
+
+    DB::table('basic_settings')->updateOrInsert(
+      ['uniqid' => 12345],
+      [
+        'google_reviews_status' => (int) $request->google_reviews_status,
+        'google_places_api_key' => trim((string) $request->google_places_api_key),
+        'google_place_id' => trim((string) $request->google_place_id),
+      ]
+    );
+
+    \App\Services\GoogleReviewsService::forget();
+
+    if ((int) $request->google_reviews_status === 1) {
+      $result = \App\Services\GoogleReviewsService::get();
+      if (empty($result) || empty($result['reviews'])) {
+        Session::flash('warning', 'Settings saved, but Google returned no reviews. Check the API key (Places API (New) must be enabled) and the Place ID.');
+        return redirect()->back();
+      }
+      Session::flash('success', 'Google reviews connected: ' . count($result['reviews']) . ' reviews loaded, rating ' . $result['rating'] . ' from ' . $result['count'] . ' ratings.');
+      return redirect()->back();
+    }
+
+    Session::flash('success', 'Google reviews settings updated successfully!');
+
+    return redirect()->back();
+  }
   public function updateRecaptcha(Request $request)
   {
     $rules = [

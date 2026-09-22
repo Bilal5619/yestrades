@@ -304,6 +304,76 @@
 
     <div class="col-lg-4">
       <div class="card">
+        <form action="{{ route('admin.basic_settings.update_google_reviews') }}" method="post">
+          @csrf
+          <div class="card-header">
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card-title">{{ __('Google Reviews (website)') }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="row">
+              <div class="col-lg-12">
+                <p class="text-muted small">{{ __('Shows the real rating and latest reviews from your Google Business Profile on the website. Needs a Google Cloud API key with "Places API (New)" enabled, and your Place ID.') }}</p>
+                <div class="form-group">
+                  <label>{{ __('Status') . '*' }}</label>
+                  <div class="selectgroup w-100">
+                    <label class="selectgroup-item">
+                      <input type="radio" name="google_reviews_status" value="1" class="selectgroup-input"
+                        {{ ($data->google_reviews_status ?? 0) == 1 ? 'checked' : '' }}>
+                      <span class="selectgroup-button">{{ __('Active') }}</span>
+                    </label>
+
+                    <label class="selectgroup-item">
+                      <input type="radio" name="google_reviews_status" value="0" class="selectgroup-input"
+                        {{ ($data->google_reviews_status ?? 0) == 0 ? 'checked' : '' }}>
+                      <span class="selectgroup-button">{{ __('Deactive') }}</span>
+                    </label>
+                  </div>
+                  @if ($errors->has('google_reviews_status'))
+                    <p class="mt-1 mb-0 text-danger">{{ $errors->first('google_reviews_status') }}</p>
+                  @endif
+                </div>
+
+                <div class="form-group">
+                  <label>{{ __('Google Places API Key') . '*' }}</label>
+                  <input type="text" class="form-control" name="google_places_api_key"
+                    value="{{ $data->google_places_api_key ?? '' }}" autocomplete="off">
+                  @if ($errors->has('google_places_api_key'))
+                    <p class="mt-1 mb-0 text-danger">{{ $errors->first('google_places_api_key') }}</p>
+                  @endif
+                </div>
+
+                <div class="form-group">
+                  <label>{{ __('Google Place ID') . '*' }}</label>
+                  <input type="text" class="form-control" name="google_place_id"
+                    value="{{ $data->google_place_id ?? '' }}" placeholder="ChIJ...">
+                  <small class="text-muted">{{ __('Find it at') }} <a href="https://developers.google.com/maps/documentation/places/web-service/place-id#find-id" target="_blank" rel="noopener">Google Place ID Finder</a> — {{ __('search "YES TRADES Livingston".') }}</small>
+                  @if ($errors->has('google_place_id'))
+                    <p class="mt-1 mb-0 text-danger">{{ $errors->first('google_place_id') }}</p>
+                  @endif
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <div class="row">
+              <div class="col-12 text-center">
+                <button type="submit" class="btn btn-success">
+                  {{ __('Update') }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card">
         <form action="{{ route('admin.basic_settings.update_recaptcha') }}" method="post">
           @csrf
           <div class="card-header">

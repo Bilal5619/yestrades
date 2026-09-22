@@ -76,7 +76,7 @@
         'postalCode' => 'EH54 8JR',
         'addressCountry' => 'GB',
       ],
-      'areaServed' => ['Livingston', 'Edinburgh', 'West Lothian', 'Bathgate', 'Broxburn', 'Linlithgow'],
+      'areaServed' => ['West Lothian', 'Livingston', 'Edinburgh', 'Glasgow', 'Stirling', 'Dundee'],
       'sameAs' => ['https://www.google.co.uk/maps/place/YES+TRADES/@55.9015079,-3.545075,17z/data=!4m6!3m5!1s0x4887d93d19ebc8b9:0x4328e70bc2a3ea10!8m2!3d55.9015079!4d-3.545075!16s%2Fg%2F1q6kk8x89'],
     ]), JSON_UNESCAPED_SLASHES) !!}
   </script>

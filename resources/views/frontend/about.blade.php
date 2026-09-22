@@ -31,6 +31,13 @@
     $ytxPhone = $basicInfo->contact_number ?? null;
     $ytxPhoneHref = $ytxPhone ? 'tel:' . preg_replace('/\s+/', '', $ytxPhone) : null;
     $ytxGoogleUrl = 'https://www.google.co.uk/maps/place/YES+TRADES/@55.9015079,-3.545075,17z/data=!4m6!3m5!1s0x4887d93d19ebc8b9:0x4328e70bc2a3ea10!8m2!3d55.9015079!4d-3.545075!16s%2Fg%2F1q6kk8x89';
+    $ytxGoogle = \App\Services\GoogleReviewsService::get();
+    if (!empty($ytxGoogle['url'])) { $ytxGoogleUrl = $ytxGoogle['url']; }
+    // Real Google reviews when connected, otherwise admin testimonials.
+    $ytxAboutReviews = collect($ytxGoogle['reviews'] ?? [])->take(6)->map(fn ($r) => (object) [
+      'name' => $r['name'], 'occupation' => $r['time'], 'rating' => (int) $r['rating'], 'comment' => $r['text'], 'photo' => $r['photo'] ?? null,
+    ]);
+    if ($ytxAboutReviews->isEmpty()) { $ytxAboutReviews = collect($testimonials ?? []); }
 
     $aboutImage = !empty($about->about_section_image) && file_exists(public_path('assets/img/' . $about->about_section_image))
       ? asset('assets/img/' . $about->about_section_image)
@@ -241,7 +248,7 @@
     </div>
 
     {{-- Testimonials --}}
-    @if (($secInfo->testimonial_section_status ?? 1) == 1 && collect($testimonials ?? [])->isNotEmpty())
+    @if (($secInfo->testimonial_section_status ?? 1) == 1 && $ytxAboutReviews->isNotEmpty())
       <section class="ytx-section ytx-soft">
         <div class="ytx-wrap">
           <div class="ytx-section-title">
@@ -252,10 +259,14 @@
             <a class="ytx-btn ytx-outline" href="{{ $ytxGoogleUrl }}" target="_blank" rel="noopener"><span class="ytx-google-mark" aria-hidden="true">G</span> {{ __('Read our Google reviews') }}</a>
           </div>
           <div class="ytx-reviews ytx-reviews-cards ytx-reviews-3">
-            @foreach (collect($testimonials)->take(6) as $t)
+            @foreach ($ytxAboutReviews->take(6) as $t)
               <article class="ytx-review">
                 <div class="ytx-review-head">
-                  <span class="ytx-review-avatar">{{ strtoupper(mb_substr(trim($t->name), 0, 1)) }}</span>
+                  @if (!empty($t->photo))
+                    <img class="ytx-review-avatar ytx-review-avatar-img" src="{{ $t->photo }}" alt="" loading="lazy" referrerpolicy="no-referrer">
+                  @else
+                    <span class="ytx-review-avatar">{{ strtoupper(mb_substr(trim($t->name), 0, 1)) }}</span>
+                  @endif
                   <div><strong>{{ $t->name }}</strong>@if ($t->occupation)<small>{{ $t->occupation }}</small>@endif</div>
                   <span class="ytx-google-mark ytx-review-g" aria-hidden="true">G</span>
                 </div>

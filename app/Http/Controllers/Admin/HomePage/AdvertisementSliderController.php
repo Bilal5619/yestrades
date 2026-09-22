@@ -65,6 +65,37 @@ class AdvertisementSliderController extends Controller
         return redirect()->back()->with('upload_success', "Uploaded {$incoming} image(s) successfully.");
     }
 
+    /**
+     * Optional text + link shown on each slide of the home page hero slider.
+     * A slide with no title is shown as a plain image (like a promo banner).
+     */
+    public function updateDetails(Request $request)
+    {
+        $request->validate([
+            'slides'                => ['required', 'array'],
+            'slides.*.title'        => ['nullable', 'string', 'max:120'],
+            'slides.*.subtitle'     => ['nullable', 'string', 'max:200'],
+            'slides.*.button_text'  => ['nullable', 'string', 'max:40'],
+            'slides.*.url'          => ['nullable', 'string', 'max:500'],
+            'slides.*.sort_order'   => ['nullable', 'integer', 'min:0', 'max:999'],
+        ]);
+
+        foreach ($request->input('slides', []) as $id => $fields) {
+            $slide = HeroSliderImage::find((int) $id);
+            if (!$slide) {
+                continue;
+            }
+            $slide->update([
+                'title'       => trim((string) ($fields['title'] ?? '')) ?: null,
+                'subtitle'    => trim((string) ($fields['subtitle'] ?? '')) ?: null,
+                'button_text' => trim((string) ($fields['button_text'] ?? '')) ?: null,
+                'url'         => trim((string) ($fields['url'] ?? '')) ?: null,
+                'sort_order'  => isset($fields['sort_order']) && $fields['sort_order'] !== '' ? (int) $fields['sort_order'] : $slide->sort_order,
+            ]);
+        }
+
+        return redirect()->back()->with('details_success', 'Slide text and links saved.');
+    }
     public function bulkDelete(Request $request)
     {
         $ids = $request->input('delete_ids', []);

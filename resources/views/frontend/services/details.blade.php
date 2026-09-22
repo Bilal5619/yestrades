@@ -115,7 +115,7 @@
           @endif
           <div class="ytx-hero-actions">
             @if ($ytxIsBookable)
-              <a class="ytx-btn bookNowBtn product-details" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#makeBooking" data-service-id="{{ $details->id }}">{{ $ytxActionLabel }} →</a>
+              <a class="ytx-btn" href="#ytx-book">{{ $ytxActionLabel }} →</a>
             @else
               <a class="ytx-btn" href="{{ $ytxActionUrl }}">{{ $ytxActionLabel }} →</a>
             @endif
@@ -137,44 +137,26 @@
     </section>
 
     {{-- ══════════ Book / quote panel ══════════ --}}
-    <section class="ytx-finder-section" id="ytx-book">
-      <div class="ytx-wrap">
-        <div class="ytx-finder">
-          <div class="ytx-finder-head">
-            <div>
-              <div class="ytx-eyebrow">{{ __('Ready when you are') }}</div>
-              <h2>{{ $ytxIsBookable ? __('Add this service to your booking') : __('Request your free quote') }}</h2>
-              <p>
-                @if ($ytxIsBookable)
-                  {{ __('Add it to your cart now — you will choose the date, time and address on the next step, with no account required.') }}
-                @else
-                  {{ __('Tell us a little about the job and our team will confirm the best next step.') }}
-                @endif
-              </p>
+    @if ($ytxIsBookable)
+      @include('frontend.services.partials.booking-panel', ['details' => $details, 'service' => $service])
+    @else
+      <section class="ytx-finder-section" id="ytx-book">
+        <div class="ytx-wrap">
+          <div class="ytx-finder">
+            <div class="ytx-finder-head">
+              <div>
+                <div class="ytx-eyebrow">{{ __('Ready when you are') }}</div>
+                <h2>{{ __('Request your free quote') }}</h2>
+                <p>{{ __('Tell us a little about the job and our team will confirm the best next step.') }}</p>
+              </div>
             </div>
-            @if (!$details->hasPricePlaceholder() && !$details->isQuoteType())
-              <span class="ytx-finder-badge">{{ __('From') }} {{ symbolPrice($details->price) }}</span>
-            @endif
-          </div>
-
-          @if ($ytxIsBookable)
-            <form action="{{ route('frontend.services.cart.quick_add') }}" method="POST">
-              @csrf
-              <input type="hidden" name="service_id" value="{{ $details->id }}">
-              <button type="submit" class="ytx-btn ytx-full">
-                <i class="fal fa-shopping-cart"></i> {{ __('Add to booking') }} →
-              </button>
-            </form>
-          @else
             <a href="{{ route('frontend.service_quote.questions', $details->id) }}" class="ytx-btn ytx-full">
               <i class="fal fa-file-invoice"></i> {{ __('Get a Quote') }} →
             </a>
-          @endif
-          <p class="ytx-marketplace-note">{{ __('Final availability and any additional work are confirmed before payment.') }}</p>
+          </div>
         </div>
-      </div>
-    </section>
-
+      </section>
+    @endif
     {{-- ══════════ Anchor bar ══════════ --}}
     <nav class="ytx-anchorbar">
       <div class="ytx-wrap">
@@ -351,7 +333,7 @@
             <h2>{{ $ytxActionLabel }}</h2>
             <p>{{ __('Share a few details and our team will contact you to confirm the best next step.') }}</p>
             @if ($ytxIsBookable)
-              <a class="ytx-btn bookNowBtn product-details" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#makeBooking" data-service-id="{{ $details->id }}">{{ $ytxActionLabel }} →</a>
+              <a class="ytx-btn" href="#ytx-book">{{ $ytxActionLabel }} →</a>
             @else
               <a class="ytx-btn" href="{{ $ytxActionUrl }}">{{ $ytxActionLabel }} →</a>
             @endif

@@ -147,6 +147,7 @@ Route::middleware('change.lang')->group(function () {
 
     // Service cart
     Route::post('cart/quick-add', 'FrontEnd\Services\ServiceCartController@quickAdd')->name('frontend.services.cart.quick_add');
+    Route::post('booking-price', 'FrontEnd\Services\ServiceCartController@bookingPrice')->name('frontend.services.booking_price');
     Route::post('cart/quick-add-package', 'FrontEnd\Services\ServiceCartController@quickAddPackage')->name('frontend.services.cart.quick_add_package');
     Route::post('cart/add', 'FrontEnd\Services\ServiceCartController@add')->name('frontend.services.cart.add');
     Route::get('cart', 'FrontEnd\Services\ServiceCartController@index')->name('frontend.services.cart');

@@ -7,7 +7,7 @@
        instead of above it. --}}
   <div class="ytx-utility">
     <div class="ytx-wrap">
-      <span>* {{ __('Serving Edinburgh, Livingston, Central Scotland and surrounding area.') }}</span>
+      <span>* {{ __('Serving West Lothian, Edinburgh, Glasgow, Stirling, Dundee, and surrounding areas.') }}</span>
       @if (!empty($basicInfo->contact_number))
         <span>
           <a href="tel:{{ preg_replace('/\s+/', '', $basicInfo->contact_number) }}" style="color:#fff;">{{ __('Phone') }} {{ $basicInfo->contact_number }}</a>
