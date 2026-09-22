@@ -530,3 +530,23 @@
     gap: 12px 18px;
   }
 }
+
+/* Mobile footer: compact 2-column layout (client request, Sept 2026) */
+@media (max-width: 767px) {
+  .footer-signal { padding: 28px 22px; border-radius: 18px; }
+  .footer-signal h2, .footer-signal-title { font-size: 26px; }
+  .footer-signal-points { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 18px; }
+  .footer-signal-point { padding: 10px 12px; }
+  .footer-main { padding: 36px 0 28px; }
+  .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 18px; }
+  .footer-brand-column { grid-column: 1 / -1; }
+  .footer-intro { font-size: 14px; }
+  .footer-link-column h3 { font-size: 13px; margin-bottom: 10px; }
+  .footer-link-column ul { display: grid; gap: 6px; }
+  .footer-link-column a { font-size: 14.5px; }
+  .copy-right-area { padding: 14px 0; }
+  .copy-right-content { gap: 8px; font-size: 12.5px; }
+}
+@media (max-width: 420px) {
+  .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

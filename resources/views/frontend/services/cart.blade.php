@@ -1534,7 +1534,8 @@
                   $firstCartItemForPostcode = $serviceCart->first();
                   $prefillPostcode = $firstCartItemForPostcode['site']['zip_code'] ?? ($firstCartItemForPostcode['customer']['zip_code'] ?? '');
                 @endphp
-                <div class="cart-postcode-panel" data-cart-postcode-panel>
+                {{-- Postcode is collected on the service page (and the "Site postcode" field below keeps pricing in sync), so this panel stays hidden. --}}
+                <div class="cart-postcode-panel" data-cart-postcode-panel hidden style="display:none">
                   <label class="cart-field-label" for="cart_pricing_postcode">{{ __('Your postcode') }}</label>
                   <div class="cart-postcode-input-row">
                     <input type="text" id="cart_pricing_postcode" class="form-control"

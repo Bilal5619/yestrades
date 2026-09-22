@@ -559,33 +559,30 @@
       </section>
     @endif
 
-    {{-- ══════════ Areas + guarantee ══════════ --}}
-    <section class="ytx-section ytx-soft">
-      <div class="ytx-wrap ytx-split">
-        <div>
-          <div class="ytx-eyebrow">{{ __('Where we work') }}</div>
-          <h2>{{ __('Local to you') }}</h2>
-          <p class="ytx-lead">{{ __('Based in Central Scotland and covering homes and rental properties across:') }}</p>
-          <div class="ytx-filterbar">
+    {{-- ══════════ Areas we cover: map + SEO description ══════════ --}}
+    <section class="ytx-section ytx-soft ytx-areas-section">
+      <div class="ytx-wrap ytx-areas-grid">
+        <div class="ytx-areas-map">
+          <iframe
+            title="{{ __('Map of the areas Yes Trades covers in Central Scotland') }}"
+            src="https://www.google.com/maps?q=YES%20TRADES%2C%20128%20Waverley%20Crescent%2C%20Livingston%20EH54%208JR&z=9&output=embed"
+            loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+          <a class="ytx-areas-map-link" href="{{ $ytxGoogleUrl }}" target="_blank" rel="noopener"><i class="fal fa-map-marker-alt"></i> {{ __('128 Waverley Crescent, Livingston EH54 8JR') }}</a>
+        </div>
+        <div class="ytx-areas-copy">
+          <div class="ytx-eyebrow">{{ __('Areas we cover') }}</div>
+          <h2>{{ __('Local trades across West Lothian, Edinburgh & Central Scotland') }}</h2>
+          <p>{{ __('Yes Trades is a family-run plumbing, heating, electrical and home improvement company based in Livingston, West Lothian. Our Gas Safe registered engineers and NICEIC approved electricians carry out boiler servicing and repairs, gas safety certificates (CP12), EICR electrical inspections, plumbing repairs, socket and lighting work, and full bathroom and kitchen renovations for homeowners, landlords and letting agents.') }}</p>
+          <p>{{ __('We work across Livingston, Bathgate, Broxburn, Linlithgow and the whole of West Lothian, as well as Edinburgh, Glasgow, Stirling, Dundee and surrounding areas — with fixed online prices, dated certificates emailed after every inspection, and a workmanship guarantee on every job.') }}</p>
+          <div class="ytx-filterbar ytx-areas-chips">
             @foreach ($ytxAreas as $area)
               <span class="ytx-chip">{{ $area }}</span>
             @endforeach
           </div>
           <p class="ytx-marketplace-note">{{ __('Not sure if we cover you? Give us a call — we are happy to check.') }}</p>
         </div>
-        <div class="ytx-guarantee">
-          <span class="ytx-guarantee-icon"><i class="fal fa-shield-check"></i></span>
-          <h3>{{ __('Our workmanship guarantee') }}</h3>
-          <p>{{ $ytxGuaranteeText }}</p>
-          <ul class="ytx-check-list ytx-check-list-single">
-            <li>{{ __('Registered, qualified engineers only') }}</li>
-            <li>{{ __('No extra work without your approval') }}</li>
-            <li>{{ __('Certificates issued where required') }}</li>
-          </ul>
-        </div>
       </div>
     </section>
-
     @if (count($after_banner) > 0)
       @foreach ($after_banner as $cusBanner)
         @if (isset($homecusSec[$cusBanner->id]) && $homecusSec[$cusBanner->id] == 1)
@@ -715,17 +712,6 @@
       @endforeach
     @endif
 
-  </div>
-
-  {{-- Sticky mobile action bar (Call / WhatsApp / Book) — shown on phones only --}}
-  <div class="ytx-sticky-mobile">
-    @if ($ytxPhoneHref)
-      <a class="ytx-btn ytx-dark" href="{{ $ytxPhoneHref }}"><i class="fal fa-phone"></i> {{ __('Call') }}</a>
-    @endif
-    @if ($ytxWhatsapp)
-      <a class="ytx-btn ytx-outline" href="https://wa.me/{{ $ytxWhatsapp }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> {{ __('WhatsApp') }}</a>
-    @endif
-    <a class="ytx-btn" href="{{ route('frontend.services') }}">{{ __('Book online') }}</a>
   </div>
 
   @push('scripts')

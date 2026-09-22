@@ -320,9 +320,9 @@
       }
 
       @media (max-width: 767.98px) {
+        /* Phones: hidden (client request) — WhatsApp stays in the footer CTA. */
         .floating-whatsapp {
-          right: 16px;
-          bottom: 84px;
+          display: none !important;
         }
 
         .floating-whatsapp-icon {

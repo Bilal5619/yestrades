@@ -773,3 +773,62 @@ body.cart-one-step .cart-edit-hint { display: block; }
 .ytx-hslide { aspect-ratio: 4 / 3.3; }
 .ytx-hslider[data-count="1"] .ytx-hslide { aspect-ratio: 16 / 7; }
 @media (max-width: 600px) { .ytx-hslide, .ytx-hslider[data-count="1"] .ytx-hslide { aspect-ratio: 4 / 3.6; } }
+
+/* ── Areas we cover: map + SEO copy ─────────────────────────────────── */
+.ytx-areas-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 48px; align-items: center; }
+.ytx-areas-map { position: relative; border-radius: 20px; overflow: hidden; border: 1px solid var(--ytx-line); background: #e9eeea; box-shadow: var(--ytx-shadow); }
+.ytx-areas-map iframe { display: block; width: 100%; height: 420px; border: 0; }
+.ytx-areas-map-link { position: absolute; left: 14px; bottom: 14px; display: inline-flex; align-items: center; gap: 8px; background: #fff; color: var(--ytx-ink); border-radius: 10px; padding: 9px 12px; font-size: 13px; font-weight: 700; text-decoration: none; box-shadow: 0 8px 22px rgba(0,0,0,.14); }
+.ytx-areas-map-link i { color: var(--ytx-green); }
+.ytx-areas-copy h2 { font-size: 34px; margin: 10px 0 14px; }
+.ytx-areas-copy p { color: var(--ytx-muted); font-size: 15.5px; line-height: 1.65; margin: 0 0 12px; }
+.ytx-areas-chips { margin: 18px 0 10px; }
+.ytx-areas-chips .ytx-chip { padding: 7px 13px; font-size: 13px; cursor: default; }
+.ytx-sticky-mobile { display: none !important; }
+
+/* ── Mobile: tighter sections, fix overflow, compact layouts ──────────── */
+@media (max-width: 900px) {
+  .ytx-section { padding: 56px 0; }
+  .ytx-areas-grid { grid-template-columns: 1fr; gap: 24px; }
+  .ytx-areas-map iframe { height: 300px; }
+  .ytx-areas-copy h2 { font-size: 28px; }
+  .ytx-how-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+  .ytx-how-step { padding: 20px 18px; border-radius: 16px; }
+  .ytx-how-step h3 { font-size: 17px; margin-top: 12px; }
+  .ytx-how-num { font-size: 28px; top: 12px; right: 14px; }
+}
+@media (max-width: 600px) {
+  .ytx-section { padding: 44px 0; }
+  .ytx-section-title { margin-bottom: 22px; }
+  .ytx-service-large-top { flex-wrap: wrap; }
+  .ytx-service-large-top h3 { font-size: 22px; flex: 1 1 100%; }
+  .ytx-service-large .ytx-price-pill { flex: 0 0 auto; }
+  .ytx-service-large-body { padding: 18px; }
+  .ytx-service-large-body ul li { font-size: 15px; }
+  .ytx-how-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ytx-how-step { padding: 16px 14px; }
+  .ytx-how-step h3 { font-size: 15px; margin-top: 10px; }
+  .ytx-how-step p { font-size: 13px; }
+  .ytx-how-icon { width: 40px; height: 40px; font-size: 18px; }
+  .ytx-how-num { font-size: 22px; }
+  .ytx-areas-map iframe { height: 240px; }
+  .ytx-areas-map-link { font-size: 12px; padding: 7px 10px; }
+  .ytx-areas-copy h2 { font-size: 24px; }
+  .ytx-areas-copy p { font-size: 15px; }
+  .ytx-page { padding-bottom: 0; }
+  body { padding-bottom: 0 !important; }
+}
+/* Mobile: compact 2-up cards so sections don't run for screens */
+@media (max-width: 600px) {
+  .ytx-help-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ytx-help-card { padding: 16px 14px; border-radius: 14px; }
+  .ytx-help-icon { width: 40px; height: 40px; font-size: 18px; margin-bottom: 10px; }
+  .ytx-help-card h3 { font-size: 16px; margin: 0 0 4px; }
+  .ytx-help-card p { font-size: 13px; line-height: 1.45; }
+  .ytx-help-card .ytx-link { font-size: 13px; }
+  .ytx-value-mosaic { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ytx-value-tile { padding: 14px; }
+  .ytx-value-tile h3, .ytx-value-tile strong { font-size: 15px; }
+  .ytx-value-tile p { font-size: 13px; }
+}
+.ytx-areas-map-link { position: static; display: flex; justify-content: center; border-radius: 0; box-shadow: none; border-top: 1px solid var(--ytx-line); padding: 12px 14px; }
