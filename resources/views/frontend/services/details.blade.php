@@ -102,40 +102,40 @@
       {{ $service->name ?? __('Service Details') }}
     </div>
 
-    {{-- ══════════ Page hero ══════════ --}}
-    <section class="ytx-page-hero">
-      <div class="ytx-wrap ytx-page-hero-grid">
-        <div>
+    {{-- ══════════ Page hero — deliberately compact so the booking
+         questions below are visible without scrolling ══════════ --}}
+    <section class="ytx-page-hero ytx-page-hero-slim">
+      <div class="ytx-wrap ytx-page-hero-slim-grid">
+        <div class="ytx-page-hero-slim-main">
           @if (!empty($service->category))
             <div class="ytx-eyebrow">{{ $service->category->name }}</div>
           @endif
-          <h1>{{ $service->name }}, {{ __('delivered by a') }} <em>{{ __('trusted local team') }}</em></h1>
+          <h1>{{ $service->name }}</h1>
           @if (!empty($service->description))
-            <p class="ytx-lead">{{ Str::limit(strip_tags($service->description), 170) }}</p>
+            <p class="ytx-lead">{{ Str::limit(strip_tags($service->description), 120) }}</p>
           @endif
-          <div class="ytx-hero-actions">
-            @if ($ytxIsBookable)
-              <a class="ytx-btn" href="#ytx-book">{{ $ytxActionLabel }} →</a>
-            @else
-              <a class="ytx-btn" href="{{ $ytxActionUrl }}">{{ $ytxActionLabel }} →</a>
-            @endif
-            @if (!empty($basicInfo->contact_number))
-              <a class="ytx-btn ytx-outline" href="tel:{{ preg_replace('/\s+/', '', $basicInfo->contact_number) }}">{{ __('Speak to our team') }}</a>
-            @endif
-          </div>
           <div class="ytx-trust-row">
             <span>{{ __('Qualified trades') }}</span>
-            <span>{{ __('Clear written quote') }}</span>
+            <span>{{ __('Clear price up front') }}</span>
             <span>{{ __('Fully insured') }}</span>
           </div>
         </div>
-        <div class="ytx-hero-media">
-          <img src="{{ $ytxHeroImage }}" alt="{{ $service->name }}">
-          <div class="ytx-rating">★★★★★<br>{{ __('Local, trusted support') }}</div>
+        <div class="ytx-page-hero-slim-side">
+          @if ($ytxIsBookable)
+            <div class="ytx-page-hero-price">
+              @if ($details->hasPricePlaceholder())
+                <strong>{{ $details->price_placeholder }}</strong>
+              @else
+                <small>{{ __('From') }}</small><strong>{{ symbolPrice($details->price) }}</strong>
+              @endif
+            </div>
+          @endif
+          @if (!empty($basicInfo->contact_number))
+            <a class="ytx-btn ytx-outline" href="tel:{{ preg_replace('/\s+/', '', $basicInfo->contact_number) }}"><i class="fal fa-phone"></i> {{ __('Speak to our team') }}</a>
+          @endif
         </div>
       </div>
     </section>
-
     {{-- ══════════ Book / quote panel ══════════ --}}
     @if ($ytxIsBookable)
       @include('frontend.services.partials.booking-panel', ['details' => $details, 'service' => $service])

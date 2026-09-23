@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Helpers\UploadFile;
 use App\Models\Admin\HeroSliderImage;
 use App\Models\BasicSettings\Basic;
+use App\Models\Services\Services;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class AdvertisementSliderController extends Controller
@@ -15,7 +17,14 @@ class AdvertisementSliderController extends Controller
         $settings = Basic::first();
         $images   = HeroSliderImage::orderBy('sort_order')->get();
 
-        return view('admin.home-page.advertisement-slider', compact('settings', 'images'));
+        // Services the admin can advertise in the home page hero slider.
+        $services = DB::table('services')
+            ->join('service_contents', 'services.id', '=', 'service_contents.service_id')
+            ->select('services.id', 'service_contents.name')
+            ->orderBy('service_contents.name')
+            ->get();
+
+        return view('admin.home-page.advertisement-slider', compact('settings', 'images', 'services'));
     }
 
     public function updateLimit(Request $request)
@@ -69,8 +78,34 @@ class AdvertisementSliderController extends Controller
      * Optional text + link shown on each slide of the home page hero slider.
      * A slide with no title is shown as a plain image (like a promo banner).
      */
-    public function updateDetails(Request $request)
+    /**
+     * Add a slide that advertises a service. No upload needed — the slider uses
+     * the service's own image, name and price, and links to its booking page.
+     */
+    public function storeService(Request $request)
     {
+        $request->validate(['service_id' => ['required', 'integer', 'exists:services,id']]);
+
+        $limit    = (int) (Basic::first()->ad_slider_max_images ?? 10);
+        $existing = HeroSliderImage::count();
+
+        if ($existing >= $limit) {
+            return redirect()->back()->with('upload_error', "You have reached the maximum of {$limit} slides. Delete one first, or raise the limit above.");
+        }
+
+        if (HeroSliderImage::where('service_id', $request->service_id)->exists()) {
+            return redirect()->back()->with('upload_error', 'That service is already in the slider.');
+        }
+
+        HeroSliderImage::create([
+            'service_id' => (int) $request->service_id,
+            'sort_order' => (int) (HeroSliderImage::max('sort_order') ?? 0) + 1,
+        ]);
+
+        return redirect()->back()->with('upload_success', 'Service added to the home page slider.');
+    }
+
+    public function updateDetails(Request $request)    {
         $request->validate([
             'slides'                => ['required', 'array'],
             'slides.*.title'        => ['nullable', 'string', 'max:120'],
@@ -107,13 +142,13 @@ class AdvertisementSliderController extends Controller
         $records = HeroSliderImage::whereIn('id', $ids)->get();
 
         foreach ($records as $record) {
-            $path = public_path('assets/img/hero/' . $record->image);
-            if (file_exists($path)) {
+            $path = $record->image ? public_path('assets/img/hero/' . $record->image) : null;
+            if ($path && file_exists($path)) {
                 @unlink($path);
             }
             $record->delete();
         }
 
-        return redirect()->back()->with('delete_success', count($records) . ' image(s) deleted.');
+        return redirect()->back()->with('delete_success', count($records) . ' slide(s) deleted.');
     }
 }

@@ -96,13 +96,40 @@
 
   <div class="ytx-page">
 
-    {{-- ══════════ Hero: headline + promo slider (Currys-style card carousel) ══════════ --}}
+    {{-- ══════════ Hero: headline + service slider ══════════ --}}
     @php
-      // Slides: admin uploads (Admin > Home Page > Slides) first, then popular
-      // services fill up to 6 so the slider is never empty or too short.
-      $ytxSlides = collect($heroSliderImages ?? [])
-        ->filter(fn ($s) => !empty($s->image) && file_exists(public_path('assets/img/hero/' . $s->image)))
-        ->map(fn ($s) => [
+      // Slides come from Admin > Home Page > Slides: services the admin picked
+      // (service image, price, booking link) plus any uploaded promo images.
+      // If nothing is set up yet, the newest services fill the slider.
+      $ytxSlideServiceIds = collect($heroSliderImages ?? [])->pluck('service_id')->filter()->map(fn ($i) => (int) $i)->all();
+      $ytxSlideServices = $ytxSlideServiceIds
+        ? $services->getCollection()->whereIn('id', $ytxSlideServiceIds)->keyBy('id')
+        : collect();
+      $ytxServiceSlide = function ($s) use ($ytxServiceImage) {
+        return [
+          'image' => $ytxServiceImage($s),
+          'eyebrow' => $s->categoryName ?? __('Our services'),
+          'title' => $s->name,
+          'subtitle' => !empty($s->short_description) ? truncateString($s->short_description, 80) : null,
+          'price' => $s->isQuoteType() ? __('Free quote') : ($s->hasPricePlaceholder() ? $s->price_placeholder : __('From') . ' ' . symbolPrice($s->price)),
+          'button' => $s->isQuoteType() ? __('Get a quote') : __('Book online'),
+          'url' => route('frontend.service.details', ['slug' => $s->slug, 'id' => $s->id]),
+          'plain' => false,
+        ];
+      };
+      $ytxSlides = collect($heroSliderImages ?? [])->map(function ($s) use ($ytxSlideServices, $ytxServiceSlide) {
+        if (!empty($s->service_id)) {
+          $svc = $ytxSlideServices->get((int) $s->service_id);
+          if (!$svc) { return null; }
+          $slide = $ytxServiceSlide($svc);
+          if (!empty($s->title)) { $slide['title'] = $s->title; }
+          if (!empty($s->subtitle)) { $slide['subtitle'] = $s->subtitle; }
+          if (!empty($s->button_text)) { $slide['button'] = $s->button_text; }
+          if (!empty($s->url)) { $slide['url'] = $s->url; }
+          return $slide;
+        }
+        if (empty($s->image) || !file_exists(public_path('assets/img/hero/' . $s->image))) { return null; }
+        return [
           'image' => asset('assets/img/hero/' . $s->image),
           'eyebrow' => null,
           'title' => $s->title,
@@ -111,47 +138,18 @@
           'button' => $s->button_text ?: ($s->title ? __('Find out more') : null),
           'url' => $s->url ?: route('frontend.services'),
           'plain' => empty($s->title),
-        ]);
-      if ($ytxSlides->count() < 6) {
+        ];
+      })->filter()->values();
+
+      // Nothing set up in admin yet → advertise the newest services instead.
+      if ($ytxSlides->count() < 3) {
         $ytxSlides = $ytxSlides->concat(
-          $services->getCollection()->take(6 - $ytxSlides->count())->map(fn ($s) => [
-            'image' => $ytxServiceImage($s),
-            'eyebrow' => $s->categoryName ?? __('Popular service'),
-            'title' => $s->name,
-            'subtitle' => !empty($s->short_description) ? truncateString($s->short_description, 80) : null,
-            'price' => $s->isQuoteType() ? __('Free quote') : ($s->hasPricePlaceholder() ? $s->price_placeholder : __('From') . ' ' . symbolPrice($s->price)),
-            'button' => $s->isQuoteType() ? __('Get a quote') : __('Book online'),
-            'url' => route('frontend.service.details', ['slug' => $s->slug, 'id' => $s->id]),
-            'plain' => false,
-          ])
-        );
+          $services->getCollection()
+            ->reject(fn ($s) => in_array((int) $s->id, $ytxSlideServiceIds, true))
+            ->take(6 - $ytxSlides->count())
+            ->map($ytxServiceSlide)
+        )->values();
       }
-      // Built-in promo slides so the carousel always has enough cards to slide
-      // (a dev copy / new site may only have a couple of services).
-      if ($ytxSlides->count() < 5) {
-        $ytxPromoSlides = collect([
-          [
-            'image' => file_exists(public_path('assets/img/services/bathroom-renovation.jpg')) ? asset('assets/img/services/bathroom-renovation.jpg') : 'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80',
-            'eyebrow' => __('Renovations'), 'title' => __('Bathrooms, kitchens & full renovations'),
-            'subtitle' => __('One family team for design, plumbing, electrics and finishing.'),
-            'price' => __('Free quote'), 'button' => __('Request a quote'), 'url' => route('frontend.job_request.create'), 'plain' => false,
-          ],
-          [
-            'image' => 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80',
-            'eyebrow' => __('Landlords'), 'title' => __('Landlord certificates & safety checks'),
-            'subtitle' => __('Gas safety, EICR, EPC and PAT — sorted in one visit, certificates emailed.'),
-            'price' => null, 'button' => __('Landlord services'), 'url' => route('frontend.landlords'), 'plain' => false,
-          ],
-          [
-            'image' => 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=1200&q=80',
-            'eyebrow' => __('Emergency call-out'), 'title' => __('No heating, a leak or a power fault?'),
-            'subtitle' => __('Call us — same-day response across West Lothian and Edinburgh.'),
-            'price' => null, 'button' => __('Call now'), 'url' => $ytxPhoneHref ?? route('contact'), 'plain' => false,
-          ],
-        ]);
-        $ytxSlides = $ytxSlides->concat($ytxPromoSlides->take(max(0, 5 - $ytxSlides->count())));
-      }
-      $ytxSlides = $ytxSlides->values();
     @endphp
     <section class="ytx-hero ytx-hero-dark ytx-hero-slider">
       <div class="ytx-wrap">

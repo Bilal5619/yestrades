@@ -55,13 +55,11 @@
           <i class="fal fa-file-invoice"></i>{{ __('Get a Quote') }}
         </a>
       @else
-        <form action="{{ route('frontend.services.cart.quick_add') }}" method="POST" class="m-0 w-100">
-          @csrf
-          <input type="hidden" name="service_id" value="{{ $service->id }}">
-          <button type="submit" class="sv-card-btn" title="{{ __('Book Now') }}">
-            <i class="fal fa-calendar-check"></i>{{ __('Book Now') }}
-          </button>
-        </form>
+        {{-- Booking starts on the service page (questions, postcode and date), so
+             this links there instead of dropping the service straight into the cart. --}}
+        <a href="{{ route('frontend.service.details', ['slug' => $service->slug, 'id' => $service->id]) }}#ytx-book" class="sv-card-btn" title="{{ __('Book Now') }}">
+          <i class="fal fa-calendar-check"></i>{{ __('Book Now') }}
+        </a>
       @endif
     </div>
   </div>

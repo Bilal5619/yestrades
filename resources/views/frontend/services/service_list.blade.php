@@ -197,17 +197,20 @@
                                 <span class="prev-price font-sm">{{ symbolPrice($normalPrice) }}</span>
                               @endif
                             </div>
-                            <form action="{{ $isPackage ? route('frontend.services.cart.quick_add_package') : route('frontend.services.cart.quick_add') }}" method="POST" class="m-0">
-                              @csrf
-                              @if ($isPackage)
+                            @if ($isPackage)
+                              <form action="{{ route('frontend.services.cart.quick_add_package') }}" method="POST" class="m-0">
+                                @csrf
                                 <input type="hidden" name="package_id" value="{{ $item->id }}">
-                              @else
-                                <input type="hidden" name="service_id" value="{{ $item->id }}">
-                              @endif
-                              <button type="submit" class="btn btn-sm btn-outline-2" title="{{ __('Book Now') }}">
+                                <button type="submit" class="btn btn-sm btn-outline-2" title="{{ __('Book Now') }}">
+                                  <i class="fal fa-calendar-check me-1"></i>{{ __('Book Now') }}
+                                </button>
+                              </form>
+                            @else
+                              {{-- Questions/date are asked on the service page, so start there. --}}
+                              <a href="{{ route('frontend.service.details', ['slug' => $item->slug, 'id' => $item->id]) }}#ytx-book" class="btn btn-sm btn-outline-2" title="{{ __('Book Now') }}">
                                 <i class="fal fa-calendar-check me-1"></i>{{ __('Book Now') }}
-                              </button>
-                            </form>
+                              </a>
+                            @endif
                           </div>
                         </div>
                       </div>

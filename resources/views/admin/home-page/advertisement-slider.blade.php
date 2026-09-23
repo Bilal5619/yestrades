@@ -122,8 +122,14 @@
                 @foreach ($images as $img)
                   <div class="col-md-2 col-sm-3 col-4 mb-3 slide-item" data-id="{{ $img->id }}">
                     <div class="slide-card" style="position:relative;border-radius:6px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:border-color .2s;">
-                      <img src="{{ asset('assets/img/hero/' . $img->image) }}" alt="slide"
-                        style="width:100%;height:110px;object-fit:cover;display:block;">
+                      @if ($img->service_id)
+                        <div style="height:110px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;background:#eef7f0;color:#187a28;font-weight:700;font-size:12px;">
+                          {{ optional($services->firstWhere('id', $img->service_id))->name ?? __('Service slide') }}
+                        </div>
+                      @else
+                        <img src="{{ asset('assets/img/hero/' . $img->image) }}" alt="slide"
+                          style="width:100%;height:110px;object-fit:cover;display:block;">
+                      @endif
                       {{-- X button --}}
                       <button type="button" class="slide-delete-toggle"
                         style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:24px;height:24px;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;">
@@ -149,6 +155,36 @@
       </div>
     </div>
 
+    {{-- ── Advertise a service in the hero slider ───────────────── --}}
+    <div class="col-md-12 mb-4">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">{{ __('Advertise a Service') }}</div>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-3">
+            Pick a service to show in the home page slider. It uses the service's own image, name and price, and the button takes the customer straight to its booking page. No image upload needed.
+          </p>
+          <form action="{{ route('admin.home_page.ad_slider.store_service') }}" method="POST" class="row g-2 align-items-end">
+            @csrf
+            <div class="col-md-8">
+              <label class="mb-1">{{ __('Service') }}</label>
+              <select name="service_id" class="form-control" required>
+                <option value="">{{ __('Choose a service…') }}</option>
+                @foreach ($services as $svc)
+                  <option value="{{ $svc->id }}" {{ $images->contains('service_id', $svc->id) ? 'disabled' : '' }}>
+                    {{ $svc->name }}{{ $images->contains('service_id', $svc->id) ? ' — ' . __('already added') : '' }}
+                  </option>
+                @endforeach
+              </select>
+            </div>
+            <div class="col-md-4">
+              <button type="submit" class="btn btn-success btn-block"><i class="fa fa-plus"></i> {{ __('Add to slider') }}</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
     {{-- ── Slide text & links (shown on the website hero slider) ── --}}
     @if ($existing > 0)
       <div class="col-md-12 mb-4">
@@ -180,9 +216,16 @@
                   <tbody>
                     @foreach ($images as $img)
                       <tr>
-                        <td><img src="{{ asset('assets/img/hero/' . $img->image) }}" alt="" style="width:100px;height:66px;object-fit:cover;border-radius:6px;"></td>
+                        <td>
+                          @if ($img->service_id)
+                            <span class="badge badge-success">{{ __('Service') }}</span><br>
+                            <small>{{ optional($services->firstWhere('id', $img->service_id))->name ?? __('Service removed') }}</small>
+                          @else
+                            <img src="{{ asset('assets/img/hero/' . $img->image) }}" alt="" style="width:100px;height:66px;object-fit:cover;border-radius:6px;">
+                          @endif
+                        </td>
                         <td><input type="number" class="form-control" name="slides[{{ $img->id }}][sort_order]" value="{{ $img->sort_order }}" min="0"></td>
-                        <td><input type="text" class="form-control" name="slides[{{ $img->id }}][title]" value="{{ $img->title }}" placeholder="e.g. Boiler service from £79"></td>
+                        <td><input type="text" class="form-control" name="slides[{{ $img->id }}][title]" value="{{ $img->title }}" placeholder="{{ $img->service_id ? __('Leave blank to use the service name') : 'e.g. Boiler service from £79' }}"></td>
                         <td><input type="text" class="form-control" name="slides[{{ $img->id }}][subtitle]" value="{{ $img->subtitle }}" placeholder="e.g. Gas Safe engineer, fixed price"></td>
                         <td><input type="text" class="form-control" name="slides[{{ $img->id }}][button_text]" value="{{ $img->button_text }}" placeholder="Book now"></td>
                         <td><input type="text" class="form-control" name="slides[{{ $img->id }}][url]" value="{{ $img->url }}" placeholder="https://yestrades.co.uk/services"></td>

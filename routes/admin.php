@@ -751,6 +751,7 @@ Route::prefix('/admin')->middleware('auth:admin')->group(function () {
       Route::post('/advertisement-slides/store', 'Admin\HomePage\AdvertisementSliderController@store')->name('admin.home_page.ad_slider.store');
       Route::post('/advertisement-slides/bulk-delete', 'Admin\HomePage\AdvertisementSliderController@bulkDelete')->name('admin.home_page.ad_slider.bulk_delete');
       Route::post('/advertisement-slides/update-details', 'Admin\HomePage\AdvertisementSliderController@updateDetails')->name('admin.home_page.ad_slider.update_details');
+      Route::post('/advertisement-slides/store-service', 'Admin\HomePage\AdvertisementSliderController@storeService')->name('admin.home_page.ad_slider.store_service');
       // section customization
       Route::get('/section-customization', 'Admin\HomePage\SectionController@index')->name('admin.home_page.section_customization');
 

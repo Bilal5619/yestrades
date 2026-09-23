@@ -832,3 +832,103 @@ body.cart-one-step .cart-edit-hint { display: block; }
   .ytx-value-tile p { font-size: 13px; }
 }
 .ytx-areas-map-link { position: static; display: flex; justify-content: center; border-radius: 0; box-shadow: none; border-top: 1px solid var(--ytx-line); padding: 12px 14px; }
+
+/* ── Service page: slim header so the booking questions sit at the top ─── */
+.ytx-page-hero-slim-grid { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; padding: 26px 0 30px; flex-wrap: wrap; }
+.ytx-page-hero-slim-main { flex: 1 1 520px; min-width: 0; }
+.ytx-page-hero-slim h1 { font-size: 40px; margin: 8px 0 10px; }
+.ytx-page-hero-slim .ytx-lead { margin: 0 0 14px; font-size: 16px; max-width: 720px; }
+.ytx-page-hero-slim .ytx-trust-row { margin: 0; }
+.ytx-page-hero-slim-side { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.ytx-page-hero-price { display: flex; align-items: baseline; gap: 6px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22); border-radius: 12px; padding: 10px 16px; color: #fff; }
+.ytx-page-hero-price small { font-size: 13px; font-weight: 700; opacity: .8; }
+.ytx-page-hero-price strong { font-size: 26px; line-height: 1; }
+.ytx-booking-section { padding-top: 34px; }
+.ytx-booking-section .ytx-section-title { margin-bottom: 20px; }
+@media (max-width: 900px) {
+  .ytx-page-hero-slim-grid { padding: 18px 0 22px; gap: 16px; }
+  .ytx-page-hero-slim h1 { font-size: 28px; }
+  .ytx-page-hero-slim .ytx-lead { font-size: 15px; margin-bottom: 10px; }
+  .ytx-booking-section { padding-top: 24px; }
+}
+
+/* ── Home service cards: 2-up, no stretched bullet gaps ───────────────── */
+.ytx-service-large-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
+.ytx-service-large { grid-template-columns: 40% 1fr; }
+.ytx-service-large-media img { min-height: 0; height: 100%; }
+.ytx-service-large-body { padding: 24px 26px; }
+.ytx-service-large-body h3 { font-size: 22px; }
+.ytx-service-large-body ul { flex: 0 0 auto; gap: 8px; font-size: 15px; margin-bottom: 14px; }
+@media (max-width: 900px) {
+  .ytx-service-large-grid { grid-template-columns: 1fr; gap: 16px; }
+  .ytx-service-large { grid-template-columns: 38% 1fr; }
+}
+@media (max-width: 600px) {
+  .ytx-service-large { grid-template-columns: 1fr; }
+  .ytx-service-large-media img { min-height: 170px; max-height: 190px; }
+}
+.ytx-booking-intro { margin-bottom: 18px; }
+.ytx-booking-intro h2 { font-size: 28px; margin: 0 0 6px; }
+.ytx-booking-intro p { margin: 0; color: var(--ytx-muted); font-size: 15px; max-width: 640px; }
+@media (max-width: 600px) {
+  .ytx-booking-intro h2 { font-size: 22px; }
+  .ytx-booking-intro p { font-size: 14px; }
+  .ytx-page-hero-slim .ytx-lead { display: none; }
+  .ytx-page-hero-slim-side { width: 100%; }
+  .ytx-page-hero-slim-side .ytx-btn { flex: 1; }
+}
+
+/* ── Density pass: the earlier "spacious" values left too much dead space ── */
+.ytx-section { padding: 72px 0; }
+.ytx-section-title { margin-bottom: 34px; }
+.ytx-section-title h2 { font-size: clamp(30px, 2.8vw, 40px); }
+.ytx-section-title p, .ytx-lead { font-size: 17px; }
+
+.ytx-help-grid { grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.ytx-help-card { padding: 26px 24px; gap: 10px; border-radius: 16px; }
+.ytx-help-card h3 { font-size: 19px; }
+.ytx-help-card p { font-size: 15px; line-height: 1.5; }
+.ytx-help-icon { width: 48px; height: 48px; font-size: 21px; border-radius: 12px; }
+.ytx-help-card .ytx-link { font-size: 15px; margin-top: 6px; }
+
+.ytx-how-grid { grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.ytx-how-step { padding: 26px 24px; border-radius: 16px; }
+.ytx-how-icon { width: 48px; height: 48px; font-size: 21px; border-radius: 12px; }
+.ytx-how-step h3 { font-size: 18px; margin-top: 14px; }
+.ytx-how-step p { font-size: 15px; line-height: 1.5; }
+.ytx-how-num { font-size: 40px; }
+
+.ytx-split { gap: 48px; }
+.ytx-value-tile { min-height: 0; padding: 20px; font-size: 16px; border-radius: 16px; }
+.ytx-value-tile i { font-size: 26px; }
+.ytx-value-tile-dark strong { font-size: 44px; }
+.ytx-check-list li { padding: 8px 0; font-size: 15px; }
+.ytx-stats { padding: 56px 0; }
+.ytx-review { padding: 26px; border-radius: 18px; font-size: 15px; line-height: 1.6; }
+.ytx-review p { margin: 10px 0 12px; }
+.ytx-guarantee { padding: 32px; border-radius: 20px; }
+.ytx-guarantee h3 { font-size: 24px; }
+.ytx-guarantee p { font-size: 16px; }
+.ytx-chip { padding: 9px 16px; font-size: 14px; }
+.ytx-filterbar { gap: 10px; margin: 20px 0; }
+.ytx-faq button { padding: 20px 22px; font-size: 17px; }
+.ytx-faq .ytx-faq-body { padding: 0 22px 20px; font-size: 15px; }
+.ytx-faq { margin: 10px 0; }
+
+@media (max-width: 1100px) {
+  .ytx-help-grid, .ytx-how-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 900px) {
+  .ytx-section { padding: 52px 0; }
+  .ytx-section-title { margin-bottom: 24px; }
+}
+@media (max-width: 600px) {
+  .ytx-section { padding: 40px 0; }
+  .ytx-help-grid, .ytx-how-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+}
+/* Mobile: questions first, price summary after them (client request) */
+@media (max-width: 900px) {
+  .ytx-booking-summary { order: 1; position: static; }
+  .ytx-booking-main { order: 0; padding: 22px 18px; }
+  .ytx-booking-grid { gap: 16px; }
+}

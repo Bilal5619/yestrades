@@ -15,12 +15,9 @@
 
 <section class="ytx-section ytx-booking-section" id="ytx-book">
   <div class="ytx-wrap">
-    <div class="ytx-section-title">
-      <div>
-        <div class="ytx-eyebrow">{{ __('Book online in under a minute') }}</div>
-        <h2>{{ __('Get your price and book') }} {{ $service->name }}</h2>
-        <p>{{ __('Answer a few quick questions, choose a date, then add your address and pay — all in one go. No account needed.') }}</p>
-      </div>
+    <div class="ytx-booking-intro">
+      <h2>{{ __('Get your price and book online') }}</h2>
+      <p>{{ __('Answer a few quick questions, choose a date, then add your address and pay — all in one go. No account needed.') }}</p>
     </div>
 
     <form id="ytxBookingForm" class="ytx-booking-grid" action="{{ route('frontend.services.cart.quick_add') }}" method="POST"
