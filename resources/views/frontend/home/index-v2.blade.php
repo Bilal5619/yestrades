@@ -798,7 +798,17 @@
           }
           track.addEventListener('pointerup', endDrag);
           track.addEventListener('pointercancel', endDrag);
-          track.addEventListener('click', function (e) { if (root.dataset.swiped) { e.preventDefault(); } }, true);
+          track.addEventListener('click', function (e) {
+            var link = e.target.closest('[data-ytx-slide]');
+            if (root.dataset.swiped) {
+              e.preventDefault();
+              return;
+            }
+            if (link && link.href && !e.defaultPrevented && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+              e.preventDefault();
+              window.location.href = link.href;
+            }
+          }, true);
 
           window.addEventListener('resize', function () { render(); restart(); });
           render();
