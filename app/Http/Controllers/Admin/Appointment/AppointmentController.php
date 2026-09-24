@@ -651,6 +651,51 @@ if ($tenantDeferred) {
     return view('admin.appointment.details', $information);
   }
 
+  public function resendTenantSlotInvitation($id)
+  {
+    $appointment = ServiceBooking::with(['service.content', 'user'])
+      ->findOrFail($id);
+
+    if (($appointment->scheduling_mode ?? null) !== 'tenant') {
+      return redirect()->back()->with('warning', 'This appointment is not set for tenant date selection.');
+    }
+
+    $resendableStatuses = [
+      TenantSlotService::STATUS_WAITING,
+      TenantSlotService::STATUS_EXPIRED,
+    ];
+
+    if (!in_array($appointment->tenant_slot_status, $resendableStatuses, true)) {
+      return redirect()->back()->with('warning', 'A new tenant link can only be sent while the tenant has not selected a date.');
+    }
+
+    if (empty($appointment->tenant_email) && empty($appointment->customer_email) && empty(optional($appointment->user)->email)) {
+      return redirect()->back()->with('warning', 'No email address is available for this tenant appointment link.');
+    }
+
+    $token = app(TenantSlotService::class)->issueToken();
+
+    $appointment->forceFill([
+      'tenant_slot_status' => TenantSlotService::STATUS_WAITING,
+      'tenant_slot_plain_token' => $token['plain'],
+      'tenant_slot_token_hash' => $token['hash'],
+      'tenant_slot_expires_at' => $token['expires_at'],
+    ])->save();
+
+    try {
+      app(TenantSlotService::class)->sendInvitations(collect([$appointment]));
+    } catch (\Throwable $exception) {
+      \Log::error('Tenant scheduling invitation resend failed', [
+        'booking_id' => $appointment->id,
+        'message' => $exception->getMessage(),
+      ]);
+
+      return redirect()->back()->with('warning', 'The tenant link was renewed, but the email could not be sent: ' . $exception->getMessage());
+    }
+
+    return redirect()->back()->with('success', 'A new tenant appointment link has been emailed. It expires in 3 days.');
+  }
+
   // Vendor calendar overview page (all vendors' appointments).
   public function calendar()
   {

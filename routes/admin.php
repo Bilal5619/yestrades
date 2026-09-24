@@ -232,6 +232,8 @@ Route::prefix('/admin')->middleware('auth:admin')->group(function () {
 
     Route::post('/reschedule-request/{id}/reject', 'Admin\Appointment\AppointmentController@rejectRescheduleRequest')->name('admin.appointment.reschedule_reject');
 
+    Route::post('/tenant-slot/resend/{id}', 'Admin\Appointment\AppointmentController@resendTenantSlotInvitation')->name('admin.appointment.tenant_slot_resend');
+
     Route::post('/staff/assign', 'Admin\Appointment\AppointmentController@staffAssign')->name('admin.appointment.staff_assign');
 
     Route::post('/vendor/assign', 'Admin\Appointment\AppointmentController@vendorAssign')->name('admin.appointment.vendor_assign');

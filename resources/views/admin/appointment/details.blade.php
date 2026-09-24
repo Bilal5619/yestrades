@@ -39,6 +39,11 @@
     @php
       $symbol = $details->currency_symbol;
       $symbol_positon = $details->currency_symbol_position;
+      $canResendTenantSlot = ($details->scheduling_mode ?? null) === 'tenant'
+        && in_array($details->tenant_slot_status, [
+          \App\Services\TenantSlotService::STATUS_WAITING,
+          \App\Services\TenantSlotService::STATUS_EXPIRED,
+        ], true);
     @endphp
 
     <div class="col-md-4">
@@ -47,11 +52,21 @@
           <div class="card-title d-inline-block">
             {{ __('Booking No.') . ' ' . '#' . $details->order_number }}
           </div>
-          @if ($details->order_status == 'pending')
-            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#rescheduleModal">
-              {{ __('Change Date/Time') }}
-            </button>
-          @endif
+          <div class="d-flex align-items-center" style="gap: 8px;">
+            @if ($canResendTenantSlot)
+              <form action="{{ route('admin.appointment.tenant_slot_resend', ['id' => $details->id]) }}" method="post" class="mb-0">
+                @csrf
+                <button type="submit" class="btn btn-info btn-sm">
+                  {{ __('Send New Tenant Link') }}
+                </button>
+              </form>
+            @endif
+            @if ($details->order_status == 'pending')
+              <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#rescheduleModal">
+                {{ __('Change Date/Time') }}
+              </button>
+            @endif
+          </div>
         </div>
 
         <div class="card-body">
@@ -105,7 +120,13 @@
               </div>
 
               <div class="col-lg-6">
-                {{ \Carbon\Carbon::parse($details->booking_date)->format('M d, Y') }}
+                @if (!empty($details->booking_date))
+                  {{ \Carbon\Carbon::parse($details->booking_date)->format('M d, Y') }}
+                @elseif (($details->scheduling_mode ?? null) === 'tenant')
+                  {{ __('Waiting for tenant') }}
+                @else
+                  {{ '-' }}
+                @endif
               </div>
             </div>
 
