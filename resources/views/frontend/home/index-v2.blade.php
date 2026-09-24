@@ -794,7 +794,7 @@
             dragging = false; paused = false;
             root.classList.remove('is-dragging');
             if (Math.abs(moved) > 40) { go(index + (moved < 0 ? 1 : -1), true); } else { render(); }
-            if (Math.abs(moved) > 8) { root.dataset.swiped = '1'; setTimeout(function () { delete root.dataset.swiped; }, 50); }
+            if (Math.abs(moved) > 40) { root.dataset.swiped = '1'; setTimeout(function () { delete root.dataset.swiped; }, 150); }
           }
           track.addEventListener('pointerup', endDrag);
           track.addEventListener('pointercancel', endDrag);
