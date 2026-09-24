@@ -102,9 +102,10 @@
       // (service image, price, booking link) plus any uploaded promo images.
       // If nothing is set up yet, the newest services fill the slider.
       $ytxSlideServiceIds = collect($heroSliderImages ?? [])->pluck('service_id')->filter()->map(fn ($i) => (int) $i)->all();
-      $ytxSlideServices = $ytxSlideServiceIds
-        ? $services->getCollection()->whereIn('id', $ytxSlideServiceIds)->keyBy('id')
-        : collect();
+      $ytxSlideServices = collect($heroSlideServices ?? []);
+      if ($ytxSlideServices->isEmpty() && $ytxSlideServiceIds) {
+        $ytxSlideServices = $services->getCollection()->whereIn('id', $ytxSlideServiceIds)->keyBy('id');
+      }
       $ytxServiceSlide = function ($s) use ($ytxServiceImage) {
         return [
           'image' => $ytxServiceImage($s),

@@ -337,6 +337,47 @@ class HomeController extends Controller
 
 
     $queryResult['heroSliderImages'] = HeroSliderImage::orderBy('sort_order')->get();
+    $heroSlideServiceIds = $queryResult['heroSliderImages']
+      ->pluck('service_id')
+      ->filter()
+      ->map(fn ($id) => (int) $id)
+      ->unique()
+      ->values();
+
+    $queryResult['heroSlideServices'] = $heroSlideServiceIds->isNotEmpty()
+      ? Services::join('service_contents', 'services.id', '=', 'service_contents.service_id')
+        ->join('service_categories', 'service_categories.id', '=', 'service_contents.category_id')
+        ->whereIn('services.id', $heroSlideServiceIds)
+        ->where('service_contents.language_id', $language->id)
+        ->where('service_categories.language_id', $language->id)
+        ->where('services.status', 1)
+        ->where(function ($query) use ($vendorStatus) {
+          $query->whereIn('services.vendor_id', $vendorStatus)
+            ->orWhere('services.vendor_id', 0);
+        })
+        ->when('services.vendor_id' != "0", function ($query) {
+          return $query->leftJoin('memberships', 'services.vendor_id', '=', 'memberships.vendor_id')
+            ->where(function ($query) {
+              $query->where([
+                ['memberships.status', '=', 1],
+                ['memberships.start_date', '<=', now()->format('Y-m-d')],
+                ['memberships.expire_date', '>=', now()->format('Y-m-d')],
+              ])->orWhere('services.vendor_id', '=', 0);
+            });
+        })
+        ->select(
+          'services.*',
+          'service_contents.name',
+          'service_contents.slug',
+          'service_contents.address',
+          'service_contents.short_description',
+          'service_contents.features',
+          'service_categories.name as categoryName',
+          'service_categories.id as categoryId'
+        )
+        ->get()
+        ->keyBy('id')
+      : collect();
 
     if ($themeVersion == 1) {
       return view('frontend.home.index-v1', $queryResult);
