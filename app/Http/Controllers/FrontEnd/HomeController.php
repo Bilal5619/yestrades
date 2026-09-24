@@ -370,7 +370,6 @@ class HomeController extends Controller
           'service_contents.name',
           'service_contents.slug',
           'service_contents.address',
-          'service_contents.short_description',
           'service_contents.features',
           'service_categories.name as categoryName',
           'service_categories.id as categoryId'
