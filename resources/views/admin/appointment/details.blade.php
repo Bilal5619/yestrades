@@ -888,6 +888,14 @@
                 @error('job_certificate')<p class="mt-1 mb-0 text-danger">{{ $message }}</p>@enderror
               </div>
               <div class="form-group">
+                <label><strong>{{ __('Certificate Expiry Date') }}</strong></label>
+                <input type="date" name="job_certificate_expiry" class="form-control"
+                  min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
+                  value="{{ old('job_certificate_expiry', \Carbon\Carbon::today()->addYear()->format('Y-m-d')) }}">
+                <small class="form-text text-muted">{{ __('Yes Trades is emailed one month before this date so the customer can be booked in for a renewal. Leave blank if the certificate never expires.') }}</small>
+                @error('job_certificate_expiry')<p class="mt-1 mb-0 text-danger">{{ $message }}</p>@enderror
+              </div>
+              <div class="form-group">
                 <label>{{ __('Completion Notes') }}</label>
                 <textarea name="completion_notes" class="form-control" rows="3" maxlength="5000">{{ old('completion_notes') }}</textarea>
                 @error('completion_notes')<p class="mt-1 mb-0 text-danger">{{ $message }}</p>@enderror

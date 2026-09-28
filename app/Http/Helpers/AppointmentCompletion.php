@@ -53,6 +53,10 @@ class AppointmentCompletion
 
         $lockedBooking->update([
           'job_certificate' => $certFileName,
+          // Expiry drives the 30-day reminder email and the compliance list.
+          'job_certificate_expiry' => $request->filled('job_certificate_expiry')
+            ? $request->input('job_certificate_expiry')
+            : $lockedBooking->job_certificate_expiry,
         ]);
 
         if ($afterComplete) {

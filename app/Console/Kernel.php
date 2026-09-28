@@ -38,6 +38,12 @@ class Kernel extends ConsoleKernel
     ->command('tenant-slots:expire')
     ->hourly()
     ->withoutOverlapping();
+
+    // Certificate expiry warnings (30 days before, and once after expiry).
+    $schedule
+    ->command('certificates:remind')
+    ->dailyAt('07:00')
+    ->withoutOverlapping();
   }
 
   /**

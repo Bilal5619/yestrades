@@ -23,6 +23,8 @@
           ['label' => 'Pending Payments', 'count' => $taskCounts['pending_payments'], 'class' => 'warning', 'icon' => 'fas fa-money-bill-wave'],
           ['label' => 'Jobs Needing a Vendor', 'count' => $taskCounts['jobs_needing_vendor'], 'class' => 'info', 'icon' => 'fas fa-user-plus'],
           ['label' => 'Availability Conflicts', 'count' => $taskCounts['availability_conflicts'], 'class' => 'secondary', 'icon' => 'fas fa-exclamation-triangle'],
+          ['label' => 'Certificates Expiring Soon', 'count' => $taskCounts['certificates_expiring'] ?? 0, 'class' => 'warning', 'icon' => 'fas fa-certificate'],
+          ['label' => 'Certificates Expired', 'count' => $taskCounts['certificates_expired'] ?? 0, 'class' => 'danger', 'icon' => 'fas fa-calendar-times'],
       ];
     @endphp
     @foreach ($summary as $card)
@@ -96,6 +98,105 @@
     </div>
   </div>
 
+  {{-- Certificate expiry: job certificates, vendor documents and staff training --}}
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title d-inline-block">{{ __('Certificates Expiring Soon') }}</div>
+          <span class="badge badge-warning ml-2">{{ $taskCounts['certificates_expiring'] ?? 0 }}</span>
+          <span class="text-muted ml-2" style="font-size:13px;">
+            {{ __('Next :days days. Yes Trades is emailed automatically one month before each expiry.', ['days' => $certificateReminderDays ?? 30]) }}
+          </span>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>{{ __('Type') }}</th>
+                  <th>{{ __('Certificate') }}</th>
+                  <th>{{ __('Customer / Staff') }}</th>
+                  <th>{{ __('Expires') }}</th>
+                  <th>{{ __('Days Left') }}</th>
+                  <th>{{ __('Action') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @forelse ($certificatesExpiring ?? [] as $cert)
+                  <tr>
+                    <td><span class="badge badge-light">{{ $cert['type'] }}</span></td>
+                    <td>{{ $cert['title'] }}</td>
+                    <td>{{ $cert['who'] }}</td>
+                    <td>{{ $cert['expiry_display'] }}</td>
+                    <td>
+                      <span class="badge badge-{{ $cert['days_left'] <= 7 ? 'danger' : 'warning' }}">
+                        {{ $cert['days_left'] }} {{ __('days') }}
+                      </span>
+                    </td>
+                    <td>
+                      @if (!empty($cert['url']))
+                        <a href="{{ $cert['url'] }}" class="btn btn-primary btn-sm">{{ __('Open job') }}</a>
+                      @else
+                        <span class="text-muted">—</span>
+                      @endif
+                    </td>
+                  </tr>
+                @empty
+                  <tr><td colspan="6" class="text-center text-muted py-3">{{ __('No certificates expiring in the next month.') }}</td></tr>
+                @endforelse
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title d-inline-block">{{ __('Expired Certificates') }}</div>
+          <span class="badge badge-danger ml-2">{{ $taskCounts['certificates_expired'] ?? 0 }}</span>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>{{ __('Type') }}</th>
+                  <th>{{ __('Certificate') }}</th>
+                  <th>{{ __('Customer / Staff') }}</th>
+                  <th>{{ __('Expired On') }}</th>
+                  <th>{{ __('Action') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @forelse ($certificatesExpired ?? [] as $cert)
+                  <tr>
+                    <td><span class="badge badge-light">{{ $cert['type'] }}</span></td>
+                    <td>{{ $cert['title'] }}</td>
+                    <td>{{ $cert['who'] }}</td>
+                    <td class="text-danger">{{ $cert['expiry_display'] }}</td>
+                    <td>
+                      @if (!empty($cert['url']))
+                        <a href="{{ $cert['url'] }}" class="btn btn-primary btn-sm">{{ __('Open job') }}</a>
+                      @else
+                        <span class="text-muted">—</span>
+                      @endif
+                    </td>
+                  </tr>
+                @empty
+                  <tr><td colspan="5" class="text-center text-muted py-3">{{ __('No expired certificates.') }}</td></tr>
+                @endforelse
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   {{-- Expired documents --}}
   <div class="row">
     <div class="col-md-12">

@@ -336,6 +336,7 @@ class VendorMobileController extends Controller
       'completion_images' => ['required', 'array', 'min:1', 'max:10'],
       'completion_images.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
       'job_certificate' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+      'job_certificate_expiry' => ['nullable', 'date', 'after:today'],
     ]);
 
     $vendor = $this->vendor($request);
@@ -366,7 +367,12 @@ class VendorMobileController extends Controller
         $certificate = UploadFile::store(public_path('assets/file/certificates/'), $request->file('job_certificate'));
         $storedFiles[] = public_path('assets/file/certificates/' . $certificate);
         AppointmentCompletion::complete($locked, 'vendor', $vendor->id);
-        $locked->update(['job_certificate' => $certificate]);
+        $locked->update([
+          'job_certificate' => $certificate,
+          'job_certificate_expiry' => $request->filled('job_certificate_expiry')
+            ? $request->input('job_certificate_expiry')
+            : $locked->job_certificate_expiry,
+        ]);
       });
     } catch (\Throwable $exception) {
       foreach ($storedFiles as $file) {

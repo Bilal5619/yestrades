@@ -280,7 +280,7 @@ class BasicController extends Controller
 
   public function mailToAdmin()
   {
-    $data = DB::table('basic_settings')->select('to_mail')->first();
+    $data = DB::table('basic_settings')->select('to_mail', 'certificate_reminder_email')->first();
 
     return view('admin.basic-settings.email.mail-to-admin', ['data' => $data]);
   }
@@ -288,7 +288,8 @@ class BasicController extends Controller
   public function updateMailToAdmin(Request $request)
   {
     $rule = [
-      'to_mail' => 'required'
+      'to_mail' => 'required|email',
+      'certificate_reminder_email' => 'nullable|email',
     ];
 
     $message = [
@@ -303,7 +304,10 @@ class BasicController extends Controller
 
     DB::table('basic_settings')->updateOrInsert(
       ['uniqid' => 12345],
-      ['to_mail' => $request->to_mail]
+      [
+        'to_mail' => $request->to_mail,
+        'certificate_reminder_email' => trim((string) $request->certificate_reminder_email) ?: null,
+      ]
     );
 
     Session::flash('success', 'Mail info updated successfully!');

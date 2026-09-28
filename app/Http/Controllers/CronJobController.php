@@ -45,5 +45,13 @@ class CronJobController extends Controller
             }
         } catch (\Exception $e) {
         }
+
+        // Certificate expiry reminders. Kept inside this URL-triggered cron as
+        // well as the scheduler, because some hosts only call /subcheck.
+        try {
+            \Artisan::call('certificates:remind');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('certificates:remind failed: ' . $e->getMessage());
+        }
     }
 }

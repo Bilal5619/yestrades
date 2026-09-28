@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\FrontEnd\Booking\ServicePaymentController;
 use App\Http\Controllers\FrontEnd\MiscellaneousController;
 use App\Http\Helpers\AdminComplianceTasks;
+use App\Http\Helpers\CertificateExpiry;
 use App\Http\Helpers\AppointmentCompletion;
 use App\Http\Helpers\BasicMailer;
 use App\Http\Helpers\VendorAvailability;
@@ -437,6 +438,26 @@ if ($tenantDeferred) {
    * (date exception) or a weekly-schedule clash. These are conflicts the admin
    * needs to resolve (e.g. reassign the vendor).
    */
+  /**
+   * Set or correct a job certificate's expiry date after the job is completed.
+   * Needed because certificates uploaded from the mobile app carry no date,
+   * and because a certificate is sometimes re-issued with a new expiry.
+   */
+  public function updateCertificateExpiry(Request $request, $id)
+  {
+    $request->validate([
+      'job_certificate_expiry' => ['nullable', 'date'],
+    ]);
+
+    $booking = ServiceBooking::findOrFail($id);
+    $booking->update([
+      'job_certificate_expiry' => $request->filled('job_certificate_expiry')
+        ? $request->input('job_certificate_expiry')
+        : null,
+    ]);
+
+    return redirect()->back()->with('success', 'Certificate expiry date updated.');
+  }
   public function availabilityCompliance(Request $request)
   {
     $language = Language::where('code', request()->language)->firstOrFail();
@@ -459,6 +480,9 @@ if ($tenantDeferred) {
     $information['expiredDocuments'] = AdminComplianceTasks::expiredDocuments();
     $information['pendingPayments'] = AdminComplianceTasks::pendingPayments($language_id);
     $information['jobsNeedingVendor'] = AdminComplianceTasks::jobsNeedingVendor($language_id);
+    $information['certificatesExpiring'] = CertificateExpiry::expiringSoon(CertificateExpiry::REMINDER_DAYS, $language_id);
+    $information['certificatesExpired'] = CertificateExpiry::expired($language_id);
+    $information['certificateReminderDays'] = CertificateExpiry::REMINDER_DAYS;
     $information['taskCounts'] = AdminComplianceTasks::counts();
 
     return view('admin.appointment.availability-compliance', $information);
@@ -1268,6 +1292,7 @@ if ($tenantDeferred) {
       'completion_images' => ['required', 'array', 'min:1', 'max:10'],
       'completion_images.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
       'job_certificate' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+      'job_certificate_expiry' => ['nullable', 'date', 'after:today'],
       'completion_notes' => ['nullable', 'string', 'max:5000'],
     ]);
 

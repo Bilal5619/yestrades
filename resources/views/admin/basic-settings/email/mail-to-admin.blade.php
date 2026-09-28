@@ -57,6 +57,16 @@
                     <p class="mt-2 mb-0 text-danger">{{ $errors->first('to_mail') }}</p>
                   @endif
                 </div>
+
+                <div class="form-group">
+                  <label>{{ __('Certificate Reminder Email') }}</label>
+                  <input class="form-control" type="email" name="certificate_reminder_email"
+                    value="{{ $data->certificate_reminder_email ?? '' }}" placeholder="yestradesltd@gmail.com">
+                  <small class="form-text text-muted">{{ __('Where the certificate expiry warnings are sent — one month before any certificate runs out, and again once it has expired. Leave blank to use the address above.') }}</small>
+                  @if ($errors->has('certificate_reminder_email'))
+                    <p class="mt-2 mb-0 text-danger">{{ $errors->first('certificate_reminder_email') }}</p>
+                  @endif
+                </div>
               </div>
             </div>
           </div>

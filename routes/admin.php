@@ -216,6 +216,8 @@ Route::prefix('/admin')->middleware('auth:admin')->group(function () {
 
     Route::get('rejected-appointments', 'Admin\Appointment\AppointmentController@rejectedAppointment')->name('admin.rejected_appointment');
 
+    Route::post('/certificate-expiry/{id}', 'Admin\Appointment\AppointmentController@updateCertificateExpiry')->name('admin.appointment.update_certificate_expiry');
+
     Route::get('availability-compliance', 'Admin\Appointment\AppointmentController@availabilityCompliance')->name('admin.availability_compliance');
 
     Route::get('customer-compliance', 'Admin\Appointment\AppointmentController@customerCompliance')->name('admin.customer_compliance');

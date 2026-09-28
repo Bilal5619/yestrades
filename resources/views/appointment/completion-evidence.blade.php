@@ -30,6 +30,25 @@
     </div>
   @endif
 
+  @if ($appointment->job_certificate && Auth::guard('admin')->check())
+    <div class="row mb-2">
+      <div class="col-lg-6">
+        <strong>{{ __('Certificate Expiry') . ' :' }}</strong>
+      </div>
+      <div class="col-lg-6">
+        <form action="{{ route('admin.appointment.update_certificate_expiry', ['id' => $appointment->id]) }}"
+          method="POST" class="form-inline">
+          @csrf
+          <input type="date" name="job_certificate_expiry" class="form-control form-control-sm mr-2"
+            value="{{ optional($appointment->job_certificate_expiry)->format('Y-m-d') ?? ($appointment->job_certificate_expiry ?? '') }}">
+          <button type="submit" class="btn btn-xs btn-primary">{{ __('Save') }}</button>
+        </form>
+        <small class="text-muted">
+          {{ __('Yes Trades is emailed one month before this date, and it appears in Compliance & Tasks.') }}
+        </small>
+      </div>
+    </div>
+  @endif
   @if ($appointment->completion_invoice)
     <div class="row mb-2">
       <div class="col-lg-6">

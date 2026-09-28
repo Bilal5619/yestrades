@@ -363,6 +363,7 @@ class AppointmentController extends Controller
       'completion_images'   => ['required', 'array', 'min:1', 'max:10'],
       'completion_images.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
       'job_certificate'     => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+      'job_certificate_expiry' => ['nullable', 'date', 'after:today'],
     ]);
 
     $vendorId = Auth::guard('vendor')->id();
@@ -406,6 +407,9 @@ class AppointmentController extends Controller
 
         $lockedBooking->update([
           'job_certificate'   => $certFileName,
+          'job_certificate_expiry' => $request->filled('job_certificate_expiry')
+            ? $request->input('job_certificate_expiry')
+            : $booking->job_certificate_expiry,
         ]);
       });
     } catch (Throwable $exception) {

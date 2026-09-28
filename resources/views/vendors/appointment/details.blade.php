@@ -697,6 +697,15 @@
                 <div class="text-danger mt-1" id="cj_cert_err"></div>
               </div>
 
+              <div class="form-group">
+                <label><strong>{{ __('Certificate Expiry Date') }}</strong></label>
+                <input type="date" name="job_certificate_expiry" class="form-control"
+                  min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
+                  value="{{ old('job_certificate_expiry', \Carbon\Carbon::today()->addYear()->format('Y-m-d')) }}">
+                <small class="form-text text-muted">{{ __('Yes Trades is emailed one month before this date so the customer can be booked in for a renewal. Leave blank if the certificate never expires.') }}</small>
+                @error('job_certificate_expiry')<p class="mt-1 mb-0 text-danger">{{ $message }}</p>@enderror
+              </div>
+
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">{{ __('Cancel') }}</button>

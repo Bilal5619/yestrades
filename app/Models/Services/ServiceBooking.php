@@ -18,6 +18,7 @@ class ServiceBooking extends Model
 
   protected $casts = [
     'completed_at' => 'datetime',
+    'job_certificate_expiry' => 'date',
     'package_included_services' => 'array',
   ];
 

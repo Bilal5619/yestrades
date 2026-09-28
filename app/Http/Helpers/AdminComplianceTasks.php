@@ -131,6 +131,8 @@ class AdminComplianceTasks
     $payments = self::pendingPaymentsCount();
     $unassigned = self::jobsNeedingVendorCount();
     $availability = VendorAvailability::unresolvedConflictCount();
+    $certificatesExpiring = CertificateExpiry::expiringSoonCount();
+    $certificatesExpired = CertificateExpiry::expiredCount();
 
     return [
       'pending_document_approvals' => $pendingDocumentApprovals,
@@ -138,7 +140,9 @@ class AdminComplianceTasks
       'pending_payments' => $payments,
       'jobs_needing_vendor' => $unassigned,
       'availability_conflicts' => $availability,
-      'total' => $pendingDocumentApprovals + $expired + $payments + $unassigned + $availability,
+      'certificates_expiring' => $certificatesExpiring,
+      'certificates_expired' => $certificatesExpired,
+      'total' => $pendingDocumentApprovals + $expired + $payments + $unassigned + $availability + $certificatesExpiring + $certificatesExpired,
     ];
   }
 
