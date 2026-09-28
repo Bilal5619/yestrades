@@ -25,6 +25,7 @@
           ['label' => 'Availability Conflicts', 'count' => $taskCounts['availability_conflicts'], 'class' => 'secondary', 'icon' => 'fas fa-exclamation-triangle'],
           ['label' => 'Certificates Expiring Soon', 'count' => $taskCounts['certificates_expiring'] ?? 0, 'class' => 'warning', 'icon' => 'fas fa-certificate'],
           ['label' => 'Certificates Expired', 'count' => $taskCounts['certificates_expired'] ?? 0, 'class' => 'danger', 'icon' => 'fas fa-calendar-times'],
+          ['label' => 'Missing Certificate / Date', 'count' => $taskCounts['certificates_missing_date'] ?? 0, 'class' => 'info', 'icon' => 'fas fa-calendar-plus'],
       ];
     @endphp
     @foreach ($summary as $card)
@@ -189,6 +190,79 @@
                   </tr>
                 @empty
                   <tr><td colspan="5" class="text-center text-muted py-3">{{ __('No expired certificates.') }}</td></tr>
+                @endforelse
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{-- Certificates uploaded without an expiry date (vendor left it blank) --}}
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title d-inline-block">{{ __('Jobs Missing a Certificate or Expiry Date') }}</div>
+          <span class="badge badge-info ml-2">{{ $taskCounts['certificates_missing_date'] ?? 0 }}</span>
+          <span class="text-muted ml-2" style="font-size:13px;">
+            {{ __('Both are optional for the engineer. Open the certificate, read the date off it and save it here — or mark it as having no expiry.') }}
+          </span>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>{{ __('Booking') }}</th>
+                  <th>{{ __('Service') }}</th>
+                  <th>{{ __('Completed') }}</th>
+                  <th>{{ __('Missing') }}</th>
+                  <th>{{ __('Set Expiry Date') }}</th>
+                  <th>{{ __('Action') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @forelse ($certificatesMissingDate ?? [] as $item)
+                  @php
+                    $missingParts = [];
+                    if (empty($item->job_certificate)) { $missingParts[] = __('Certificate'); }
+                    if (empty($item->job_certificate_expiry)) { $missingParts[] = __('Expiry Date'); }
+                  @endphp
+                  <tr>
+                    <td>{{ '#' . $item->order_number }}</td>
+                    <td>{{ $item->serviceContent->isNotEmpty() ? $item->serviceContent->first()->name : '—' }}</td>
+                    <td>{{ $item->completed_at ? \Carbon\Carbon::parse($item->completed_at)->format('d M Y') : '—' }}</td>
+                    <td><span class="badge badge-warning">{{ implode(' & ', $missingParts) }}</span></td>
+                    <td>
+                      @if ($item->job_certificate)
+                        <form action="{{ route('admin.appointment.update_certificate_expiry', ['id' => $item->id]) }}"
+                          method="POST" class="form-inline">
+                          @csrf
+                          <input type="date" name="job_certificate_expiry" class="form-control form-control-sm mr-1"
+                            style="min-width:140px;"
+                            value="{{ $item->job_certificate_expiry ? \Carbon\Carbon::parse($item->job_certificate_expiry)->format('Y-m-d') : '' }}">
+                          <button type="submit" class="btn btn-success btn-sm mr-1">{{ __('Save') }}</button>
+                          <button type="submit" name="has_no_expiry" value="1" class="btn btn-outline-secondary btn-sm"
+                            title="{{ __('Use this when the certificate genuinely carries no expiry date, so it stops appearing here.') }}">
+                            {{ __('No expiry') }}
+                          </button>
+                        </form>
+                      @else
+                        <small class="text-muted">{{ __('Certificate not uploaded yet') }}</small>
+                      @endif
+                    </td>
+                    <td>
+                      @if ($item->job_certificate)
+                        <a href="{{ asset('assets/file/certificates/' . $item->job_certificate) }}" target="_blank"
+                          class="btn btn-outline-primary btn-sm mb-1">{{ __('View Certificate') }}</a>
+                      @endif
+                      <a href="{{ route('admin.appointment.details', ['id' => $item->id, 'language' => request()->language ?? $defaultLang->code]) }}"
+                        class="btn btn-primary btn-sm">{{ __('View Job') }}</a>
+                    </td>
+                  </tr>
+                @empty
+                  <tr><td colspan="6" class="text-center text-muted py-3">{{ __('Every completed job has a certificate and expiry date on file.') }}</td></tr>
                 @endforelse
               </tbody>
             </table>

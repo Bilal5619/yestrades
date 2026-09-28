@@ -52,7 +52,7 @@
 </p>
 
 <p style="margin-top:24px;">
-  <a href="{{ route('admin.availability_compliance', ['language' => optional(\App\Models\Language::where('is_default', 1)->first())->code ?? 'en']) }}"
+  <a href="{{ route('admin.availability_compliance', ['language' => optional(\App\Models\Language::where('is_default', 1)->first())->code]) }}"
     style="background:#2da63b;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:700;display:inline-block;">
     Open Compliance &amp; Tasks
   </a>

@@ -44,6 +44,55 @@ class CertificateExpiry
     return self::collect(null, Carbon::yesterday(), $languageId, 'expired');
   }
 
+  /**
+   * Completed jobs still missing their certificate or its expiry date.
+   * Both are optional for the engineer, so this is how the office catches the
+   * ones that were left blank and fills them in.
+   */
+  public static function missingExpiry(?int $languageId = null): Collection
+  {
+    if (!Schema::hasColumn('service_bookings', 'job_certificate_expiry')) {
+      return collect();
+    }
+
+    return self::missingQuery()
+      ->with(['serviceContent' => function ($q) use ($languageId) {
+        if ($languageId) {
+          $q->where('language_id', $languageId);
+        }
+      }, 'vendor', 'vendorInfo'])
+      ->orderByDesc('completed_at')
+      ->limit(self::LIMIT)
+      ->get();
+  }
+
+  public static function missingExpiryCount(): int
+  {
+    if (!Schema::hasColumn('service_bookings', 'job_certificate_expiry')) {
+      return 0;
+    }
+
+    return self::missingQuery()->count();
+  }
+
+  /**
+   * Completed jobs missing the certificate file, or missing its expiry date.
+   * A certificate the office has confirmed carries no expiry is excluded —
+   * otherwise it would sit here for ever, since its date stays empty by design.
+   */
+  private static function missingQuery()
+  {
+    return ServiceBooking::query()
+      ->where('order_status', 'completed')
+      ->where(function ($query) {
+        $query->whereNull('job_certificate')
+          ->orWhere('job_certificate', '')
+          ->orWhere(function ($missingExpiry) {
+            $missingExpiry->whereNull('job_certificate_expiry')
+              ->where('job_certificate_has_no_expiry', 0);
+          });
+      });
+  }
   public static function expiringSoonCount(int $days = self::REMINDER_DAYS): int
   {
     return self::expiringSoon($days)->count();
@@ -65,6 +114,7 @@ class CertificateExpiry
     if (Schema::hasColumn('service_bookings', 'job_certificate_expiry')) {
       $bookings = ServiceBooking::query()
         ->whereNotNull('job_certificate_expiry')
+        ->where('job_certificate_has_no_expiry', 0)
         ->when($from, fn ($q) => $q->whereDate('job_certificate_expiry', '>=', $from->toDateString()))
         ->whereDate('job_certificate_expiry', '<=', $to->toDateString())
         ->with(['serviceContent' => function ($q) use ($languageId) {
@@ -85,7 +135,7 @@ class CertificateExpiry
           trim(($booking->customer_name ?? $booking->site_name ?? '') . ' ' . ($booking->customer_phone ?? '')) ?: ($booking->customer_email ?? '—'),
           $booking->job_certificate_expiry,
           $stage,
-          route('admin.appointment.details', ['id' => $booking->id, 'language' => request()->language ?? 'en'])
+          route('admin.appointment.details', ['id' => $booking->id, 'language' => request()->language ?? optional(\App\Models\Language::where('is_default', 1)->first())->code])
         ));
       }
     }

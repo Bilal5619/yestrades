@@ -701,8 +701,8 @@
                 <label><strong>{{ __('Certificate Expiry Date') }}</strong></label>
                 <input type="date" name="job_certificate_expiry" class="form-control"
                   min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
-                  value="{{ old('job_certificate_expiry', \Carbon\Carbon::today()->addYear()->format('Y-m-d')) }}">
-                <small class="form-text text-muted">{{ __('Yes Trades is emailed one month before this date so the customer can be booked in for a renewal. Leave blank if the certificate never expires.') }}</small>
+                  value="{{ old('job_certificate_expiry') }}">
+                <small class="form-text text-muted">{{ __('Optional. If the certificate has an expiry date, enter it here — Yes Trades is emailed one month before. Leave blank if it does not expire or you do not have the date; the office will be shown it as missing.') }}</small>
                 @error('job_certificate_expiry')<p class="mt-1 mb-0 text-danger">{{ $message }}</p>@enderror
               </div>
 

@@ -445,18 +445,31 @@ if ($tenantDeferred) {
    */
   public function updateCertificateExpiry(Request $request, $id)
   {
-    $request->validate([
-      'job_certificate_expiry' => ['nullable', 'date'],
+    $validated = $request->validate([
+      'job_certificate_expiry' => ['nullable', 'date', 'required_without:has_no_expiry'],
+      'has_no_expiry' => ['nullable', 'boolean'],
+    ], [
+      'job_certificate_expiry.required_without' => 'Enter an expiry date, or tick that this certificate has no expiry.',
     ]);
 
     $booking = ServiceBooking::findOrFail($id);
+
+    if (!$booking->job_certificate) {
+      return redirect()->back()->with('warning', 'This booking has no certificate uploaded yet.');
+    }
+
+    $hasNoExpiry = (bool) ($validated['has_no_expiry'] ?? false);
+
     $booking->update([
-      'job_certificate_expiry' => $request->filled('job_certificate_expiry')
-        ? $request->input('job_certificate_expiry')
-        : null,
+      // The two are mutually exclusive: a certificate either carries a date
+      // or is marked as not having one, never both.
+      'job_certificate_expiry' => $hasNoExpiry ? null : ($validated['job_certificate_expiry'] ?? null),
+      'job_certificate_has_no_expiry' => $hasNoExpiry,
     ]);
 
-    return redirect()->back()->with('success', 'Certificate expiry date updated.');
+    return redirect()->back()->with('success', $hasNoExpiry
+      ? 'Marked as having no expiry date.'
+      : 'Certificate expiry date saved.');
   }
   public function availabilityCompliance(Request $request)
   {
@@ -482,6 +495,7 @@ if ($tenantDeferred) {
     $information['jobsNeedingVendor'] = AdminComplianceTasks::jobsNeedingVendor($language_id);
     $information['certificatesExpiring'] = CertificateExpiry::expiringSoon(CertificateExpiry::REMINDER_DAYS, $language_id);
     $information['certificatesExpired'] = CertificateExpiry::expired($language_id);
+    $information['certificatesMissingDate'] = CertificateExpiry::missingExpiry($language_id);
     $information['certificateReminderDays'] = CertificateExpiry::REMINDER_DAYS;
     $information['taskCounts'] = AdminComplianceTasks::counts();
 

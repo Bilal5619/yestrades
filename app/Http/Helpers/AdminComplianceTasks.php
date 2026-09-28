@@ -133,6 +133,8 @@ class AdminComplianceTasks
     $availability = VendorAvailability::unresolvedConflictCount();
     $certificatesExpiring = CertificateExpiry::expiringSoonCount();
     $certificatesExpired = CertificateExpiry::expiredCount();
+    // Completed jobs with no certificate file, or no expiry date on it.
+    $certificatesMissingDate = CertificateExpiry::missingExpiryCount();
 
     return [
       'pending_document_approvals' => $pendingDocumentApprovals,
@@ -142,7 +144,8 @@ class AdminComplianceTasks
       'availability_conflicts' => $availability,
       'certificates_expiring' => $certificatesExpiring,
       'certificates_expired' => $certificatesExpired,
-      'total' => $pendingDocumentApprovals + $expired + $payments + $unassigned + $availability + $certificatesExpiring + $certificatesExpired,
+      'certificates_missing_date' => $certificatesMissingDate,
+      'total' => $pendingDocumentApprovals + $expired + $payments + $unassigned + $availability + $certificatesExpiring + $certificatesExpired + $certificatesMissingDate,
     ];
   }
 
