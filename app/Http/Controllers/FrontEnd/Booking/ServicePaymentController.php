@@ -27,6 +27,7 @@ use App\Models\Services\Services;
 use App\Models\Shop\Coupon;
 use App\Models\PostalCode;
 use App\Models\Question;
+use App\Models\QuestionCondition;
 use App\Models\QuestionOption;
 use App\Models\Vendor;
 use App\Services\TenantSlotService;
@@ -193,19 +194,44 @@ class ServicePaymentController extends Controller
         ], 422);
       }
 
-      $cartItems = $cartItems->map(function ($item) use ($request, $normalizedSlot, $questionAnswers, $isWithinFourHoursUrgency, $tenantDeferred) {
+      // Each service can carry its own date when it was booked from its service
+      // page, so a two-service order no longer gets both visits stamped with the
+      // first service's date. Falls back to the single checkout date.
+      $itemSchedules = $this->decodeItemSchedules($request->input('item_schedules'));
+
+      foreach ($itemSchedules as $key => $schedule) {
+        if (!empty($schedule['date'])) {
+          try {
+            if (Carbon::parse($schedule['date'])->lt(Carbon::today())) {
+              return response()->json([
+                'error' => __('Please choose today or a future booking date.'),
+              ], 422);
+            }
+          } catch (\Exception $exception) {
+            return response()->json([
+              'error' => __('Please choose today or a future booking date.'),
+            ], 422);
+          }
+        }
+      }
+
+      $cartItems = $cartItems->map(function ($item) use ($request, $normalizedSlot, $questionAnswers, $isWithinFourHoursUrgency, $tenantDeferred, $itemSchedules) {
+        $schedule = $itemSchedules[$item['key'] ?? ''] ?? [];
+        $itemDate = $schedule['date'] ?? null;
+        $itemSlot = !empty($schedule['slot']) ? $this->normalizeCartTimeSlot($schedule['slot']) : [];
+
         $item['booking_date'] = ($isWithinFourHoursUrgency || $tenantDeferred)
           ? null
-          : $request->input('bookingDate', $item['booking_date'] ?? null);
+          : ($itemDate ?: $request->input('bookingDate', $item['booking_date'] ?? null));
         $item['service_hour_id'] = ($isWithinFourHoursUrgency || $tenantDeferred)
           ? null
-          : ($normalizedSlot['service_hour_id'] ?? ($item['service_hour_id'] ?? null));
+          : ($itemSlot['service_hour_id'] ?? ($normalizedSlot['service_hour_id'] ?? ($item['service_hour_id'] ?? null)));
         $item['start_time'] = ($isWithinFourHoursUrgency || $tenantDeferred)
           ? null
-          : ($normalizedSlot['start_time'] ?? ($item['start_time'] ?? null));
+          : ($itemSlot['start_time'] ?? ($normalizedSlot['start_time'] ?? ($item['start_time'] ?? null)));
         $item['end_time'] = ($isWithinFourHoursUrgency || $tenantDeferred)
           ? null
-          : ($normalizedSlot['end_time'] ?? ($item['end_time'] ?? null));
+          : ($itemSlot['end_time'] ?? ($normalizedSlot['end_time'] ?? ($item['end_time'] ?? null)));
 
         if ($tenantDeferred) {
           $item['zoom_status'] = 0;
@@ -221,8 +247,14 @@ class ServicePaymentController extends Controller
         return $item;
       });
 
+      if ($missingQuestion = $this->firstUnansweredRequiredQuestion($cartItems)) {
+        return response()->json([
+          'error' => __('Please answer ":question" before continuing.', ['question' => $missingQuestion]),
+        ], 422);
+      }
       $quoteRequest = $request->boolean('quote_request') || $this->cartHasQuoteRequest($cartItems);
-      $weekendRequest = $this->isWeekendBookingDate($bookingDate);
+      $weekendRequest = $this->isWeekendBookingDate($bookingDate)
+        || $cartItems->contains(fn ($item) => $this->isWeekendBookingDate($item['booking_date'] ?? null));
       $requestOnlyBooking = $quoteRequest || $weekendRequest;
       $cartPriceCheck = $this->resolveCartCheckoutPrice($cartItems, $urgencySurcharge, $requestOnlyBooking, $request->input('zip_code'));
       $clientTotal = round((float) $request->input('total_price', 0), 2);
@@ -495,6 +527,38 @@ class ServicePaymentController extends Controller
     return response()->json(['redirectURL' => route('frontend.services')]);
   }
 
+  /**
+   * Per-item dates sent by the one-step checkout: {"<item key>": {"date": "Y-m-d", "slot": "10:00 AM - 12:00 PM"}}.
+   */
+  private function decodeItemSchedules($raw): array
+  {
+    if (is_string($raw)) {
+      $raw = json_decode($raw, true);
+    }
+
+    if (!is_array($raw)) {
+      return [];
+    }
+
+    $schedules = [];
+
+    foreach ($raw as $key => $value) {
+      if (!is_array($value)) {
+        continue;
+      }
+
+      $date = trim((string) ($value['date'] ?? ''));
+      $slot = trim((string) ($value['slot'] ?? ''));
+
+      if ($date === '' && $slot === '') {
+        continue;
+      }
+
+      $schedules[(string) $key] = ['date' => $date ?: null, 'slot' => $slot ?: null];
+    }
+
+    return $schedules;
+  }
   private function normalizeCartTimeSlot($slot): array
   {
     $slot = trim((string) $slot);
@@ -549,6 +613,77 @@ class ServicePaymentController extends Controller
     return '';
   }
 
+  /**
+   * A required question that was left unanswered, or null when all are answered.
+   *
+   * Conditional questions are skipped: they are only shown once another answer
+   * triggers them, so treating them as always-required would reject perfectly
+   * valid bookings.
+   */
+  private function firstUnansweredRequiredQuestion(Collection $cartItems): ?string
+  {
+    $serviceIds = $cartItems
+      ->filter(fn ($item) => ($item['item_type'] ?? 'service') === 'service')
+      ->pluck('service_id')
+      ->filter()
+      ->unique()
+      ->values();
+
+    if ($serviceIds->isEmpty()) {
+      return null;
+    }
+
+    $questions = Question::query()
+      ->whereIn('service_id', $serviceIds)
+      ->where('is_required', 1)
+      ->get();
+
+    if ($questions->isEmpty()) {
+      return null;
+    }
+
+    $conditionalIds = QuestionCondition::query()
+      ->whereIn('question_id', $questions->pluck('id'))
+      ->pluck('question_id')
+      ->unique()
+      ->all();
+
+    foreach ($cartItems as $item) {
+      if (($item['item_type'] ?? 'service') !== 'service') {
+        continue;
+      }
+
+      // An accepted quote is priced and agreed by admin and never goes through
+      // the question form, so it has no answers to check.
+      if (($item['price_status'] ?? null) === 'quote_locked') {
+        continue;
+      }
+
+      $answers = $this->decodeCartQuestionAnswers($item['question_answers'] ?? '{}');
+
+      foreach ($questions->where('service_id', $item['service_id'] ?? null) as $question) {
+        if (in_array($question->id, $conditionalIds, true)) {
+          continue;
+        }
+
+        $answer = $answers[(string) $question->id] ?? ($answers[$question->id] ?? null);
+
+        if ($question->type === 'quantity') {
+          // A quantity of zero is a real answer unless a minimum says otherwise.
+          if ($answer === null || $answer === '') {
+            return $question->title;
+          }
+          continue;
+        }
+
+        if ($answer === null || $answer === '' || $answer === []) {
+          return $question->title;
+        }
+      }
+    }
+
+    return null;
+  }
   private function decodeCartQuestionAnswers($answers): array
   {
     if (is_array($answers)) {

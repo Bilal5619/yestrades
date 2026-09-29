@@ -932,3 +932,7 @@ body.cart-one-step .cart-edit-hint { display: block; }
   .ytx-booking-main { order: 0; padding: 22px 18px; }
   .ytx-booking-grid { gap: 16px; }
 }
+/* One-step checkout: urgent booking options moved out of the hidden date step */
+body.cart-one-step .cart-one-step-urgency { margin: 0 0 20px; }
+body.cart-one-step .cart-one-step-urgency .urgency-surcharge-info { margin: 0; }
+body.cart-one-step .cart-urgency-replaces-date { margin: 10px 0 0; font-size: 13px; }

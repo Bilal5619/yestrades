@@ -1534,8 +1534,12 @@
                   $firstCartItemForPostcode = $serviceCart->first();
                   $prefillPostcode = $firstCartItemForPostcode['site']['zip_code'] ?? ($firstCartItemForPostcode['customer']['zip_code'] ?? '');
                 @endphp
-                {{-- Postcode is collected on the service page (and the "Site postcode" field below keeps pricing in sync), so this panel stays hidden. --}}
-                <div class="cart-postcode-panel" data-cart-postcode-panel hidden style="display:none">
+                {{-- In one-step checkout the postcode already came from the service
+                     page and the "Site postcode" field below keeps pricing in sync, so this
+                     panel is hidden. In the normal flow it must stay visible: the step
+                     cannot be passed without it. --}}
+                <div class="cart-postcode-panel" data-cart-postcode-panel
+                  @if ($cartOneStep) hidden style="display:none" @endif>
                   <label class="cart-field-label" for="cart_pricing_postcode">{{ __('Your postcode') }}</label>
                   <div class="cart-postcode-input-row">
                     <input type="text" id="cart_pricing_postcode" class="form-control"
@@ -2232,6 +2236,8 @@
                     <input hidden type="text" name="country" id="billing_country" value="{{ $firstCustomer['country'] ?? '' }}">
                     <input hidden type="text" name="serviceHourId" id="serviceHourId">
                     <input hidden type="text" name="bookingDate" id="bookingDate">
+                    {{-- Per-item dates, so two services booked for different days keep their own date. --}}
+                    <input hidden type="text" name="item_schedules" id="item_schedules" value="">
                     <input hidden type="text" name="staffId" id="staffId" value="{{ $firstCartItem['staff_id'] ?? '' }}">
                     <input hidden type="text" name="user_id" id="userId" value="{{ $authUser ? $authUser->id : ($firstCartItem['user_id'] ?? 0) }}">
                     <input hidden type="text" name="max_person" id="bmax_person" value="{{ $firstCartItem['max_person'] ?? 1 }}">
@@ -3344,6 +3350,9 @@
         }
 
         if (event.target && event.target.id === 'cart_booking_date') {
+          // A date picked here applies to the whole order, so the per-item
+          // dates taken from the service pages no longer apply.
+          window.ytxCartItemSchedules = {};
           if (isPastCartBookingDate(event.target.value)) {
             event.target.value = '';
             showCartAlert('date', @json(__('Please choose today or a future booking date.')));
@@ -4194,6 +4203,17 @@
           bookingDateInput.value = cartSchedulingMode === 'tenant' ? '' : bookingDate.value;
         }
 
+        // Each item's own date, when the services were booked separately from
+        // their service pages. Ignored for tenant bookings and urgent slots,
+        // where there is no customer-chosen date to keep.
+        const itemSchedulesInput = document.getElementById('item_schedules');
+        if (itemSchedulesInput) {
+          const schedules = (cartSchedulingMode === 'tenant' || selectedUrgencyFee > 0)
+            ? {}
+            : (window.ytxCartItemSchedules || {});
+          itemSchedulesInput.value = Object.keys(schedules).length ? JSON.stringify(schedules) : '';
+        }
+
         if (serviceHourInput && serviceHour) {
           serviceHourInput.value = cartSchedulingMode === 'tenant' || isWithinFourHoursUrgency() ? '' : serviceHour.value;
         }
@@ -4329,10 +4349,27 @@
               message = error.responseJSON.error;
             }
 
+            // The date/tenant step is hidden in one-step checkout, so an error
+            // about it would otherwise be invisible. Open that step and point
+            // the customer at it instead of failing silently.
+            const fieldsWithErrors = (error.responseJSON && error.responseJSON.errors)
+              ? Object.keys(error.responseJSON.errors)
+              : [];
+            const isSchedulingError = fieldsWithErrors.some(function (field) {
+              return field.indexOf('tenant') === 0 || field === 'bookingDate' || field === 'serviceHourId';
+            }) || /tenant|occupier|booking date/i.test(message);
+
+            if (isSchedulingError && document.body.classList.contains('cart-one-step')) {
+              document.body.classList.remove('cart-one-step');
+              const editHint = document.querySelector('.cart-edit-hint');
+              if (editHint) editHint.remove();
+              showCartStep('date');
+              showCartAlert('date', message);
+            }
+
             if (gatewayError && gatewayError.textContent === '') {
               gatewayError.textContent = message;
             }
-
             if (stripeErrors) {
               stripeErrors.textContent = message;
             }
@@ -4796,6 +4833,17 @@
           if (slotEl && first.time_slot) { slotEl.value = first.time_slot; slotEl.dispatchEvent(new Event('change', { bubbles: true })); }
         }
 
+        // Each item keeps its own date/slot for checkout, not just the first
+        // one. Published after the date field is set above, because that change
+        // event clears the map (a date picked by hand applies to the whole order).
+        window.ytxCartItemSchedules = {};
+        Object.keys(prefill).forEach(function (key) {
+          const data = prefill[key] || {};
+          if (data.scheduling_mode !== 'tenant' && data.booking_date) {
+            window.ytxCartItemSchedules[key] = { date: data.booking_date, slot: data.time_slot || '' };
+          }
+        });
+
         document.querySelectorAll('.service-cart-page .question-quantity-selector').forEach(updateCartQuantityDisplay);
         updateCartConditionalQuestions();
         updateSequentialCartQuestions();
@@ -4827,11 +4875,45 @@
           if (infoHeading && infoHeading.parentNode) { infoHeading.insertAdjacentElement('afterend', hint); } else { infoPanel.appendChild(hint); }
           hint.querySelector('[data-cart-edit-booking]').addEventListener('click', function (e) {
             e.preventDefault();
+            window.ytxCartItemSchedules = {};
             document.body.classList.remove('cart-one-step');
             hint.remove();
             showCartStep('questions');
           });
         }
+        // Urgent booking options normally sit in the date step, which this flow
+        // skips. Move them into the visible panel so the customer can still pick
+        // one — the click handler is delegated from document, so it keeps working.
+        // Not offered in tenant mode, where the server ignores urgency anyway.
+        if (infoPanel && cartSchedulingMode !== 'tenant') {
+          const urgencyBlock = document.querySelector('.urgency-surcharge-info');
+          if (urgencyBlock && !infoPanel.contains(urgencyBlock)) {
+            const urgencyWrap = document.createElement('div');
+            urgencyWrap.className = 'cart-one-step-urgency';
+            urgencyWrap.appendChild(urgencyBlock);
+
+            const urgentNote = document.querySelector('[data-cart-urgent-time-note]');
+            if (urgentNote) urgencyWrap.appendChild(urgentNote);
+
+            const replacedNote = document.createElement('p');
+            replacedNote.className = 'cart-urgency-replaces-date text-muted';
+            replacedNote.style.display = 'none';
+            replacedNote.textContent = @json(__('An urgent booking replaces the date you chose — we confirm the earliest available slot with you.'));
+            urgencyWrap.appendChild(replacedNote);
+
+            const anchor = infoPanel.querySelector('.cart-edit-hint') || infoPanel.querySelector('h3');
+            if (anchor) { anchor.insertAdjacentElement('afterend', urgencyWrap); } else { infoPanel.appendChild(urgencyWrap); }
+
+            urgencyWrap.addEventListener('click', function () {
+              // Runs after the delegated handler has updated the selection.
+              setTimeout(function () {
+                const selected = document.querySelector('[data-cart-urgency-fee].is-selected');
+                replacedNote.style.display = selected ? 'block' : 'none';
+              }, 0);
+            });
+          }
+        }
+
         if (infoPanel && !window.isRestrictedInAppBrowser) infoPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       })();
     })();
