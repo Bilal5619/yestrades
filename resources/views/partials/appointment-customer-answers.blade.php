@@ -150,7 +150,16 @@
       $decodedValue = json_decode($rawValue, true);
       $hasJsonValue = json_last_error() === JSON_ERROR_NONE && is_array($decodedValue);
 
-      $displayValue = $hasJsonValue ? null : $rawValue;
+      // The cart saves select/multi answers as option IDs; show the option text instead.
+      $optionTexts = in_array($questionType, ['select', 'multi'], true) ? $question->options->pluck('option_text', 'id') : collect();
+      $toOptionText = function ($value) use ($optionTexts) {
+        return is_numeric($value) && $optionTexts->has((int) $value) ? $optionTexts->get((int) $value) : $value;
+      };
+      if ($hasJsonValue) {
+        $decodedValue = array_map($toOptionText, $decodedValue);
+      }
+
+      $displayValue = $hasJsonValue ? null : $toOptionText($rawValue);
       if ($questionType === 'quantity' && $displayValue !== null && $displayValue !== '') {
         $unitPrice = optional($question)->quantity_unit_price;
         $displayValue = $displayValue . ' ' . ((int) $displayValue === 1 ? __('item') : __('items'));
