@@ -161,6 +161,24 @@ Route::middleware('change.lang')->group(function () {
 
     Route::post('payment/process/', 'FrontEnd\Booking\ServicePaymentController@index')->name('frontend.service.payment');
 
+
+    // Stripe bank authentication return page.
+    Route::get(
+      'stripe/payment-return',
+      'FrontEnd\Booking\Payment\StripeController@paymentReturn'
+    )
+      ->middleware('throttle:30,1')
+      ->name('frontend.service_booking.stripe.return');
+
+    // Secure POST endpoint to verify and finalise returned payments.
+    Route::post(
+      'stripe/payment-return/complete',
+      'FrontEnd\Booking\Payment\StripeController@finishReturnedPayment'
+    )
+      ->middleware('throttle:10,1')
+      ->name('frontend.service_booking.stripe.complete');
+
+      
     //service booking payment notify route
     Route::get('/paypal/payment/notify', 'FrontEnd\Booking\Payment\PayPalController@notify')->name('frontend.service_booking.paypal.notify');
 
