@@ -2676,38 +2676,71 @@
         return activeStripeIntent;
       }
 
-      async function confirmCartStripeCardPayment(form) {
-        if (stripePaymentInFlight) {
-          return;
-        }
+    
+async function confirmCartStripeCardPayment(form) {
+  if (stripePaymentInFlight) {
+    return;
+  }
 
-        stripePaymentInFlight = true;
-        setStripePaymentError('');
-        $('.request-loader-time').addClass('show');
+  stripePaymentInFlight = true;
+  setStripePaymentError('');
+  $('.request-loader-time').addClass('show');
 
-        stripe.createToken(stripeCard).then(function (result) {
-          if (result.error) {
-            setStripePaymentError(result.error.message || @json(__('Card payment failed. Please check your card details or try another payment method.')));
-            $('.request-loader-time').removeClass('show');
-            stripePaymentInFlight = false;
-            return;
-          }
+  try {
+    // Create or reuse the existing Stripe PaymentIntent.
+    const intent = await createOrReuseCartStripePaymentIntent(form);
 
-          const tokenInput = document.getElementById('stripeToken');
-          const intentInput = document.getElementById('payment_intent_id');
-          const gatewayInput = document.getElementById('gateway');
+    if (!intent || !intent.client_secret) {
+      throw new Error('Unable to start payment. Please try again.');
+    }
 
-          if (tokenInput) tokenInput.value = result.token.id;
-          if (intentInput) intentInput.value = '';
-          if (gatewayInput) gatewayInput.value = 'stripe';
+    // Confirm the card payment securely on this website.
+    // Stripe automatically displays bank authentication if required.
+    
+const result = await stripe.confirmCardPayment(
+  intent.client_secret,
+  {
+    payment_method: {
+      card: stripeCard
+    },
+    return_url: @json(route('frontend.service_booking.stripe.return'))
+  }
+);
 
-          submitCartPaymentForm(form);
-        }).catch(function (error) {
-          setStripePaymentError(error.message || @json(__('Card payment failed. Please check your card details or try another payment method.')));
-          $('.request-loader-time').removeClass('show');
-          stripePaymentInFlight = false;
-        });
-      }
+
+    if (result.error) {
+      throw new Error(
+        result.error.message ||
+        'Card payment failed. Please try again.'
+      );
+    }
+
+    if (
+      !result.paymentIntent ||
+      result.paymentIntent.status !== 'succeeded'
+    ) {
+      throw new Error(
+        'Payment is not yet complete. Please check your payment status.'
+      );
+    }
+
+    // Send the successful PaymentIntent to Laravel.
+    // Laravel verifies the payment before creating the booking.
+    setStripePaymentIntentId(result.paymentIntent.id);
+
+    submitCartPaymentForm(form);
+
+  } catch (error) {
+    setStripePaymentError(
+      error.message ||
+      'Payment could not be completed. Please try again.'
+    );
+
+  } finally {
+    $('.request-loader-time').removeClass('show');
+    stripePaymentInFlight = false;
+  }
+}
 
       async function handleStripeExpressCheckoutConfirm(event) {
         const form = document.getElementById('payment-form');

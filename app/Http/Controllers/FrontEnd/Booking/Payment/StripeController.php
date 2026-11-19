@@ -521,6 +521,18 @@ class StripeController extends Controller
     if (!$stripeGateway || !$stripeGateway->status || empty($stripeSecret) || empty($stripeKey)) {
       return Response::json(['error' => 'Card payment is temporarily unavailable. Please try again later.'], 503);
     }
+    
+    // Keep the validated checkout request in the Laravel session.
+    // This allows the same booking to be completed after bank authentication.
+    // Never store Stripe tokens or card data here.
+    Session::put(
+      'stripe_service_return_payload',
+      $request->except([
+        '_token',
+        'stripeToken',
+        'payment_intent_id',
+      ])
+    );
 
     $amountMinor = $this->chargedMinorUnits($customerpaid, $currencyInfo->base_currency_text);
     $currency = strtolower($currencyInfo->base_currency_text);
@@ -689,6 +701,7 @@ class StripeController extends Controller
     Session::put('paymentInfo', $bookings->first());
     $request->session()->forget('serviceData');
     $request->session()->forget('stripe_service_payment_intent');
+    $request->session()->forget('stripe_service_return_payload');
 
     if ($request->expectsJson() || $request->ajax()) {
       return Response::json(['redirectURL' => route('frontend.services')]);
@@ -745,4 +758,83 @@ class StripeController extends Controller
 
     return 'Card payment failed. Please check your card details or try another payment method.';
   }
+
+  /**
+   * Display the payment verification page after bank authentication.
+   * This GET request never creates a booking.
+   */
+  public function paymentReturn(Request $request)
+  {
+    $paymentIntentId = $request->query('payment_intent');
+
+    $pending = Session::get('stripe_service_payment_intent');
+
+    if (
+      !is_string($paymentIntentId) ||
+      !preg_match('/^pi_[A-Za-z0-9]+$/', $paymentIntentId) ||
+      !is_array($pending) ||
+      !hash_equals(
+        (string) ($pending['payment_intent_id'] ?? ''),
+        $paymentIntentId
+      ) ||
+      !Session::has('stripe_service_return_payload') ||
+      !Session::has('serviceData')
+    ) {
+      abort(403, 'Payment session unavailable. Please contact support before paying again.');
+    }
+
+    return response()
+      ->view('frontend.services.payment-return', [
+        'paymentIntentId' => $paymentIntentId,
+      ])
+      ->header('Cache-Control', 'no-store, private');
+  }
+
+  /**
+   * Complete a returned payment using the existing verified
+   * Stripe PaymentIntent and booking finalisation process.
+   */
+  public function finishReturnedPayment(Request $request)
+  {
+    $request->validate([
+      'payment_intent_id' => [
+        'required',
+        'string',
+        'regex:/^pi_[A-Za-z0-9]+$/',
+      ],
+    ]);
+
+    $pending = Session::get('stripe_service_payment_intent');
+    $payload = Session::get('stripe_service_return_payload');
+
+    if (
+      !is_array($pending) ||
+      !is_array($payload) ||
+      !Session::has('serviceData') ||
+      !hash_equals(
+        (string) ($pending['payment_intent_id'] ?? ''),
+        (string) $request->input('payment_intent_id')
+      )
+    ) {
+      return Response::json([
+        'error' => 'Unable to restore this payment. Contact support before paying again.',
+      ], 409);
+    }
+
+    $paymentIntentId = $request->input('payment_intent_id');
+
+    // Restore the original checkout data from the server session.
+    // Never trust booking amounts or customer details from the return URL.
+    $request->merge($payload);
+
+    $request->merge([
+      'gateway' => 'stripe',
+      'payment_intent_id' => $paymentIntentId,
+    ]);
+
+    // This existing method verifies the PaymentIntent directly
+    // with Stripe, checks amount/currency/session, and finalises.
+    return $this->index($request);
+  }
+
 }
