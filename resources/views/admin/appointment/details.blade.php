@@ -81,7 +81,7 @@
                   {{ $details->package_name ?? '-' }}
                 @elseif ($details->serviceContent->isNotEmpty())
                   @foreach ($details->serviceContent as $content)
-                    <a href="{{ route('frontend.service.details', ['slug' => $content->slug, 'id' => $details->service->id]) }}"
+                    <a href="{{ route('frontend.service.details', ['slug' => $content->slug, 'id' => $details->service_id]) }}"
                       target="_blank">
                       {{ truncateString($content->name, 50) }}
                     </a>
@@ -459,9 +459,9 @@
 
               <div class="col-lg-8">
                 @if ($details->vendor_id != 0)
-                  {{ !empty($vendor_details->name) ? $vendor_details->name : $vendor_details->username }}
+                  {{ optional($vendor_details)->name ?: optional($vendor_details)->username ?: '-' }}
                 @else
-                  {{ !empty($vendor_details->first_name) ? $vendor_details->first_name : $vendor_details->username }}
+                  {{ optional($vendor_details)->first_name ?: optional($vendor_details)->username ?: '-' }}
                 @endif
               </div>
             </div>
@@ -472,7 +472,7 @@
               </div>
 
               <div class="col-lg-8">
-                {{ $vendor_details->email }}
+                {{ optional($vendor_details)->email ?? '-' }}
               </div>
             </div>
 

@@ -352,18 +352,28 @@ class StripeController extends Controller
         // PaymentIntent server-side (status/amount/currency/ownership) and
         // finalize the booking, instead of trying to charge again.
         if ($paymentIntentId) {
-          $intent = $this->verifiedPaymentIntent($stripe, $paymentIntentId, $customerpaid, $currencyInfo->base_currency_text, $request->session()->getId());
+          try {
+            $intent = $this->verifiedPaymentIntent($stripe, $paymentIntentId, $customerpaid, $currencyInfo->base_currency_text, $request->session()->getId());
+          } catch (Exception $e) {
+            return $this->paymentErrorResponse($request, $e->getMessage());
+          }
 
-          return $this->withPaymentIntentLock($paymentIntentId, function () use ($request, $arrData, $intent) {
+          return $this->withPaymentIntentLock($request, $paymentIntentId, function () use ($request, $arrData, $intent) {
             $paymentIntentId = $intent['id'];
 
-            if (\App\Models\Services\ServiceBooking::where('payment_intent_id', $paymentIntentId)->exists()) {
-              Log::warning('Stripe PaymentIntent finalize blocked because booking already exists', [
+            $existingBookings = \App\Models\Services\ServiceBooking::where('payment_intent_id', $paymentIntentId)->get();
+
+            if ($existingBookings->isNotEmpty()) {
+              // The wallet payment was already captured and the booking exists
+              // (e.g. the customer retried after a dropped response). Show the
+              // success page instead of an error for a completed payment.
+              Log::info('Stripe PaymentIntent already finalized, returning success', [
                 'session_id' => $request->session()->getId(),
                 'payment_intent_id' => $paymentIntentId,
+                'booking_ids' => $existingBookings->pluck('id')->all(),
               ]);
 
-              return Response::json(['error' => 'This booking has already been placed.'], 409);
+              return $this->paymentSuccessResponse($request, $existingBookings);
             }
 
             return $this->finalizeSuccessfulPayment($request, $arrData, $paymentIntentId);
@@ -641,7 +651,7 @@ class StripeController extends Controller
       || (int) ($intent['amount'] ?? 0) !== $this->chargedMinorUnits($amount, $currency)
       || strtoupper((string) ($intent['currency'] ?? '')) !== strtoupper($currency)
       || (string) data_get($intent, 'metadata.source') !== 'web_service_checkout'
-      || (string) data_get($intent, 'metadata.session_id') !== $sessionId
+      || !$this->paymentIntentBelongsToSession($intent, $paymentIntentId, $sessionId)
     ) {
       throw new Exception('Payment could not be verified. You have not been charged for a booking.');
     }
@@ -649,14 +659,49 @@ class StripeController extends Controller
     return $intent;
   }
 
-  private function withPaymentIntentLock(string $paymentIntentId, callable $callback)
+  // The PaymentIntent is bound to the checkout session that created it. The
+  // session id is regenerated on login, so also accept the intent id stored
+  // in the session — session data survives regeneration, proving this is the
+  // same checkout even though the session id changed.
+  private function paymentIntentBelongsToSession(array $intent, string $paymentIntentId, string $sessionId): bool
   {
-    $lock = Cache::lock('stripe-service-payment-intent:' . $paymentIntentId, 30);
+    if ((string) data_get($intent, 'metadata.session_id') === $sessionId) {
+      return true;
+    }
+
+    $sessionIntentId = data_get(Session::get('stripe_service_payment_intent'), 'payment_intent_id');
+
+    return $sessionIntentId !== null && hash_equals((string) $sessionIntentId, $paymentIntentId);
+  }
+
+  private function withPaymentIntentLock(Request $request, string $paymentIntentId, callable $callback)
+  {
+    $lock = Cache::lock('stripe-service-payment-intent:' . $paymentIntentId, 120);
 
     try {
-      return $lock->block(5, $callback);
-    } catch (Exception $e) {
-      return Response::json(['error' => 'This payment is already being finalized. Please wait a moment.'], 409);
+      return $lock->block(20, $callback);
+    } catch (\Illuminate\Contracts\Cache\LockTimeoutException $e) {
+      // The parallel finalize may have finished while we waited — if the
+      // booking now exists the payment is complete and the customer should
+      // see success, not an error.
+      $existingBookings = \App\Models\Services\ServiceBooking::where('payment_intent_id', $paymentIntentId)->get();
+
+      if ($existingBookings->isNotEmpty()) {
+        Log::info('Stripe PaymentIntent finalized while waiting for lock, returning success', [
+          'session_id' => $request->session()->getId(),
+          'payment_intent_id' => $paymentIntentId,
+          'booking_ids' => $existingBookings->pluck('id')->all(),
+        ]);
+
+        return $this->paymentSuccessResponse($request, $existingBookings);
+      }
+
+      Log::warning('Stripe PaymentIntent finalize lock timed out with no booking', [
+        'session_id' => $request->session()->getId(),
+        'payment_intent_id' => $paymentIntentId,
+      ]);
+
+      return Response::json(['error' => 'This payment is still being finalized. Please wait a moment and try again.'], 409);
     }
   }
 
@@ -697,6 +742,11 @@ class StripeController extends Controller
       }
     });
 
+    return $this->paymentSuccessResponse($request, $bookings);
+  }
+
+  private function paymentSuccessResponse(Request $request, $bookings)
+  {
     Session::put('complete', 'payment_complete');
     Session::put('paymentInfo', $bookings->first());
     $request->session()->forget('serviceData');

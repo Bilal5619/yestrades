@@ -151,7 +151,12 @@
       $hasJsonValue = json_last_error() === JSON_ERROR_NONE && is_array($decodedValue);
 
       // The cart saves select/multi answers as option IDs; show the option text instead.
-      $optionTexts = in_array($questionType, ['select', 'multi'], true) ? $question->options->pluck('option_text', 'id') : collect();
+      // Note: questions.options is a legacy text column that shadows the options()
+      // relation, so the relation must be read explicitly.
+      $questionOptions = $question
+        ? ($question->relationLoaded('options') ? $question->getRelation('options') : $question->options()->get())
+        : collect();
+      $optionTexts = in_array($questionType, ['select', 'multi'], true) ? $questionOptions->pluck('option_text', 'id') : collect();
       $toOptionText = function ($value) use ($optionTexts) {
         return is_numeric($value) && $optionTexts->has((int) $value) ? $optionTexts->get((int) $value) : $value;
       };

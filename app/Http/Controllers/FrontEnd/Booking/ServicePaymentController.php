@@ -1121,7 +1121,15 @@ class ServicePaymentController extends Controller
 
     if ($cartItems->isNotEmpty()) {
       $bookings = $this->storeCartItems($arrData, $orderData);
-      app(TenantSlotService::class)->sendInvitations($bookings);
+
+      try {
+        app(TenantSlotService::class)->sendInvitations($bookings);
+      } catch (\Throwable $e) {
+        Log::error('Tenant slot invitation failed after booking was stored', [
+          'booking_ids' => $bookings->pluck('id')->all(),
+          'message' => $e->getMessage(),
+        ]);
+      }
 
       return $bookings;
     }

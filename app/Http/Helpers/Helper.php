@@ -273,12 +273,22 @@ if (!function_exists('vendorTotalAddedService')) {
 if (!function_exists('zoomCreate')) {
   function zoomCreate($data)
   {
-    if ($data['zoom_status'] == 1) {
+    if (($data['zoom_status'] ?? 0) != 1) {
+      return;
+    }
+
+    try {
       $permission = $data['vendor_id'] != 0 ? VendorPermissionHelper::packagePermission($data['vendor_id']) : null;
 
       if (!$permission || $permission->zoom_meeting_status == 1) {
         (new ZoomController())->createMeeting($data);
       }
+    } catch (\Throwable $e) {
+      \Log::error('Zoom meeting creation failed during booking, continuing without it', [
+        'service_id' => $data['service_id'] ?? null,
+        'booking_date' => $data['booking_date'] ?? null,
+        'message' => $e->getMessage(),
+      ]);
     }
   }
 }
@@ -286,19 +296,27 @@ if (!function_exists('zoomCreate')) {
 if (!function_exists('calendarEventCreate')) {
   function calendarEventCreate($data)
   {
-    $staffCalender = StaffPlugin::where('staff_id', $data['staff_id'])->select('google_calendar', 'calender_id')->first();
+    try {
+      $staffCalender = StaffPlugin::where('staff_id', $data['staff_id'])->select('google_calendar', 'calender_id')->first();
 
-    if ($data['calender_status'] == 1) {
-      $permission = $data['vendor_id'] != 0 ? VendorPermissionHelper::packagePermission($data['vendor_id']) : null;
+      if (($data['calender_status'] ?? 0) == 1) {
+        $permission = $data['vendor_id'] != 0 ? VendorPermissionHelper::packagePermission($data['vendor_id']) : null;
 
-      if (!$permission || $permission->calendar_status == 1) {
-        (new GoogleCalendarController())->createEvent($data);
-        if (!empty($staffCalender)) {
-          if (!empty($staffCalender->google_calendar) && !empty($staffCalender->calender_id)) {
-            (new StaffCalendarController())->createEvent($data);
+        if (!$permission || $permission->calendar_status == 1) {
+          (new GoogleCalendarController())->createEvent($data);
+          if (!empty($staffCalender)) {
+            if (!empty($staffCalender->google_calendar) && !empty($staffCalender->calender_id)) {
+              (new StaffCalendarController())->createEvent($data);
+            }
           }
         }
       }
+    } catch (\Throwable $e) {
+      \Log::error('Calendar event creation failed during booking, continuing without it', [
+        'service_id' => $data['service_id'] ?? null,
+        'booking_date' => $data['booking_date'] ?? null,
+        'message' => $e->getMessage(),
+      ]);
     }
   }
 }
