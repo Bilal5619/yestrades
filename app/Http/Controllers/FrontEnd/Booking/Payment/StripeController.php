@@ -751,6 +751,20 @@ class StripeController extends Controller
     Session::put('paymentInfo', $bookings->first());
     $request->session()->forget('serviceData');
     $request->session()->forget('stripe_service_payment_intent');
+
+    if ($request->expectsJson() || $request->ajax()) {
+      return Response::json(['redirectURL' => route('frontend.services')]);
+    }
+
+    return redirect()->route('frontend.services');
+  }
+
+  private function paymentSuccessResponse(Request $request, $bookings)
+  {
+    Session::put('complete', 'payment_complete');
+    Session::put('paymentInfo', $bookings->first());
+    $request->session()->forget('serviceData');
+    $request->session()->forget('stripe_service_payment_intent');
     $request->session()->forget('stripe_service_return_payload');
 
     if ($request->expectsJson() || $request->ajax()) {
